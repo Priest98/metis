@@ -12,10 +12,14 @@ async def main():
     try:
         from app.main import app
         from httpx import AsyncClient, ASGITransport
+        from app.database import init_db
     except Exception as e:
         print(f"IMPORT FAILED: {e}")
         traceback.print_exc()
         return
+
+    print("Initializing test database...")
+    await init_db()
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url='http://test', timeout=15) as client:
