@@ -77,7 +77,7 @@ class TelegramBot:
         direction_emoji = "🟢" if signal['direction'] == 'BUY' else "🔴"
         
         message = f"""
-🚀 *TraderCopilot Signal* 🚀
+🚀 *Metis Signal* 🚀
 
 {direction_emoji} *{signal['symbol']} - {signal['direction']}*
 
@@ -118,7 +118,7 @@ class TelegramBot:
             return
         
         message = f"""
-📊 *TraderCopilot Statistics* 📊
+📊 *Metis Statistics* 📊
 
 • Active Signals: {stats.get('active_signals', 0)}
 • Avg Score: {stats.get('avg_score', 0)}/10

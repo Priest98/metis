@@ -166,18 +166,18 @@ Be precise, data-driven, and focus on statistical validity.
             text: Text to embed
         
         Returns:
-            List of embedding values (1536 dimensions)
+            List of embedding values (3072 dimensions)
         """
         try:
             result = genai.embed_content(
-                model="models/embedding-001",
+                model="models/gemini-embedding-001",
                 content=text,
                 task_type="retrieval_document"
             )
             return result['embedding']
         except Exception as e:
             logger.error(f"Embedding generation error: {e}")
-            return [0.0] * 1536  # Return zero vector on error
+            return [0.0] * 768  # Return zero vector on error
 
 
 # Global client instance

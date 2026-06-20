@@ -4,11 +4,11 @@ services:
   # Python Backend
   backend:
     build: ./backend
-    container_name: tradercopilot-backend
+    container_name: metis-backend
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD:-password}@db:5432/tradercopilot
+      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD:-password}@db:5432/metis
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - ENVIRONMENT=production
     depends_on:
@@ -20,7 +20,7 @@ services:
   # Next.js Frontend
   frontend:
     build: ./frontend
-    container_name: tradercopilot-frontend
+    container_name: metis-frontend
     ports:
       - "3000:3000"
     environment:
@@ -34,11 +34,11 @@ services:
   # TimescaleDB (PostgreSQL)
   db:
     image: timescale/timescaledb:latest-pg15
-    container_name: tradercopilot-db
+    container_name: metis-db
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
-      - POSTGRES_DB=tradercopilot
+      - POSTGRES_DB=metis
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:

@@ -9,6 +9,7 @@ from datetime import datetime
 from app.database import get_db
 from app.models import MarketData
 from app.schemas import MarketDataPoint
+from app.core.auth import get_current_user
 
 router = APIRouter()
 
@@ -19,7 +20,8 @@ async def get_market_data(
     start_time: datetime = Query(..., description="Start time (ISO format)"),
     end_time: datetime = Query(..., description="End time (ISO format)"),
     limit: int = Query(1000, le=10000),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get historical market data for a symbol.
@@ -55,7 +57,8 @@ async def get_market_data(
 @router.get("/{symbol}/latest", response_model=MarketDataPoint)
 async def get_latest_market_data(
     symbol: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """Get the latest market data point for a symbol."""
     result = await db.execute(

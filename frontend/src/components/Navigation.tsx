@@ -1,82 +1,157 @@
-
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { ThemeToggle } from './ThemeToggle';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { LogoMark } from '@/components/LogoMark';
+
+const APP_NAV = [
+    { href: '/dashboard',   label: 'signals' },
+    { href: '/strategies',  label: 'strategies' },
+    { href: '/backtesting', label: 'backtest' },
+    { href: '/knowledge',   label: 'knowledge' },
+    { href: '/history',     label: 'history' },
+    { href: '/faucet',      label: '⛽ faucet' },
+];
+
+const PUBLIC_NAV = [
+    { href: '#how-it-works', label: 'how it works' },
+    { href: '#signals',      label: 'signals' },
+    { href: '/testimonials', label: 'testimonials' },
+    { href: '/contact',      label: 'contact' },
+];
 
 export default function Navigation() {
-    const pathname = usePathname();
+    const pathname  = usePathname();
     const { user, logout } = useAuth();
+    const [scrolled, setScrolled] = useState(false);
+    const [hovered,  setHovered]  = useState(false);
 
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 48);
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
+    const expanded = scrolled || hovered;
     const isActive = (path: string) => pathname === path;
-    const linkBaseClass = "px-4 py-2 rounded-lg text-sm font-medium transition-colors";
-    const activeClass = "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400";
-    const inactiveClass = "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800";
+    const links    = user ? APP_NAV : PUBLIC_NAV;
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
-            <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                <div className="flex items-center gap-8">
-                    <Link href="/" className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-emerald-500 dark:from-indigo-400 dark:to-emerald-400">
-                        TraderCopilot
-                    </Link>
+        <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 pointer-events-none">
+            <nav
+                className={`
+                    pointer-events-auto flex items-center h-11
+                    rounded-full border backdrop-blur-2xl
+                    transition-all duration-500
+                `}
+                style={{
+                    background: 'var(--nav-bg)',
+                    borderColor: expanded
+                        ? 'rgba(var(--color-ink-rgb) / 0.13)'
+                        : 'var(--color-hairline)',
+                    boxShadow: expanded
+                        ? `0 8px 40px var(--nav-shadow), 0 0 0 1px rgba(var(--color-accent-rgb) / 0.08)`
+                        : `0 4px 20px var(--nav-shadow)`,
+                    paddingLeft:  '6px',
+                    paddingRight: '6px',
+                }}
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+                role="navigation"
+                aria-label="Main navigation"
+            >
+                {/* ── Logo (always visible) ──────────────────── */}
+                <Link
+                    href="/"
+                    className="flex items-center gap-2 pl-2 pr-1 text-ink shrink-0"
+                    aria-label="Metis — home"
+                >
+                    <LogoMark width={16} height={16} />
+                    <span
+                        className="font-display text-sm font-medium tracking-tight whitespace-nowrap overflow-hidden transition-all duration-500"
+                        style={{
+                            maxWidth:    expanded ? '130px' : '0px',
+                            opacity:     expanded ? 1 : 0,
+                            marginRight: expanded ? '2px' : '0px',
+                        }}
+                    >
+                        Metis
+                    </span>
+                </Link>
 
-                    {user && (
-                        <div className="flex items-center gap-1 hidden md:flex">
-                            <Link href="/dashboard" className={`${linkBaseClass} ${isActive('/dashboard') ? activeClass : inactiveClass}`}>
-                                Signals
-                            </Link>
-                            <Link href="/strategies" className={`${linkBaseClass} ${isActive('/strategies') ? activeClass : inactiveClass}`}>
-                                Strategies
-                            </Link>
-                            <Link href="/backtesting" className={`${linkBaseClass} ${isActive('/backtesting') ? activeClass : inactiveClass}`}>
-                                Backtesting
-                            </Link>
-                            <Link href="/knowledge" className={`${linkBaseClass} ${isActive('/knowledge') ? activeClass : inactiveClass}`}>
-                                Knowledge
-                            </Link>
-                        </div>
-                    )}
-                </div>
+                {/* ── Expandable middle ────────────────────────── */}
+                <div
+                    className="flex items-center overflow-hidden transition-all duration-500"
+                    style={{
+                        maxWidth: expanded ? '640px' : '0px',
+                        opacity:  expanded ? 1 : 0,
+                    }}
+                >
+                    {/* Left divider */}
+                    <div className="h-4 w-px bg-ink/[0.08] mx-2 shrink-0" />
 
-                <div className="flex items-center gap-4">
-                    <ThemeToggle />
+                    {/* Nav links */}
+                    {links.map(link => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={`
+                                font-mono text-xs px-3 py-1 whitespace-nowrap shrink-0
+                                transition-colors duration-200
+                                ${isActive(link.href) ? 'text-accent' : 'text-muted hover:text-ink'}
+                            `}
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
 
+                    {/* Right divider */}
+                    <div className="h-4 w-px bg-ink/[0.08] mx-2 shrink-0" />
+
+                    {/* User / auth section */}
                     {user ? (
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm text-slate-500 dark:text-slate-400 hidden sm:block">{user.email}</span>
+                        <div className="flex items-center gap-1 shrink-0">
+                            <span className="font-mono text-[0.6rem] text-muted px-1 hidden sm:block max-w-[88px] truncate">
+                                {user.email}
+                            </span>
                             <button
                                 onClick={logout}
-                                className="px-4 py-2 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-800"
+                                className="font-mono text-xs px-3 py-1 text-muted hover:text-ink transition-colors whitespace-nowrap"
                             >
-                                Logout
+                                logout
                             </button>
                         </div>
                     ) : (
-                        <div className="flex items-center gap-6">
-                            <div className="hidden lg:flex items-center gap-6 mr-4">
-                                <Link href="/testimonials" className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Testimonials</Link>
-                                <Link href="/contact" className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact</Link>
-                            </div>
-                            <Link
-                                href="/login"
-                                className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                            >
-                                Login
-                            </Link>
-                            <Link
-                                href="/signup"
-                                className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-lg shadow-indigo-600/20"
-                            >
-                                Get Started
-                            </Link>
-                        </div>
+                        <Link
+                            href="/login"
+                            className="font-mono text-xs px-3 py-1 text-muted hover:text-ink transition-colors whitespace-nowrap shrink-0"
+                        >
+                            login
+                        </Link>
                     )}
                 </div>
-            </div>
-        </nav>
+
+                {/* ── Theme toggle (always visible) ─────────── */}
+                <div className="px-1 shrink-0">
+                    <ThemeToggle />
+                </div>
+
+                {/* ── CTA pill (always visible) ────────────── */}
+                <Link
+                    href={user ? '/dashboard' : '/login'}
+                    className="
+                        font-mono text-xs bg-ink text-background
+                        px-4 py-1.5 rounded-full font-semibold
+                        hover:bg-accent transition-colors
+                        whitespace-nowrap shrink-0 ml-1
+                    "
+                >
+                    {user ? 'terminal →' : 'launch →'}
+                </Link>
+            </nav>
+        </div>
     );
 }

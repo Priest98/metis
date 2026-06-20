@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 if __name__ == "__main__":
-    print("🚀 Starting TraderCopilot Platform...")
+    print("🚀 Starting Metis Platform...")
     print("   - Market Data: Binance WebSocket")
     print("   - Database: Supabase")
     print("   - AI: Google Gemini")

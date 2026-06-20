@@ -1,6 +1,6 @@
 """FastAPI Application Entry Point"""
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
@@ -41,6 +41,14 @@ async def lifespan(app: FastAPI):
             logger.info("✅ Database connection verified")
         else:
             logger.warning("⚠️ Database not connected - functionalities limited")
+            
+        # Initialize SQL database tables
+        from app.database import init_db
+        try:
+            await init_db()
+            logger.info("✅ Relational database initialized")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize database: {e}")
         
         # Start WebSocket Distributor
         await websocket_distributor.start()
@@ -55,6 +63,11 @@ async def lifespan(app: FastAPI):
         from app.core.signals.lifecycle import signal_lifecycle
         asyncio.create_task(signal_lifecycle.start())
         logger.info("✅ Signal Lifecycle Manager started")
+        
+        # Ingest Initial Sentiment Data (in background)
+        from app.core.market_data.sentiment import sentiment_ingestor
+        asyncio.create_task(sentiment_ingestor.seed_all_sentiment())
+        logger.info("✅ Ingested initial sentiment data")
         
         yield
         
@@ -79,7 +92,7 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all for now, restrict in production
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:8000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -94,7 +107,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=500,
         content={
-            "detail": "Internal server error" if not settings.DEBUG else str(exc),
+            "detail": "Internal server error" if settings.ENVIRONMENT == "production" else str(exc),
             "timestamp": datetime.utcnow().isoformat(),
         }
     )
@@ -128,8 +141,15 @@ app.include_router(api_router, prefix="/api/v1")
 
 # WebSocket endpoint for signals
 @app.websocket("/ws/signals/{client_id}")
-async def websocket_endpoint(websocket, client_id: str):
+async def websocket_endpoint(websocket: WebSocket, client_id: str):
     await websocket_distributor.connect(websocket, client_id)
+    if websocket not in websocket_distributor.active_connections:
+        return
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        websocket_distributor.disconnect(websocket)
 
 
 if __name__ == "__main__":

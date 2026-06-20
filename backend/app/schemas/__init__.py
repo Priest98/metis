@@ -64,7 +64,7 @@ class BacktestResponse(BaseModel):
     end_date: datetime
     initial_capital: Decimal
     final_capital: Decimal
-    metrics: BacktestMetrics
+    metrics: Dict[str, Any]
     created_at: datetime
     
     class Config:

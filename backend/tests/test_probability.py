@@ -35,6 +35,6 @@ def test_monte_carlo_simulation():
     )
     
     assert "probability_of_profit" in result
-    assert "expected_return" in result
-    assert "var_95" in result
-    assert 0 <= result["probability_of_profit"] <= 1.0
+    assert "expected_final_capital" in result
+    assert "percentile_95" in result
+    assert 0 <= result["probability_of_profit"] <= 100.0

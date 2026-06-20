@@ -5,87 +5,83 @@ module.exports = {
         './src/components/**/*.{js,ts,jsx,tsx,mdx}',
         './src/app/**/*.{js,ts,jsx,tsx,mdx}',
     ],
+    // Theme toggled via .dark / .light class on <html> (next-themes)
     darkMode: 'class',
     theme: {
         extend: {
             colors: {
-                primary: {
-                    DEFAULT: '#6366F1', // Indigo
-                    dark: '#4F46E5',
-                    light: '#818CF8',
-                },
-                accent: {
-                    DEFAULT: '#F59E0B', // Amber
-                    dark: '#D97706',
-                    light: '#FBBF24',
-                },
-                success: '#10B981', // Emerald
-                danger: '#EF4444',
-                warning: '#F59E0B',
-                slate: {
-                    900: '#0F172A',
-                    800: '#1E293B', // Text color
-                    700: '#334155',
-                    600: '#475569',
-                    500: '#64748B',
-                    400: '#94A3B8',
-                    300: '#CBD5E1',
-                    200: '#E2E8F0',
-                    100: '#F1F5F9',
-                    50: '#F8FAFC',
-                },
+                // All design tokens use CSS variables with opacity modifier support
+                background: ({ opacityValue }: { opacityValue?: string }) =>
+                    opacityValue !== undefined
+                        ? `rgb(var(--color-background-rgb) / ${opacityValue})`
+                        : 'var(--color-background)',
+
+                surface: ({ opacityValue }: { opacityValue?: string }) =>
+                    opacityValue !== undefined
+                        ? `rgb(var(--color-surface-rgb) / ${opacityValue})`
+                        : 'var(--color-surface)',
+
+                ink: ({ opacityValue }: { opacityValue?: string }) =>
+                    opacityValue !== undefined
+                        ? `rgb(var(--color-ink-rgb) / ${opacityValue})`
+                        : 'var(--color-ink)',
+
+                muted: ({ opacityValue }: { opacityValue?: string }) =>
+                    opacityValue !== undefined
+                        ? `rgb(var(--color-muted-rgb) / ${opacityValue})`
+                        : 'var(--color-muted)',
+
+                accent: ({ opacityValue }: { opacityValue?: string }) =>
+                    opacityValue !== undefined
+                        ? `rgb(var(--color-accent-rgb) / ${opacityValue})`
+                        : 'var(--color-accent)',
+
+                approve: ({ opacityValue }: { opacityValue?: string }) =>
+                    opacityValue !== undefined
+                        ? `rgb(var(--color-approve-rgb) / ${opacityValue})`
+                        : 'var(--color-approve)',
+
+                review: ({ opacityValue }: { opacityValue?: string }) =>
+                    opacityValue !== undefined
+                        ? `rgb(var(--color-review-rgb) / ${opacityValue})`
+                        : 'var(--color-review)',
+
+                block: ({ opacityValue }: { opacityValue?: string }) =>
+                    opacityValue !== undefined
+                        ? `rgb(var(--color-block-rgb) / ${opacityValue})`
+                        : 'var(--color-block)',
+
+                // hairline has rgba built-in — use the var directly
+                hairline: 'var(--color-hairline)',
+            },
+            fontFamily: {
+                display: ['var(--font-space-grotesk)', 'sans-serif'],
+                sans:    ['var(--font-inter)',         'sans-serif'],
+                mono:    ['var(--font-jetbrains)',     'monospace'],
+                body:    ['var(--font-inter)',         'sans-serif'],
+                heading: ['var(--font-space-grotesk)', 'sans-serif'],
             },
             backgroundImage: {
                 'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-                'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-                'glass': 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
-            },
-            backdropBlur: {
-                xs: '2px',
-            },
-            transitionTimingFunction: {
-                'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
-            },
-            transitionDuration: {
-                'fast': '150ms',
-                'normal': '300ms',
             },
             keyframes: {
-                blob: {
-                    "0%": {
-                        transform: "translate(0px, 0px) scale(1)",
-                    },
-                    "33%": {
-                        transform: "translate(30px, -50px) scale(1.1)",
-                    },
-                    "66%": {
-                        transform: "translate(-20px, 20px) scale(0.9)",
-                    },
-                    "100%": {
-                        transform: "translate(0px, 0px) scale(1)",
-                    },
+                ticker: {
+                    from: { transform: 'translateX(0)' },
+                    to:   { transform: 'translateX(-50%)' },
                 },
                 float: {
-                    "0%, 100%": { transform: "translateY(0)" },
-                    "50%": { transform: "translateY(-10px)" },
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%':      { transform: 'translateY(-8px)' },
                 },
-                "border-beam": {
-                    "100%": {
-                        "offset-distance": "100%",
-                    },
+                'fade-in': {
+                    from: { opacity: '0', transform: 'translateY(12px)' },
+                    to:   { opacity: '1', transform: 'translateY(0)' },
                 },
             },
             animation: {
-                blob: "blob 7s infinite",
-                float: "float 6s ease-in-out infinite",
-                "spin-slow": "spin 3s linear infinite",
-                "border-beam": "border-beam calc(var(--duration)*1s) infinite linear",
-            },
-            fontFamily: {
-                sans: ['var(--font-roboto)', 'sans-serif'],
-                heading: ['var(--font-inter)', 'sans-serif'],
-                mono: ['var(--font-jetbrains)', 'monospace'],
-                body: ['var(--font-roboto)', 'sans-serif'],
+                ticker:    'ticker 40s linear infinite',
+                float:     'float 6s ease-in-out infinite',
+                'fade-in': 'fade-in 0.6s ease both',
             },
         },
     },

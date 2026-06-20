@@ -1,12 +1,14 @@
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from typing import List, Optional
 from pydantic import BaseModel
 import logging
 from datetime import datetime
+from app.core.auth import get_current_user
 
 from app.services.vector_store import vector_store
 from app.core.intelligence.gemini_client import gemini_client
+from app.core.rate_limiter import rate_limiter
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -22,15 +24,19 @@ class SearchRequest(BaseModel):
     threshold: float = 0.7
 
 @router.post("/ingest", status_code=status.HTTP_201_CREATED)
-async def ingest_knowledge(item: KnowledgeItem):
+async def ingest_knowledge(request: Request, item: KnowledgeItem, current_user: dict = Depends(get_current_user)):
     """
     Ingest text content into the vector knowledge base
     """
+    client_ip = request.client.host if request.client else "unknown"
+    if rate_limiter.is_rate_limited(f"ingest:{client_ip}", limit=5, period=60):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded. Maximum 5 ingests per minute."
+        )
+
     try:
         # 1. Generate Embedding using Gemini
-        # We use a helper method in gemini_client
-        # Note: generate_embedding is sync, but we can run it in a thread or just await if it was async
-        # For simplicity, calling the sync method (FastAPI handles it in threadpool if def is async)
         embedding = await gemini_client.generate_embedding(item.content)
         
         if not embedding:
@@ -51,17 +57,24 @@ async def ingest_knowledge(item: KnowledgeItem):
         return {"status": "success", "message": "Knowledge ingested successfully"}
         
     except Exception as e:
-        logger.error(f"Ingestion error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Ingestion error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="An error occurred while ingesting knowledge.")
 
 @router.post("/search", response_model=List[dict])
-async def search_knowledge(request: SearchRequest):
+async def search_knowledge(request: Request, search_req: SearchRequest, current_user: dict = Depends(get_current_user)):
     """
     Semantic search in knowledge base
     """
+    client_ip = request.client.host if request.client else "unknown"
+    if rate_limiter.is_rate_limited(f"search:{client_ip}", limit=10, period=60):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded. Maximum 10 searches per minute."
+        )
+
     try:
         # 1. Embed query
-        embedding = await gemini_client.generate_embedding(request.query)
+        embedding = await gemini_client.generate_embedding(search_req.query)
         
         if not embedding:
             raise HTTPException(status_code=500, detail="Failed to generate query embedding")
@@ -69,12 +82,12 @@ async def search_knowledge(request: SearchRequest):
         # 2. Search Vector DB
         results = await vector_store.search_similar(
             embedding, 
-            limit=request.limit, 
-            threshold=request.threshold
+            limit=search_req.limit, 
+            threshold=search_req.threshold
         )
         
         return results
         
     except Exception as e:
-        logger.error(f"Search error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Search error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="An error occurred while performing search.")

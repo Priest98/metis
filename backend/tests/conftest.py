@@ -4,7 +4,16 @@ import asyncio
 from typing import Generator, AsyncGenerator
 from httpx import AsyncClient
 from app.main import app
-from app.database import get_db
+from httpx import AsyncClient, ASGITransport
+from app.main import app
+from app.database import get_db, init_db
+
+@pytest.fixture(scope="session", autouse=True)
+def initialize_test_database():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(init_db())
+    loop.close()
 
 @pytest.fixture(scope="session")
 def event_loop() -> Generator:
@@ -14,7 +23,7 @@ def event_loop() -> Generator:
 
 @pytest.fixture(scope="module")
 async def async_client() -> AsyncGenerator[AsyncClient, None]:
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
 
 @pytest.fixture

@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
     
     # Application
-    APP_NAME: str = "TraderCopilot"
+    APP_NAME: str = "Metis"
     VERSION: str = "0.1.0"
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
@@ -54,9 +54,13 @@ class Settings(BaseSettings):
     MIN_PROFIT_FACTOR: float = 1.8
     
     # Security
-    JWT_SECRET_KEY: str = "change-this-secret-key-in-production"
+    JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    # Arc L1 Blockchain
+    ARC_RPC_URL: str = "https://rpc.testnet.arc.network"
+    ARC_CHAIN_ID: int = 5042002
     
     # API Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 60

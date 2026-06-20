@@ -187,6 +187,11 @@ class StrategyTriggerSystem:
         # WebSocket distribution
         await signal_distributor.broadcast_signal(signal)
         
+        # Trigger autonomous agent fleet workflow in background
+        from app.core.agents.trader_agent import agent_fleet_manager
+        import asyncio
+        asyncio.create_task(agent_fleet_manager.process_new_signal(signal))
+        
         # Telegram distribution
         # await telegram_bot.send_signal(signal)
         

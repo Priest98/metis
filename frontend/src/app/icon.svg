@@ -1,0 +1,43 @@
+<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    path {
+      stroke: #111111;
+    }
+    circle {
+      stroke: #111111;
+      fill: #C89B3C;
+    }
+    @media (prefers-color-scheme: dark) {
+      path {
+        stroke: #ECEEF4;
+      }
+      circle {
+        stroke: #ECEEF4;
+        fill: #D7FF3E;
+      }
+    }
+  </style>
+  {/* Outer tactical shield shape */}
+  <path
+    d="M16 2L2 9v14l14 7 14-7V9L16 2z"
+    strokeWidth="2"
+    strokeLinejoin="round"
+  />
+  {/* The 'M' shaped owl brow / strategic chart path */}
+  <path
+    d="M8 12.5l8 4.5 8-4.5"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+  {/* Strategic chart vertical drop and branches */}
+  <path
+    d="M16 17v5.5M16 20l-4 2.5M16 20l4 2.5"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+  {/* The owl's eyes */}
+  <circle cx="12.5" cy="15.5" r="1.5" />
+  <circle cx="19.5" cy="15.5" r="1.5" />
+</svg>

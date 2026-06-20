@@ -2,60 +2,153 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Design Tokens ─────────────────────────────────────────────────────── */
+
+/* Dark theme (default) */
+:root,
+.dark {
+  --color-background:     #0a0a0f;
+  --color-background-rgb: 10 10 15;
+  --color-surface:        #111118;
+  --color-surface-rgb:    17 17 24;
+  --color-ink:            #ECEEF4;
+  --color-ink-rgb:        236 238 244;
+  --color-muted:          #8b93a5;
+  --color-muted-rgb:      139 147 165;
+  --color-accent:         #D7FF3E;
+  --color-accent-rgb:     215 255 62;
+  --color-approve:        #22c787;
+  --color-approve-rgb:    34 199 135;
+  --color-review:         #f5a623;
+  --color-review-rgb:     245 166 35;
+  --color-block:          #ff5d5d;
+  --color-block-rgb:      255 93 93;
+  --color-hairline:       rgba(255, 255, 255, 0.08);
+  --color-hairline-rgb:   255 255 255;
+  --nav-bg:               rgba(10, 10, 15, 0.88);
+  --nav-shadow:           rgba(0, 0, 0, 0.65);
+  --scrollbar-track:      #0a0a0f;
+  --scrollbar-thumb:      rgba(255, 255, 255, 0.12);
+  --scrollbar-hover:      rgba(215, 255, 62, 0.5);
+}
+
+/* Light theme — warm linen */
+.light {
+  --color-background:     #F4EFE6;
+  --color-background-rgb: 244 239 230;
+  --color-surface:        rgba(255, 255, 255, 0.80);
+  --color-surface-rgb:    255 255 255;
+  --color-ink:            #111111;
+  --color-ink-rgb:        17 17 17;
+  --color-muted:          #5F5A50;
+  --color-muted-rgb:      95 90 80;
+  --color-accent:         #C89B3C;
+  --color-accent-rgb:     200 155 60;
+  --color-approve:        #16A34A;
+  --color-approve-rgb:    22 163 74;
+  --color-review:         #c97c10;
+  --color-review-rgb:     201 124 16;
+  --color-block:          #dc3535;
+  --color-block-rgb:      220 53 53;
+  --color-hairline:       rgba(0, 0, 0, 0.10);
+  --color-hairline-rgb:   0 0 0;
+  --nav-bg:               rgba(244, 239, 230, 0.92);
+  --nav-shadow:           rgba(0, 0, 0, 0.10);
+  --scrollbar-track:      #F4EFE6;
+  --scrollbar-thumb:      rgba(0, 0, 0, 0.15);
+  --scrollbar-hover:      rgba(200, 155, 60, 0.55);
+}
+
+/* ─── Base styles ───────────────────────────────────────────────────────── */
+
 @layer base {
-  * {
-    @apply border-slate-200;
+  *, *::before, *::after {
+    box-sizing: border-box;
   }
 
   body {
-    @apply bg-white text-slate-800 font-body;
+    @apply font-sans overflow-x-hidden;
+    background-color: var(--color-background);
+    color: var(--color-ink);
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-heading font-semibold tracking-tight;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold tracking-tight;
   }
 
-  code,
-  pre {
+  code, pre {
     @apply font-mono;
   }
 }
 
+/* ─── Component utilities ───────────────────────────────────────────────── */
+
 @layer components {
-  /* ... existing component classes ... */
-
-  /* Interaction Utilities */
-  .hover-scale {
-    @apply transition-transform duration-300 ease-smooth hover:scale-[1.02];
+  /* Eyebrow label — always monospace small caps */
+  .eyebrow {
+    font-family: var(--font-jetbrains), monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-muted);
+    display: block;
   }
 
-  .hover-lift {
-    @apply transition-all duration-300 ease-smooth hover:-translate-y-0.5 hover:shadow-xl;
+  /* Hairline border/bg using CSS variable */
+  .border-hairline {
+    border-color: var(--color-hairline);
   }
 
-  .hover-glow {
-    @apply transition-shadow duration-300 ease-smooth hover:shadow-lg hover:shadow-indigo-500/20 dark:hover:shadow-indigo-400/20;
+  .bg-hairline {
+    background-color: var(--color-hairline);
   }
 
-  /* Components using interactions */
-  .glass {
-    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border border-white/20 dark:border-slate-800 shadow-lg;
+  .divide-hairline > * + * {
+    border-color: var(--color-hairline);
   }
 
-  .card {
-    @apply bg-white dark:bg-slate-900 rounded-xl p-6 shadow-xl border border-slate-100 dark:border-slate-800 hover-scale hover-lift;
-  }
+  /* Verdict text */
+  .text-approve { color: var(--color-approve); }
+  .text-review  { color: var(--color-review); }
+  .text-block   { color: var(--color-block); }
 
-  .btn-primary {
-    @apply bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-primary/50 hover:scale-[1.02] active:scale-95;
+  /* Glass card (legacy — keep for app pages) */
+  .glass-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-hairline);
   }
+}
 
-  .btn-accent {
-    @apply bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300;
+/* ─── Utility overrides ─────────────────────────────────────────────────── */
+
+@layer utilities {
+  .grid-bg {
+    background-size: 40px 40px;
+    background-image:
+      linear-gradient(to right,  rgba(var(--color-ink-rgb) / 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(var(--color-ink-rgb) / 0.02) 1px, transparent 1px);
   }
+}
+
+/* ─── Ticker pause on hover ──────────────────────────────────────────────── */
+.ticker-wrap:hover .animate-ticker {
+  animation-play-state: paused;
+}
+
+/* ─── Custom scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
+
+/* ─── Smooth theme transitions ───────────────────────────────────────────── */
+body,
+.border-hairline,
+.bg-surface,
+.bg-background,
+.text-ink,
+.text-muted {
+  transition-property: background-color, color, border-color;
+  transition-duration: 300ms;
+  transition-timing-function: ease;
 }

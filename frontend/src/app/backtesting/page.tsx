@@ -14,8 +14,8 @@ export default function BacktestingPage() {
 
     const fetchBacktests = async () => {
         try {
-            const data = await api.get('/backtests/');
-            setBacktests(data);
+            const response = await api.get('/backtests/');
+            setBacktests(response.data);
         } catch (error) {
             console.error('Failed to fetch backtests:', error);
         } finally {
@@ -24,51 +24,73 @@ export default function BacktestingPage() {
     };
 
     return (
-        <main className="min-h-screen bg-black text-white p-6 md:p-12">
-            <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500 mb-8">
+        <main className="min-h-screen px-5 py-8 sm:px-8 max-w-6xl mx-auto">
+            <p className="eyebrow mb-3">backtesting results</p>
+            <h1 className="font-display text-3xl font-semibold text-ink mb-8">
                 Backtesting Results
             </h1>
 
             {loading ? (
-                <div className="text-center py-20 text-gray-500">Loading results...</div>
+                <div className="text-center py-20">
+                    <div className="h-6 w-6 animate-spin border-b-2 border-accent mx-auto mb-4" />
+                    <span className="font-mono text-xs text-muted">Loading results...</span>
+                </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {backtests.map((bt: any) => (
-                        <div key={bt.id} className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-md hover:border-green-500/30 transition-colors">
+                        <div
+                            key={bt.id}
+                            className="border border-hairline bg-surface p-6 hover:border-white/20 transition-colors"
+                        >
                             <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-200">Strategy {bt.strategy_name || 'Unknown'}</h3>
-                                    <p className="text-xs text-gray-500 font-mono">{new Date(bt.created_at).toLocaleString()}</p>
+                                    <h3 className="font-display text-lg font-semibold text-ink">
+                                        Strategy {bt.strategy_name || 'Unknown'}
+                                    </h3>
+                                    <p className="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted mt-0.5">
+                                        {new Date(bt.created_at).toLocaleString()}
+                                    </p>
                                 </div>
-                                <div className={`px-3 py-1 rounded text-sm font-bold ${bt.metrics?.total_return > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                                    }`}>
+                                <span
+                                    className={`font-mono text-xs border px-2.5 py-1 ${
+                                        bt.metrics?.total_return > 0
+                                            ? 'text-approve border-approve/30'
+                                            : 'text-block border-block/30'
+                                    }`}
+                                >
                                     {bt.metrics?.total_return?.toFixed(2)}%
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-3 mb-4">
+                                <div className="bg-background p-3">
+                                    <p className="font-mono text-[0.65rem] uppercase text-muted mb-1">Sharpe</p>
+                                    <p className="font-display text-xl font-semibold text-ink">
+                                        {bt.metrics?.sharpe_ratio?.toFixed(2)}
+                                    </p>
+                                </div>
+                                <div className="bg-background p-3">
+                                    <p className="font-mono text-[0.65rem] uppercase text-muted mb-1">Win Rate</p>
+                                    <p className="font-display text-xl font-semibold text-ink">
+                                        {bt.metrics?.win_rate?.toFixed(1)}%
+                                    </p>
+                                </div>
+                                <div className="bg-background p-3">
+                                    <p className="font-mono text-[0.65rem] uppercase text-muted mb-1">Drawdown</p>
+                                    <p className="font-display text-xl font-semibold text-block">
+                                        {bt.metrics?.max_drawdown?.toFixed(2)}%
+                                    </p>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4 mb-4">
-                                <div className="text-center p-2 bg-black/30 rounded">
-                                    <p className="text-xs text-gray-500">Sharpe</p>
-                                    <p className="text-lg font-mono font-medium">{bt.metrics?.sharpe_ratio?.toFixed(2)}</p>
-                                </div>
-                                <div className="text-center p-2 bg-black/30 rounded">
-                                    <p className="text-xs text-gray-500">Win Rate</p>
-                                    <p className="text-lg font-mono font-medium">{bt.metrics?.win_rate?.toFixed(1)}%</p>
-                                </div>
-                                <div className="text-center p-2 bg-black/30 rounded">
-                                    <p className="text-xs text-gray-500">Drawdown</p>
-                                    <p className="text-lg font-mono font-medium text-red-400">{bt.metrics?.max_drawdown?.toFixed(2)}%</p>
-                                </div>
-                            </div>
-
-                            <div className="text-xs text-gray-500 font-mono">
+                            <p className="font-mono text-[0.65rem] text-muted/50 mt-3 pt-3 border-t border-hairline">
                                 ID: {bt.id}
-                            </div>
+                            </p>
                         </div>
                     ))}
 
                     {backtests.length === 0 && (
-                        <div className="col-span-full text-center py-20 text-gray-500 bg-white/5 rounded-xl border border-white/10 border-dashed">
+                        <div className="col-span-full py-20 text-center border border-dashed border-hairline font-mono text-xs text-muted">
                             No backtests run yet. Go to Strategies to run one.
                         </div>
                     )}

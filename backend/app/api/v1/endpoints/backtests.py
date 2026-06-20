@@ -2,7 +2,8 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, and_
+from app.core.auth import get_current_user
 from typing import List
 from uuid import UUID
 from datetime import datetime, timedelta
@@ -58,16 +59,38 @@ async def run_backtest_task(
         # 4. Update Result in Database
         result['strategy_id'] = str(strategy_id)
         # Update specific fields
-        await supabase_client.client.table('backtest_results').update({
-            'total_trades': result['total_trades'],
-            'win_rate': result['win_rate'],
-            'profit_factor': result['profit_factor'],
-            'sharpe_ratio': result['sharpe_ratio'],
-            'max_drawdown': result['max_drawdown'],
-            'total_return': result['total_return'],
-            'metrics': result, # Store full blob
-            'status': 'completed' # Add status column to table or use jsonb
-        }).eq('id', str(backtest_id)).execute()
+        if not supabase_client.connected:
+            try:
+                from app.database.postgres import AsyncSessionLocal
+                from app.models import BacktestResult
+                import uuid
+                async with AsyncSessionLocal() as session:
+                    db_result = await session.execute(
+                        select(BacktestResult).where(BacktestResult.id == uuid.UUID(str(backtest_id)))
+                    )
+                    bt = db_result.scalar_one_or_none()
+                    if bt:
+                        bt.total_trades = int(result['total_trades'])
+                        bt.win_rate = float(result['win_rate'])
+                        bt.profit_factor = float(result['profit_factor'])
+                        bt.sharpe_ratio = float(result['sharpe_ratio'])
+                        bt.max_drawdown = float(result['max_drawdown'])
+                        bt.final_capital = float(result.get('final_capital', bt.final_capital))
+                        bt.metrics = result
+                        await session.commit()
+            except Exception as e:
+                logger.error(f"Error updating backtest locally: {e}")
+        else:
+            await supabase_client.client.table('backtest_results').update({
+                'total_trades': result['total_trades'],
+                'win_rate': result['win_rate'],
+                'profit_factor': result['profit_factor'],
+                'sharpe_ratio': result['sharpe_ratio'],
+                'max_drawdown': result['max_drawdown'],
+                'total_return': result['total_return'],
+                'metrics': result, # Store full blob
+                'status': 'completed' # Add status column to table or use jsonb
+            }).eq('id', str(backtest_id)).execute()
         
         logger.info(f"✅ Backtest {backtest_id} completed successfully")
         
@@ -100,23 +123,30 @@ def _generate_dummy_data(start, end):
 async def create_backtest(
     request: BacktestRequest,
     background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Run a backtest for a strategy.
     
     This is an async operation - backtest runs in the background.
     """
-    # Verify strategy exists
+    # Verify strategy exists and belongs to user
+    user_id = UUID(str(current_user.get("sub")))
     result = await db.execute(
-        select(Strategy).where(Strategy.id == request.strategy_id)
+        select(Strategy).where(
+            and_(
+                Strategy.id == request.strategy_id,
+                Strategy.user_id == user_id
+            )
+        )
     )
     strategy = result.scalar_one_or_none()
     
     if not strategy:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Strategy not found"
+            detail="Strategy not found or access denied"
         )
     
     # Create backtest record
@@ -152,10 +182,14 @@ async def list_backtests(
     strategy_id: UUID = None,
     skip: int = 0,
     limit: int = 100,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """List backtests, optionally filtered by strategy."""
-    query = select(BacktestResult).offset(skip).limit(limit)
+    user_id = UUID(str(current_user.get("sub")))
+    
+    # Retrieve backtests joined with strategies to filter by user ownership
+    query = select(BacktestResult).join(Strategy).where(Strategy.user_id == user_id).offset(skip).limit(limit)
     
     if strategy_id:
         query = query.where(BacktestResult.strategy_id == strategy_id)
@@ -169,18 +203,27 @@ async def list_backtests(
 @router.get("/{backtest_id}", response_model=BacktestResponse)
 async def get_backtest(
     backtest_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """Get backtest results by ID."""
+    user_id = UUID(str(current_user.get("sub")))
     result = await db.execute(
-        select(BacktestResult).where(BacktestResult.id == backtest_id)
+        select(BacktestResult)
+        .join(Strategy)
+        .where(
+            and_(
+                BacktestResult.id == backtest_id,
+                Strategy.user_id == user_id
+            )
+        )
     )
     backtest = result.scalar_one_or_none()
     
     if not backtest:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Backtest not found"
+            detail="Backtest not found or access denied"
         )
     
     return backtest

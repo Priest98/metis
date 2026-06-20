@@ -45,18 +45,43 @@ class SignalDistributor:
         self.active_connections.clear()
         logger.info("🛑 WebSocket Distributor stopped")
         
-    async def connect(self, websocket: WebSocket):
-        """Accept new WebSocket connection"""
+    async def connect(self, websocket: WebSocket, client_id: str):
+        """Accept new WebSocket connection with optional JWT authentication"""
+        token = websocket.query_params.get("token")
+        if token:
+            try:
+                from jose import jwt
+                from app.config import settings
+                payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+                user_id = payload.get("sub")
+                if not user_id:
+                    await websocket.accept()
+                    await websocket.close(code=1008)
+                    logger.warning(f"WebSocket auth failed: Missing subject claim for client {client_id}")
+                    return
+            except Exception as e:
+                await websocket.accept()
+                await websocket.close(code=1008)
+                logger.warning(f"WebSocket auth failed for client {client_id}: {e}")
+                return
+        else:
+            from app.config import settings
+            if settings.ENVIRONMENT == "production":
+                await websocket.accept()
+                await websocket.close(code=1008)
+                logger.warning(f"WebSocket connection rejected: Missing token query parameter for client {client_id}")
+                return
+
         await websocket.accept()
         self.active_connections.add(websocket)
         self.connection_count += 1
-        logger.info(f"✅ New WebSocket client connected (Total: {len(self.active_connections)})")
+        logger.info(f"✅ New WebSocket client connected: {client_id} (Total: {len(self.active_connections)})")
         
         # Send welcome message
         await websocket.send_json({
             "type": "connection",
             "status": "connected",
-            "message": "TraderCopilot Signal Feed",
+            "message": "Metis Signal Feed",
             "timestamp": datetime.utcnow().isoformat()
         })
     
@@ -67,7 +92,7 @@ class SignalDistributor:
     
     async def broadcast_signal(self, signal: dict):
         """
-        Broadcast signal to all connected clients
+        Broadcast signal to all connected clients (masked to protect the paywall)
         
         Args:
             signal: Signal dictionary to broadcast
@@ -76,9 +101,17 @@ class SignalDistributor:
             logger.warning("No clients connected to receive signal")
             return
         
+        # Mask signal details to prevent bypass of the nanopayment paywall
+        try:
+            from app.api.v1.endpoints.signals import mask_signal_details
+            masked_signal = mask_signal_details(signal)
+        except Exception as e:
+            logger.error(f"Failed to mask signal for broadcast: {e}")
+            masked_signal = signal
+            
         message = {
             "type": "signal",
-            "data": signal,
+            "data": masked_signal,
             "timestamp": datetime.utcnow().isoformat()
         }
         

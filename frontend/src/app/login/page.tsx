@@ -1,13 +1,16 @@
-
 'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 
+import { LogoMark } from '@/components/LogoMark';
+
 export default function LoginPage() {
     const [email, setEmail] = useState('');
-    const { login } = useAuth();
+    const [isConnecting, setIsConnecting] = useState(false);
+    const [walletError, setWalletError] = useState<string | null>(null);
+    const { login, loginWithWallet } = useAuth();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -16,51 +19,118 @@ export default function LoginPage() {
         }
     };
 
+    const handleWalletLogin = async () => {
+        setIsConnecting(true);
+        setWalletError(null);
+        try {
+            if (typeof window !== 'undefined' && (window as any).ethereum) {
+                const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
+                if (!accounts || accounts.length === 0) {
+                    throw new Error('No accounts returned from wallet.');
+                }
+                const address = accounts[0];
+                const timestamp = Math.floor(Date.now() / 1000);
+                const message = `Sign this message to log into Metis. Timestamp: ${timestamp}`;
+                
+                const signature = await (window as any).ethereum.request({
+                    method: 'personal_sign',
+                    params: [message, address]
+                });
+                
+                await loginWithWallet(address, signature, timestamp);
+            } else {
+                setWalletError('No EVM wallet detected. Please install MetaMask.');
+            }
+        } catch (err: any) {
+            console.error('Wallet login error', err);
+            setWalletError(err.message || 'Failed to log in with wallet.');
+        } finally {
+            setIsConnecting(false);
+        }
+    };
+
+    const inputClass = "w-full bg-background border border-hairline text-ink placeholder:text-muted px-4 py-3 text-sm font-mono focus:border-accent focus:outline-none transition-colors";
+    const labelClass = "font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted mb-2 block";
+
     return (
-        <main className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden transition-colors duration-300">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-100/50 dark:bg-indigo-900/20 blur-[100px] rounded-full pointer-events-none" />
+        <main className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
+            {/* Subtle accent glow */}
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 top-0 h-64"
+                style={{ background: 'radial-gradient(ellipse 60% 100% at 50% 0%, rgba(215,255,62,0.05), transparent 70%)' }}
+            />
 
-            <div className="w-full max-w-md bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/40 dark:border-slate-800 p-8 rounded-2xl shadow-2xl relative z-10">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-emerald-500 dark:from-indigo-400 dark:to-emerald-400 mb-2">
-                        Welcome Back
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400">Access your trading dashboard</p>
-                </div>
+            <div className="w-full max-w-md relative z-10">
+                {/* Brand */}
+                <Link href="/" className="flex items-baseline gap-2 mb-10 text-ink group w-fit">
+                    <LogoMark />
+                    <span className="font-display text-base font-medium tracking-tight group-hover:text-accent transition-colors">Metis</span>
+                </Link>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Email Address</label>
-                        <input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900 transition-all"
-                            placeholder="trader@quant101.com"
-                        />
-                    </div>
+                <div className="border border-hairline bg-surface p-8">
+                    <p className="eyebrow mb-3">authentication</p>
+                    <h1 className="font-display text-2xl font-semibold text-ink mb-1">Sign in</h1>
+                    <p className="font-mono text-xs text-muted mb-8">Access your quant terminal</p>
 
-                    <button
-                        type="submit"
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 dark:hover:bg-indigo-500 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg shadow-indigo-600/20"
-                    >
-                        Sign In
-                    </button>
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div>
+                            <label className={labelClass}>Email Address</label>
+                            <input
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className={inputClass}
+                                placeholder="trader@quant101.com"
+                            />
+                        </div>
 
-                    <div className="text-center text-sm text-slate-500 dark:text-slate-400">
-                        Don't have an account?{' '}
-                        <Link href="/signup" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-semibold">
-                            Create one
-                        </Link>
-                    </div>
-
-                    <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
-                        <button type="button" onClick={() => login('demo@trader.com')} className="w-full text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-                            Demo Login
+                        <button
+                            type="submit"
+                            className="w-full font-mono bg-ink text-background text-sm font-semibold py-3 transition-colors hover:bg-accent"
+                        >
+                            Sign In →
                         </button>
-                    </div>
-                </form>
+
+                        <div className="text-center font-mono text-xs text-muted pt-1">
+                            Don&apos;t have an account?{' '}
+                            <Link href="/signup" className="text-accent hover:underline underline-offset-4">
+                                Create one
+                            </Link>
+                        </div>
+
+                        <div className="border-t border-hairline pt-4 space-y-3">
+                            <button
+                                type="button"
+                                onClick={handleWalletLogin}
+                                disabled={isConnecting}
+                                className="w-full flex items-center justify-center gap-2 border border-hairline py-2.5 px-4 font-mono text-xs text-ink hover:border-accent hover:text-accent transition-all duration-300 active:scale-[0.99]"
+                            >
+                                {isConnecting ? (
+                                    <>
+                                        <span className="size-3 border-2 border-accent border-t-transparent animate-spin rounded-full" />
+                                        <span>Signing Challenge...</span>
+                                    </>
+                                ) : (
+                                    <span>Sign In with EVM Wallet</span>
+                                )}
+                            </button>
+                            
+                            {walletError && (
+                                <p className="font-mono text-[0.65rem] text-rose-400 text-center">{walletError}</p>
+                            )}
+
+                            <button
+                                type="button"
+                                onClick={() => login('demo@trader.com')}
+                                className="w-full font-mono text-xs text-muted hover:text-ink transition-colors py-1 pt-1"
+                            >
+                                Demo Login (no account needed)
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </main>
     );

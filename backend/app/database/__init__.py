@@ -4,9 +4,4 @@ from app.database.vector_kb import vector_kb
 
 Base = declarative_base()
 
-# For backward compatibility if needed, though we should transition fully
-# from app.database.postgres import init_db, get_db
-
-async def get_db():
-    """Placeholder for dependency injection compatibility"""
-    yield None
+from app.database.postgres import get_db, init_db, close_db, engine, AsyncSessionLocal

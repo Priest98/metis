@@ -20,8 +20,24 @@ class VectorStore:
         Store a knowledge chunk with its embedding
         """
         if not self.client.connected:
-            logger.warning("Vector store unavailable: Database not connected")
-            return False
+            try:
+                from app.database.postgres import AsyncSessionLocal
+                from app.models import KnowledgeBase
+                import uuid
+                async with AsyncSessionLocal() as session:
+                    new_item = KnowledgeBase(
+                        id=uuid.uuid4(),
+                        content=content,
+                        meta_data=metadata or {},
+                        embedding=embedding
+                    )
+                    session.add(new_item)
+                    await session.commit()
+                logger.info(f"✅ Stored embedding locally for content: {content[:30]}...")
+                return True
+            except Exception as e:
+                logger.error(f"Error storing embedding locally: {e}")
+                return False
             
         try:
             data = {
@@ -44,7 +60,31 @@ class VectorStore:
         Pre-requisite: A Postgres function `match_documents` must exist.
         """
         if not self.client.connected:
-            return []
+            try:
+                from app.database.postgres import AsyncSessionLocal
+                from app.models import KnowledgeBase
+                from sqlalchemy import select
+                async with AsyncSessionLocal() as session:
+                    result = await session.execute(select(KnowledgeBase))
+                    items = result.scalars().all()
+                    
+                scored_items = []
+                for item in items:
+                    if item.embedding:
+                        sim = self.cosine_similarity(embedding, item.embedding)
+                        if sim >= threshold:
+                            scored_items.append({
+                                "id": str(item.id),
+                                "content": item.content,
+                                "metadata": item.meta_data or {},
+                                "similarity": sim
+                            })
+                
+                scored_items.sort(key=lambda x: x["similarity"], reverse=True)
+                return scored_items[:limit]
+            except Exception as e:
+                logger.error(f"Error searching vector store locally: {e}")
+                return []
             
         try:
             # Call the bespoke Postgres function for vector search

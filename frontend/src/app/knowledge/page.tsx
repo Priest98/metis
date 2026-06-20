@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -14,8 +13,8 @@ export default function KnowledgePage() {
         e.preventDefault();
         setLoading(true);
         try {
-            const data = await api.post('/knowledge/search', { query });
-            setResults(data);
+            const response = await api.post('/knowledge/search', { query });
+            setResults(response.data);
         } catch (error) {
             console.error('Search failed:', error);
         } finally {
@@ -36,68 +35,79 @@ export default function KnowledgePage() {
     };
 
     return (
-        <main className="min-h-screen bg-black text-white p-6 md:p-12">
-            <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500 mb-8">
-                Quant Knowledge Base
-            </h1>
+        <main className="min-h-screen bg-background text-ink px-5 py-8 sm:px-8">
+            <div className="max-w-6xl mx-auto">
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Search Section */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-md">
-                    <h2 className="text-2xl font-semibold mb-4 text-gray-200">Semantic Search</h2>
-                    <form onSubmit={handleSearch} className="flex gap-2 mb-6">
-                        <input
-                            type="text"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Ask about strategies, market behavior..."
-                            className="flex-1 bg-black/50 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500"
+                <p className="eyebrow mb-3">knowledge base</p>
+                <h1 className="font-display text-3xl font-semibold text-ink mb-10">Quant Knowledge Base</h1>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                    {/* Search */}
+                    <div className="border border-hairline bg-surface p-6">
+                        <p className="eyebrow mb-3">semantic search</p>
+                        <h2 className="font-display text-xl font-semibold text-ink mb-5">Search Knowledge</h2>
+
+                        <form onSubmit={handleSearch} className="flex gap-2 mb-6">
+                            <input
+                                type="text"
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                placeholder="Ask about strategies, market behavior..."
+                                className="flex-1 bg-background border border-hairline text-ink placeholder:text-muted px-4 py-2.5 text-sm font-mono focus:border-accent focus:outline-none transition-colors"
+                            />
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="font-mono bg-ink text-background px-5 py-2.5 text-xs font-semibold transition-colors hover:bg-accent disabled:opacity-40"
+                            >
+                                {loading ? 'Searching...' : 'Search →'}
+                            </button>
+                        </form>
+
+                        <div className="space-y-3">
+                            {results.map((result: any, i) => (
+                                <div key={i} className="p-4 border border-hairline bg-background">
+                                    <p className="text-sm text-muted leading-relaxed">{result.content}</p>
+                                    <div className="mt-3 pt-3 border-t border-hairline flex gap-2">
+                                        <span className="font-mono text-[0.65rem] uppercase tracking-[0.12em] border border-hairline px-2 py-0.5 text-accent">
+                                            Match: {(result.similarity * 100).toFixed(1)}%
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                            {results.length === 0 && !loading && (
+                                <p className="font-mono text-xs text-muted text-center py-10">No results yet. Try a search above.</p>
+                            )}
+                            {loading && (
+                                <div className="flex justify-center py-10">
+                                    <div className="h-5 w-5 animate-spin border-b-2 border-accent" />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Ingest */}
+                    <div className="border border-hairline bg-surface p-6">
+                        <p className="eyebrow mb-3">ingest knowledge</p>
+                        <h2 className="font-display text-xl font-semibold text-ink mb-3">Add Research</h2>
+                        <p className="font-mono text-xs text-muted mb-5 leading-relaxed">
+                            Add research papers, notes, or strategy ideas to the vector database.
+                        </p>
+                        <textarea
+                            value={ingestContent}
+                            onChange={(e) => setIngestContent(e.target.value)}
+                            placeholder="Paste text content here..."
+                            className="w-full h-56 bg-background border border-hairline text-ink placeholder:text-muted px-4 py-3 font-mono text-sm focus:border-accent focus:outline-none transition-colors mb-4 resize-none"
                         />
                         <button
-                            type="submit"
-                            disabled={loading}
-                            className="bg-yellow-600 hover:bg-yellow-500 text-white px-6 py-2 rounded-lg transition-colors font-medium disabled:opacity-50"
+                            onClick={handleIngest}
+                            disabled={!ingestContent}
+                            className="w-full font-mono bg-ink text-background py-3 text-sm font-semibold transition-colors hover:bg-accent disabled:opacity-40"
                         >
-                            {loading ? 'Searching...' : 'Search'}
+                            Ingest Content →
                         </button>
-                    </form>
-
-                    <div className="space-y-4">
-                        {results.map((result: any, i) => (
-                            <div key={i} className="p-4 bg-black/30 rounded-lg border border-white/5">
-                                <p className="text-gray-300 text-sm leading-relaxed">{result.content}</p>
-                                <div className="mt-2 flex gap-2">
-                                    <span className="text-xs bg-white/10 px-2 py-1 rounded text-gray-400">
-                                        Match: {(result.similarity * 100).toFixed(1)}%
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                        {results.length === 0 && !loading && (
-                            <p className="text-gray-500 text-center py-8">No results found.</p>
-                        )}
                     </div>
-                </div>
-
-                {/* Ingest Section */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-md">
-                    <h2 className="text-2xl font-semibold mb-4 text-gray-200">Ingest Knowledge</h2>
-                    <p className="text-gray-400 text-sm mb-4">
-                        Add research papers, notes, or strategy ideas to the vector database.
-                    </p>
-                    <textarea
-                        value={ingestContent}
-                        onChange={(e) => setIngestContent(e.target.value)}
-                        placeholder="Paste text content here..."
-                        className="w-full h-64 bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500 mb-4 font-mono text-sm"
-                    />
-                    <button
-                        onClick={handleIngest}
-                        disabled={!ingestContent}
-                        className="w-full bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg transition-colors font-medium disabled:opacity-50"
-                    >
-                        Ingest Content
-                    </button>
                 </div>
             </div>
         </main>

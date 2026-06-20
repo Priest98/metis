@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '@/lib/api';
 import { StrategyResponse } from '@/lib/types';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
 const StrategyList = () => {
     const [strategies, setStrategies] = useState<StrategyResponse[]>([]);
@@ -11,7 +9,7 @@ const StrategyList = () => {
     useEffect(() => {
         const fetchStrategies = async () => {
             try {
-                const response = await axios.get(`${API_URL}/strategies`);
+                const response = await api.get('/strategies/');
                 setStrategies(response.data);
             } catch (error) {
                 console.error("Error fetching strategies:", error);
@@ -23,41 +21,48 @@ const StrategyList = () => {
         fetchStrategies();
     }, []);
 
-    if (loading) return <div className="text-white">Loading strategies...</div>;
+    if (loading) {
+        return (
+            <div className="text-center py-12">
+                <div className="h-5 w-5 animate-spin border-b-2 border-accent mx-auto mb-4" />
+                <span className="font-mono text-xs text-muted">Loading strategies...</span>
+            </div>
+        );
+    }
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {strategies.map((strategy) => (
-                <div key={strategy.id} className="bg-white/5 border border-white/10 rounded-xl p-6 hover:border-blue-500/50 transition-all backdrop-blur-md">
+                <div key={strategy.id} className="border border-hairline bg-surface p-6 hover:border-white/20 transition-colors">
                     <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-xl font-bold text-white">{strategy.name}</h3>
-                        <span className="px-2 py-1 text-xs rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                        <h3 className="font-display text-lg font-semibold text-ink">{strategy.name}</h3>
+                        <span className="font-mono text-[10px] border border-accent/30 text-accent px-2 py-0.5 bg-accent/5">
                             {strategy.type}
                         </span>
                     </div>
-                    <p className="text-gray-400 text-sm mb-4 h-10 overflow-hidden text-ellipsis">
+                    <p className="font-mono text-xs text-muted mb-4 h-10 overflow-hidden text-ellipsis">
                         {strategy.description || "No description provided."}
                     </p>
 
                     <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Risk/Reward</span>
-                            <span className="text-gray-300">
+                        <div className="flex justify-between font-mono text-xs">
+                            <span className="text-muted">Risk/Reward</span>
+                            <span className="text-ink">
                                 {strategy.rules.risk_management?.take_profit_pips} / {strategy.rules.risk_management?.stop_loss_pips} pips
                             </span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Rules</span>
-                            <span className="text-gray-300">{strategy.rules.rules?.length || 0} conditions</span>
+                        <div className="flex justify-between font-mono text-xs">
+                            <span className="text-muted">Rules</span>
+                            <span className="text-ink">{strategy.rules.rules?.length || 0} conditions</span>
                         </div>
                     </div>
 
-                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-white/5">
-                        <span className="text-xs text-gray-600">
+                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-hairline">
+                        <span className="font-mono text-[0.65rem] text-muted/50">
                             ID: {strategy.id.substring(0, 8)}...
                         </span>
                         <div className="flex gap-2">
-                            <button className="px-3 py-1.5 text-xs text-green-400 bg-green-500/10 hover:bg-green-500/20 rounded-lg transition-colors border border-green-500/20">
+                            <button className="font-mono text-[10px] border border-approve/30 text-approve px-3 py-1 bg-approve/5 hover:bg-approve/10 transition-colors">
                                 Active
                             </button>
                         </div>
@@ -66,7 +71,7 @@ const StrategyList = () => {
             ))}
 
             {strategies.length === 0 && (
-                <div className="col-span-full text-center py-12 text-gray-500 bg-white/5 rounded-xl border border-dashed border-white/10">
+                <div className="col-span-full py-20 text-center border border-dashed border-hairline font-mono text-xs text-muted">
                     No strategies found. Create one to get started.
                 </div>
             )}

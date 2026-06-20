@@ -10,36 +10,38 @@ from app.models import Strategy
 from app.schemas import StrategyCreate, StrategyUpdate, StrategyResponse
 from app.core.strategies.parser import strategy_parser
 from app.core.triggers.strategy_trigger import strategy_trigger_system
+from app.core.auth import get_current_user
 
 router = APIRouter()
 
 @router.post("/", response_model=Dict, status_code=status.HTTP_201_CREATED)
-async def create_strategy(strategy: StrategyCreate):
+async def create_strategy(
+    strategy: StrategyCreate,
+    current_user: dict = Depends(get_current_user)
+):
     """
     Create a new trading strategy.
     Supports JSON, Pine Script, and Python strategy formats.
     """
     # 1. Validate Strategy Config
     if strategy.strategy_type == 'json':
-        # Use our parser to validate JSON structure
         validation = strategy_parser.parse_json_strategy(
-            # Convert dict to json string if needed, or update parser to handle dicts
-            # Assuming config is a dict here
-            str(strategy.config).replace("'", '"') # profound hack for demo, ideally robust json dump
+            str(strategy.config).replace("'", '"')
         )
         if not validation.get('valid'):
-             # Allow saving even if invalid? Maybe not.
-             # For now, let's just log warning but save it
-             pass
+             raise HTTPException(
+                 status_code=status.HTTP_400_BAD_REQUEST,
+                 detail=f"Invalid strategy configuration: {validation.get('error')}"
+             )
 
     # 2. Store in Supabase
     strategy_data = {
         'name': strategy.name,
         'description': strategy.description,
         'type': strategy.strategy_type,
-        'rules': strategy.config,  # Supabase schema expects 'config' or mapped to 'rules'
+        'rules': strategy.config,  
         'risk_management': strategy.config.get('risk_management', {}),
-        'user_id': "00000000-0000-0000-0000-000000000000" # Placeholder
+        'user_id': current_user.get("sub")
     }
     
     strategy_id = await supabase_client.store_strategy(strategy_data)
@@ -58,24 +60,21 @@ async def create_strategy(strategy: StrategyCreate):
 
 
 @router.get("/", response_model=List[Dict])
-async def list_strategies():
-    """List all strategies."""
-    strategies = await supabase_client.get_strategies()
+async def list_strategies(current_user: dict = Depends(get_current_user)):
+    """List all strategies belonging to the current user."""
+    user_id = current_user.get("sub")
+    strategies = await supabase_client.get_strategies(user_id=user_id)
     return strategies
 
 
 @router.get("/{strategy_id}", response_model=Dict)
-async def get_strategy(strategy_id: str):
+async def get_strategy(
+    strategy_id: str,
+    current_user: dict = Depends(get_current_user)
+):
     """Get a specific strategy by ID."""
-    # We need to add get_strategy_by_id to supabase_client
-    # optimizing to use list filter for now if specific method doesn't exist
-    # But wait, we saw supabase_client.py earlier
-    
-    # Adding a quick helper here or expecting client to have it
-    # Let's check supabase_client again. It has get_strategies() but maybe not get_strategy()
-    
-    # Implementing fallback
-    strategies = await supabase_client.get_strategies()
+    user_id = current_user.get("sub")
+    strategies = await supabase_client.get_strategies(user_id=user_id)
     for s in strategies:
         if s['id'] == strategy_id:
             return s
@@ -84,4 +83,17 @@ async def get_strategy(strategy_id: str):
         status_code=status.HTTP_404_NOT_FOUND,
         detail="Strategy not found"
     )
+
+
+@router.post("/optimize", response_model=Dict)
+async def optimize_strategies(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Run an optimization sweep across all active strategies.
+    Tunes parameters using programmatic historical backtesting.
+    """
+    from app.core.strategies.optimizer import strategy_optimizer
+    results = await strategy_optimizer.optimize_active_strategies()
+    return results
 

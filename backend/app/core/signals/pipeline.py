@@ -107,7 +107,17 @@ class SignalPipeline:
                     )
                     return None
                 
-                # Step 6: Build context for Gemini
+                # Step 6: Build context for Gemini (retrieve relevant sentiment from vector store)
+                from app.services.vector_store import vector_store
+                sentiment_items = []
+                try:
+                    query_text = f"{symbol} social market sentiment"
+                    query_embedding = await gemini_client.generate_embedding(query_text)
+                    search_results = await vector_store.search_similar(query_embedding, limit=3)
+                    sentiment_items = [item["content"] for item in search_results]
+                except Exception as e:
+                    logger.error(f"Error querying vector store in pipeline: {e}")
+
                 signal_candidate = context_builder.format_signal_candidate(
                     symbol=symbol,
                     direction=direction,
@@ -121,7 +131,8 @@ class SignalPipeline:
                 context = context_builder.build_signal_context(
                     strategy=strategy,
                     backtest_result=backtest,
-                    market_data=market_data
+                    market_data=market_data,
+                    knowledge_items=sentiment_items
                 )
                 
                 # Step 7: Enhance with Gemini AI
@@ -131,6 +142,22 @@ class SignalPipeline:
                     market_conditions=context["market_conditions"],
                     relevant_knowledge=context["relevant_knowledge"]
                 )
+                
+                # Step 7.5: Run Agent Consensus Committee
+                from app.core.agents.committee import agent_committee
+                import json
+                debate_results = await agent_committee.hold_debate(
+                    signal_candidate=signal_candidate,
+                    strategy_stats=context["strategy_stats"],
+                    market_conditions=context["market_conditions"]
+                )
+                
+                if debate_results.get("final_consensus") == "REJECTED":
+                    logger.info(
+                        f"⚠️ Signal {symbol} {direction} rejected by AI Committee consensus: "
+                        f"{debate_results.get('consensus_explanation')}"
+                    )
+                    return None
                 
                 # Step 8: Generate final signal
                 signal_data = {
@@ -147,6 +174,7 @@ class SignalPipeline:
                     "trade_explanation": gemini_analysis["trade_explanation"],
                     "position_sizing": Decimal(str(gemini_analysis["position_sizing"])),
                     "gemini_context": gemini_analysis,
+                    "debate_transcript": json.dumps(debate_results),
                     "status": "active",
                     "expires_at": datetime.utcnow() + timedelta(hours=settings.SIGNAL_EXPIRY_HOURS)
                 }
@@ -158,7 +186,7 @@ class SignalPipeline:
                 await db.refresh(signal)
                 
                 logger.info(
-                    f"✅ Signal generated: {symbol} {direction} @ {entry_price} "
+                    f"✅ Signal generated with Committee Approval: {symbol} {direction} @ {entry_price} "
                     f"(Score: {signal_score}, Probability: {probability_score}%)"
                 )
                 

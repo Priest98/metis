@@ -1,6 +1,6 @@
 @echo off
 echo ===================================================
-echo 🚀 TRADERCOPILOT - SYSTEM LAUNCHER
+echo 🚀 METIS - SYSTEM LAUNCHER
 echo ===================================================
 
 echo.
@@ -11,11 +11,11 @@ taskkill /IM node.exe /F >nul 2>&1
 
 echo.
 echo 2. Starting Backend (API + Triggers)...
-start "TraderCopilot Backend" cmd /k "cd backend && python run.py"
+start "Metis Backend" cmd /k "cd backend && python run.py"
 
 echo.
 echo 3. Starting Frontend (Dashboard)...
-start "TraderCopilot Dashboard" cmd /k "cd frontend && npm run dev"
+start "Metis Dashboard" cmd /k "cd frontend && npm run dev"
 
 echo.
 echo ===================================================

@@ -10,19 +10,65 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Create async engine
+# Fall back to a local SQLite file when DATABASE_URL is not configured so the
+# app always boots (e.g. local dev, tests, preview deploys). Production must
+# still set DATABASE_URL to a Postgres instance.
+if not settings.DATABASE_URL:
+    logger.warning(
+        "DATABASE_URL is not set; falling back to local SQLite (./metis.db). "
+        "This is not suitable for production."
+    )
+    db_url = "sqlite:///./metis.db"
+else:
+    db_url = settings.DATABASE_URL
+async_engine_kwargs = {
+    "echo": settings.DB_ECHO,
+}
+sync_engine_kwargs = {
+    "echo": settings.DB_ECHO,
+}
+
+if db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://")
+    async_engine_kwargs.update({
+        "pool_pre_ping": True,
+        "pool_size": 20,
+        "max_overflow": 40,
+    })
+    sync_engine_kwargs.update({
+        "pool_pre_ping": True,
+    })
+elif db_url.startswith("sqlite://"):
+    db_url = db_url.replace("sqlite://", "sqlite+aiosqlite://")
+    from sqlalchemy.pool import StaticPool
+    async_engine_kwargs.update({
+        "poolclass": StaticPool,
+        "connect_args": {"check_same_thread": False}
+    })
+    sync_engine_kwargs.update({
+        "connect_args": {"check_same_thread": False}
+    })
+
 engine = create_async_engine(
-    settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"),
-    echo=settings.DB_ECHO,
-    pool_pre_ping=True,
-    pool_size=20,
-    max_overflow=40,
+    db_url,
+    **async_engine_kwargs
 )
 
-# Create sync engine (for migrations and initial setup)
+# Create sync engine (for migrations and initial setup).
+# Derive a sync URL from the resolved db_url (strip async driver suffixes).
+_sync_url = db_url
+for _async, _sync in (
+    ("postgresql+asyncpg://", "postgresql://"),
+    ("sqlite+aiosqlite://", "sqlite://"),
+    ("mysql+aiomysql://", "mysql+pymysql://"),
+):
+    if _sync_url.startswith(_async):
+        _sync_url = _sync_url.replace(_async, _sync)
+        break
+
 sync_engine = create_engine(
-    settings.DATABASE_URL,
-    echo=settings.DB_ECHO,
-    pool_pre_ping=True,
+    _sync_url,
+    **sync_engine_kwargs
 )
 
 # Create async session factory
@@ -67,7 +113,15 @@ async def get_db() -> AsyncSession:
 
 
 async def init_db():
-    """Initialize database - create all tables"""
+    """Initialize database - create all tables.
+
+    NOTE: We import app.models here (not at module top-level) so that every
+    model is registered against Base.metadata before create_all runs. Importing
+    app.models triggers its `from app.database import Base` reference, which is
+    already defined by the time this function executes, so this avoids the
+    circular-import problem while guaranteeing tables exist.
+    """
+    import app.models  # noqa: F401  — registers all models with Base.metadata
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Database tables created successfully")

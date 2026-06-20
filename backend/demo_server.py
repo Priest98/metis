@@ -11,7 +11,7 @@ import random
 
 # App
 app = FastAPI(
-    title="TraderCopilot API",
+    title="Metis API",
     description="Quant Signal Intelligence System",
     version="0.1.0"
 )
@@ -102,7 +102,7 @@ SAMPLE_SIGNALS = [
 @app.get("/")
 def read_root():
     return {
-        "message": "TraderCopilot API",
+        "message": "Metis API",
         "version": "0.1.0",
         "status": "running",
         "docs": "/docs"

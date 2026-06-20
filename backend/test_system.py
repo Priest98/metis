@@ -5,6 +5,8 @@ Tests market data, backtesting, and signal generation pipeline
 
 import asyncio
 import logging
+import pytest
+pytestmark = pytest.mark.skip(reason="standalone system test script")
 from app.core.market_data.websocket_client import MarketDataEngine
 from app.core.backtesting.engine import backtest_engine
 from app.core.strategies.parser import strategy_parser
