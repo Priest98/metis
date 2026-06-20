@@ -1,17 +1,17 @@
 import type { Metadata } from 'next'
-import { Space_Grotesk, Inter, JetBrains_Mono } from 'next/font/google'
+import { Inter, Roboto, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
-
-const spaceGrotesk = Space_Grotesk({
-    subsets: ['latin'],
-    variable: '--font-space-grotesk',
-    display: 'swap',
-    weight: ['400', '500', '600', '700'],
-})
 
 const inter = Inter({
     subsets: ['latin'],
     variable: '--font-inter',
+    display: 'swap',
+})
+
+const roboto = Roboto({
+    weight: ['400', '500', '700'],
+    subsets: ['latin'],
+    variable: '--font-roboto',
     display: 'swap',
 })
 
@@ -77,7 +77,7 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`} suppressHydrationWarning>
+        <html lang="en" className={`${inter.variable} ${roboto.variable} ${jetbrainsMono.variable} h-full antialiased`} suppressHydrationWarning>
             <body className="min-h-full flex flex-col bg-background text-ink">
                 <ClientProviders>
                     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>

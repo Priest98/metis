@@ -55,11 +55,11 @@ module.exports = {
                 hairline: 'var(--color-hairline)',
             },
             fontFamily: {
-                display: ['var(--font-space-grotesk)', 'sans-serif'],
-                sans:    ['var(--font-inter)',         'sans-serif'],
+                display: ['var(--font-inter)',         'sans-serif'],
+                sans:    ['var(--font-roboto)',        'sans-serif'],
                 mono:    ['var(--font-jetbrains)',     'monospace'],
-                body:    ['var(--font-inter)',         'sans-serif'],
-                heading: ['var(--font-space-grotesk)', 'sans-serif'],
+                body:    ['var(--font-roboto)',        'sans-serif'],
+                heading: ['var(--font-inter)',         'sans-serif'],
             },
             backgroundImage: {
                 'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
