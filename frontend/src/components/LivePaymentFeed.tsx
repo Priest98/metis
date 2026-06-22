@@ -1,121 +1,191 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Coins, ShieldCheck, Zap, Activity } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Zap, Shield, Brain, TrendingUp, Activity } from 'lucide-react';
 
-interface FeedItem {
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface TxEvent {
     id: string;
-    message: string;
-    timestamp: string;
-    type: 'payment' | 'signal' | 'system';
-    value?: string;
+    ts: string;
+    hash: string;
+    from: string;
+    to: string;
+    amount: string;
+    type: 'signal_unlock' | 'risk_fee' | 'sentiment_fee' | 'strategy_fee' | 'reward';
+    label: string;
+    asset?: string;
+    direction?: 'BUY' | 'SELL';
+    status: 'Pending' | 'Finalized';
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const AGENTS = [
+    { name: 'SignalAgent',    icon: Zap,        color: '#D7FF3E', bg: 'rgba(215,255,62,0.10)'   },
+    { name: 'RiskAgent',     icon: Shield,     color: '#22c787', bg: 'rgba(34,199,135,0.10)'  },
+    { name: 'SentimentAgent',icon: Brain,      color: '#6ba3ff', bg: 'rgba(75,139,255,0.10)'  },
+    { name: 'StrategyAgent', icon: TrendingUp, color: '#f5a623', bg: 'rgba(245,166,35,0.10)'  },
+];
+
+const TX_TEMPLATES = [
+    { from: 'StrategyAgent', to: 'SignalAgent',     amount: '0.001000', type: 'signal_unlock' as const, label: 'Signal unlock fee',      asset: '{sym}', direction: '{dir}' as any },
+    { from: 'StrategyAgent', to: 'RiskAgent',       amount: '0.000500', type: 'risk_fee' as const,      label: 'Risk validation fee',    asset: '{sym}' },
+    { from: 'StrategyAgent', to: 'SentimentAgent',  amount: '0.000300', type: 'sentiment_fee' as const, label: 'Sentiment context fee',  asset: '{sym}' },
+    { from: 'SignalAgent',   to: 'StrategyAgent',   amount: '0.000200', type: 'reward' as const,        label: 'Accuracy reward share',  asset: '{sym}' },
+    { from: 'RiskAgent',     to: 'StrategyAgent',   amount: '0.000150', type: 'reward' as const,        label: 'Risk model royalty',     asset: '{sym}' },
+];
+
+const ASSETS   = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT'];
+const DIRS     = ['BUY', 'SELL'] as const;
+
+function randomHex(n: number) {
+    return Array.from({ length: n }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+}
+
+function nowTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function makeTx(): TxEvent {
+    const tpl    = TX_TEMPLATES[Math.floor(Math.random() * TX_TEMPLATES.length)];
+    const asset  = ASSETS[Math.floor(Math.random() * ASSETS.length)];
+    const dir    = DIRS[Math.floor(Math.random() * DIRS.length)];
+    return {
+        id:        Math.random().toString(36).slice(2),
+        ts:        nowTime(),
+        hash:      '0xarc' + randomHex(16),
+        from:      tpl.from,
+        to:        tpl.to,
+        amount:    tpl.amount,
+        type:      tpl.type,
+        label:     tpl.label,
+        asset:     tpl.asset ? asset : undefined,
+        direction: tpl.direction ? dir : undefined,
+        status:    'Finalized',
+    };
+}
+
+// ── Subcomponents ─────────────────────────────────────────────────────────────
+
+function AgentChip({ name }: { name: string }) {
+    const agent = AGENTS.find(a => a.name === name) || AGENTS[0];
+    const Icon  = agent.icon;
+    return (
+        <span
+            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold shrink-0"
+            style={{ background: agent.bg, color: agent.color, border: `1px solid ${agent.color}30` }}
+        >
+            <Icon className="w-2.5 h-2.5" />
+            {name}
+        </span>
+    );
+}
+
+function AmountPill({ amount }: { amount: string }) {
+    return (
+        <span className="font-mono text-[11px] font-bold text-[#D7FF3E] bg-[rgba(215,255,62,0.08)] border border-[rgba(215,255,62,0.2)] px-2 py-0.5 rounded-full shrink-0">
+            +{amount} <span className="text-muted font-normal">USDC</span>
+        </span>
+    );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
+
+const SEED_TXS: TxEvent[] = Array.from({ length: 4 }, (_, i) => ({
+    ...makeTx(),
+    ts: `${new Date(Date.now() - (4 - i) * 8000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`,
+    status: 'Finalized',
+}));
+
 export default function LivePaymentFeed() {
-    const [feed, setFeed] = useState<FeedItem[]>([
-        { id: '1', message: 'User 0x71C...76B unlocked BTCUSDT entry target details', timestamp: 'Just now', type: 'payment', value: '0.0010 USDC' },
-        { id: '2', message: 'Strategy "RSI Scalper" generated BUY signal on ETHUSDT', timestamp: '2m ago', type: 'signal' },
-        { id: '3', message: 'User 0x4fa...ef3 unlocked SOLUSDT signal explanation', timestamp: '4m ago', type: 'payment', value: '0.0005 USDC' },
-        { id: '4', message: 'AI Agent "Gemini-Quant" completed market regime analysis', timestamp: '8m ago', type: 'system' },
-        { id: '5', message: 'User 0x98d...a3e unlocked BTCUSDT risk metrics', timestamp: '12m ago', type: 'payment', value: '0.0010 USDC' }
-    ]);
+    const [txs,          setTxs]          = useState<TxEvent[]>(SEED_TXS);
+    const [totalUsdc,    setTotalUsdc]    = useState(() =>
+        SEED_TXS.reduce((s, t) => s + parseFloat(t.amount), 0)
+    );
+    const [pulse,        setPulse]        = useState(false);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useEffect(() => {
-        const templates = [
-            { message: 'User 0x{addr} unlocked {sym} entry target details', type: 'payment', val: '{price} USDC' },
-            { message: 'Strategy "{strat}" generated {dir} signal on {sym}', type: 'signal' },
-            { message: 'User 0x{addr} unlocked {sym} trade justification', type: 'payment', val: '{price} USDC' },
-            { message: 'AI Agent "Gemini-Quant" updated probability score for {sym}', type: 'system' }
-        ];
+        const delay = 3000 + Math.random() * 2000;
 
-        const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'EURUSD', 'GBPUSD'];
-        const strategies = ['RSI Scalper', 'EMA Trend Follower', 'FvG Liquidity Sweep', 'MACD Divergence'];
-        const prices = ['0.0010', '0.0015', '0.0005', '0.0020'];
+        intervalRef.current = setInterval(() => {
+            const tx = makeTx();
+            setPulse(true);
+            setTimeout(() => setPulse(false), 600);
+            setTxs(prev => [tx, ...prev].slice(0, 8));
+            setTotalUsdc(prev => parseFloat((prev + parseFloat(tx.amount)).toFixed(6)));
+        }, delay);
 
-        const interval = setInterval(() => {
-            const template = templates[Math.floor(Math.random() * templates.length)];
-            const sym = symbols[Math.floor(Math.random() * symbols.length)];
-            const strat = strategies[Math.floor(Math.random() * strategies.length)];
-            const price = prices[Math.floor(Math.random() * prices.length)];
-            const dir = Math.random() > 0.5 ? 'BUY' : 'SELL';
-            
-            // Random address
-            const addr = Array.from({ length: 6 }, () => 
-                Math.floor(Math.random() * 16).toString(16).toUpperCase()
-            ).join('');
-
-            let msg = template.message
-                .replace('{sym}', sym)
-                .replace('{strat}', strat)
-                .replace('{dir}', dir)
-                .replace('{addr}', addr);
-
-            const newItem: FeedItem = {
-                id: Math.random().toString(),
-                message: msg,
-                timestamp: 'Just now',
-                type: template.type as any,
-                value: template.val ? template.val.replace('{price}', price) : undefined
-            };
-
-            setFeed(prev => {
-                // Update previous "Just now" timestamps to "1m ago"
-                const updated = prev.map(item => {
-                    if (item.timestamp === 'Just now') {
-                        return { ...item, timestamp: '1m ago' };
-                    }
-                    return item;
-                });
-                return [newItem, ...updated.slice(0, 4)];
-            });
-        }, 6000);
-
-        return () => clearInterval(interval);
+        return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
     }, []);
 
     return (
-        <div className="glass-card rounded-2xl p-6 border border-white/[0.04] glow-indigo relative overflow-hidden">
+        <div className="border border-white/10 bg-[#182030] rounded-[1.75rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/[0.04]">
-                <div className="flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-indigo-400 animate-pulse" />
-                    <h3 className="text-lg font-bold text-white tracking-tight">Live Arc L1 Nanopayments</h3>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2.5">
+                    <div className={`size-2 rounded-full bg-[#D7FF3E] transition-all duration-300 ${pulse ? 'animate-ping' : 'animate-pulse'}`} />
+                    <span className="font-display text-sm font-semibold text-ink">ARC L1 · Agent Transaction Feed</span>
                 </div>
-                <div className="flex items-center gap-1.5 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Sync Active</span>
+                <div className="flex items-center gap-3">
+                    <span className="font-mono text-[10px] text-muted">
+                        Total: <span className="text-[#D7FF3E] font-bold">{totalUsdc.toFixed(6)} USDC</span>
+                    </span>
+                    <span className="flex items-center gap-1 bg-approve/10 border border-approve/20 px-2 py-0.5 rounded-full">
+                        <Activity className="w-2.5 h-2.5 text-approve" />
+                        <span className="font-mono text-[9px] font-bold text-approve uppercase tracking-wider">Live</span>
+                    </span>
                 </div>
             </div>
 
-            {/* List */}
-            <div className="space-y-4">
-                {feed.map((item) => (
-                    <div 
-                        key={item.id} 
-                        className="flex items-start justify-between gap-4 p-3 rounded-xl bg-white/[0.01] border border-white/[0.02] hover:bg-white/[0.02] hover:border-white/[0.04] transition-all duration-300 animate-fade-in"
-                    >
-                        <div className="flex items-start gap-3">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                                item.type === 'payment' 
-                                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
-                                    : item.type === 'signal'
-                                        ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                                        : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            }`}>
-                                {item.type === 'payment' ? <Coins className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+            {/* TX List */}
+            <div className="divide-y divide-white/[0.04]">
+                <AnimatePresence initial={false}>
+                    {txs.map((tx) => (
+                        <motion.div
+                            key={tx.id}
+                            initial={{ opacity: 0, y: -8, backgroundColor: 'rgba(215,255,62,0.04)' }}
+                            animate={{ opacity: 1, y: 0,  backgroundColor: 'rgba(0,0,0,0)' }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.35, ease: 'easeOut' }}
+                            className="px-5 py-3 flex flex-col gap-1.5"
+                        >
+                            {/* Row 1: from → to + amount */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <AgentChip name={tx.from} />
+                                <ArrowRight className="w-3 h-3 text-muted shrink-0" />
+                                <AgentChip name={tx.to} />
+                                <div className="ml-auto">
+                                    <AmountPill amount={tx.amount} />
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-sm font-medium text-slate-300 leading-snug">{item.message}</p>
-                                <span className="text-[10px] text-slate-500 font-semibold">{item.timestamp}</span>
+
+                            {/* Row 2: label + asset + hash */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-mono text-[10px] text-muted">{tx.label}</span>
+                                {tx.asset && (
+                                    <span className="font-mono text-[10px] font-semibold text-ink/60 bg-white/5 px-1.5 rounded">
+                                        {tx.asset.replace('USDT','')}
+                                        {tx.direction && (
+                                            <span className={tx.direction === 'BUY' ? ' text-approve' : ' text-block'}>
+                                                {' '}{tx.direction}
+                                            </span>
+                                        )}
+                                    </span>
+                                )}
+                                <span className="ml-auto font-mono text-[9px] text-muted/40 truncate max-w-[110px]">{tx.hash}</span>
+                                <span className="font-mono text-[9px] text-approve/70 bg-approve/5 border border-approve/15 px-1.5 py-px rounded-full shrink-0">
+                                    {tx.status}
+                                </span>
                             </div>
-                        </div>
-                        {item.value && (
-                            <span className="text-xs font-bold text-amber-400 whitespace-nowrap bg-amber-500/15 border border-amber-500/20 px-2 py-0.5 rounded-md">
-                                {item.value}
-                            </span>
-                        )}
-                    </div>
-                ))}
+
+                            {/* Row 3: timestamp */}
+                            <span className="font-mono text-[9px] text-muted/40">{tx.ts}</span>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
             </div>
         </div>
     );

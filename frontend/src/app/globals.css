@@ -7,10 +7,10 @@
 /* Dark theme (default) */
 :root,
 .dark {
-  --color-background:     #0a0a0f;
-  --color-background-rgb: 10 10 15;
-  --color-surface:        #111118;
-  --color-surface-rgb:    17 17 24;
+  --color-background:     #0b0f17;
+  --color-background-rgb: 11 15 23;
+  --color-surface:        #182030;
+  --color-surface-rgb:    24 32 48;
   --color-ink:            #ECEEF4;
   --color-ink-rgb:        236 238 244;
   --color-muted:          #8b93a5;
@@ -25,9 +25,9 @@
   --color-block-rgb:      255 93 93;
   --color-hairline:       rgba(255, 255, 255, 0.08);
   --color-hairline-rgb:   255 255 255;
-  --nav-bg:               rgba(10, 10, 15, 0.88);
+  --nav-bg:               rgba(11, 15, 23, 0.88);
   --nav-shadow:           rgba(0, 0, 0, 0.65);
-  --scrollbar-track:      #0a0a0f;
+  --scrollbar-track:      #0b0f17;
   --scrollbar-thumb:      rgba(255, 255, 255, 0.12);
   --scrollbar-hover:      rgba(215, 255, 62, 0.5);
 }
@@ -112,10 +112,12 @@
   .text-review  { color: var(--color-review); }
   .text-block   { color: var(--color-block); }
 
-  /* Glass card (legacy — keep for app pages) */
+  /* Glass card */
   .glass-card {
     background-color: var(--color-surface);
     border: 1px solid var(--color-hairline);
+    border-radius: 1.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   }
 }
 

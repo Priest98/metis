@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { LogoMark } from '@/components/LogoMark';
 
 const APP_NAV = [
@@ -19,6 +18,7 @@ const APP_NAV = [
 const PUBLIC_NAV = [
     { href: '#how-it-works', label: 'how it works' },
     { href: '#signals',      label: 'signals' },
+    { href: '/api-docs',     label: 'api' },
     { href: '/testimonials', label: 'testimonials' },
     { href: '/contact',      label: 'contact' },
 ];
@@ -113,13 +113,13 @@ export default function Navigation() {
 
                     {/* User / auth section */}
                     {user ? (
-                        <div className="flex items-center gap-1 shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0">
                             <span className="font-mono text-[0.6rem] text-muted px-1 hidden sm:block max-w-[88px] truncate">
                                 {user.email}
                             </span>
                             <button
                                 onClick={logout}
-                                className="font-mono text-xs px-3 py-1 text-muted hover:text-ink transition-colors whitespace-nowrap"
+                                className="font-mono text-[10px] border border-white/15 px-3 py-1 rounded-full text-muted hover:border-accent hover:text-accent transition-colors whitespace-nowrap"
                             >
                                 logout
                             </button>
@@ -132,11 +132,6 @@ export default function Navigation() {
                             login
                         </Link>
                     )}
-                </div>
-
-                {/* ── Theme toggle (always visible) ─────────── */}
-                <div className="px-1 shrink-0">
-                    <ThemeToggle />
                 </div>
 
                 {/* ── CTA pill (always visible) ────────────── */}

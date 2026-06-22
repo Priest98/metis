@@ -1,12 +1,14 @@
 """Database models"""
 
-from sqlalchemy import Column, String, Boolean, Integer, Float, DateTime, Text, ForeignKey, Index, DECIMAL, JSON
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Boolean, Integer, Float, DateTime, Text, ForeignKey, Index, DECIMAL, JSON, Uuid
 JSONB = JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
 import uuid
+
+# Cross-compatible UUID type (works with both SQLite and PostgreSQL)
+UUID = lambda **kw: Uuid(native_uuid=False)
 
 
 class User(Base):

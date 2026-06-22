@@ -52,7 +52,7 @@ export default function LoginPage() {
     };
 
     return (
-        <main className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-6 relative overflow-hidden">
+        <main className="min-h-screen bg-[#0b0f17] flex items-center justify-center p-6 relative overflow-hidden">
             {/* Background Watermark & Diagonal Streaks */}
             <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none z-0 overflow-hidden">
                 <h1 className="font-display font-black text-[22vw] tracking-widest text-[#ffffff]/[0.015] select-none uppercase">
@@ -94,15 +94,15 @@ export default function LoginPage() {
                 </div>
 
                 {/* Form Card */}
-                <div className="border border-hairline bg-[#111118]/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.8)] text-left">
+                <div className="border border-white/10 bg-[#182030]/90 backdrop-blur-xl p-8 rounded-[1.75rem] shadow-2xl text-left">
                     {/* Tabs */}
-                    <div className="flex border border-hairline p-1 rounded-full bg-background/50 max-w-[280px] mx-auto mb-8">
+                    <div className="flex border border-white/10 p-1 rounded-full bg-black/20 max-w-[280px] mx-auto mb-8">
                         <button
                             type="button"
                             onClick={() => setAuthMethod('email')}
                             className={`flex-1 py-2 px-5 rounded-full font-mono text-xs font-semibold transition-all duration-300 ${
                                 authMethod === 'email'
-                                    ? 'bg-[#1c1c28] border border-accent/20 text-accent shadow-md'
+                                    ? 'bg-[#0b0f17] border border-accent/20 text-accent shadow-md'
                                     : 'text-muted hover:text-ink'
                             }`}
                         >
@@ -113,7 +113,7 @@ export default function LoginPage() {
                             onClick={() => setAuthMethod('wallet')}
                             className={`flex-1 py-2 px-5 rounded-full font-mono text-xs font-semibold transition-all duration-300 ${
                                 authMethod === 'wallet'
-                                    ? 'bg-[#1c1c28] border border-accent/20 text-accent shadow-md'
+                                    ? 'bg-[#0b0f17] border border-accent/20 text-accent shadow-md'
                                     : 'text-muted hover:text-ink'
                             }`}
                         >
@@ -139,7 +139,7 @@ export default function LoginPage() {
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full bg-[#1c1c28]/60 border border-hairline text-ink placeholder:text-muted/40 pl-11 pr-4 py-3 rounded-full text-sm font-mono focus:border-accent/65 focus:outline-none transition-colors"
+                                        className="w-full bg-black/20 border border-white/10 text-ink placeholder:text-muted/40 pl-11 pr-4 py-3 rounded-full text-sm font-mono focus:border-accent focus:outline-none transition-colors"
                                         placeholder="Enter your email here"
                                     />
                                 </div>
@@ -160,7 +160,7 @@ export default function LoginPage() {
                                         type={showPassword ? 'text' : 'password'}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full bg-[#1c1c28]/60 border border-hairline text-ink placeholder:text-muted/40 pl-11 pr-12 py-3 rounded-full text-sm font-mono focus:border-accent/65 focus:outline-none transition-colors"
+                                        className="w-full bg-black/20 border border-white/10 text-ink placeholder:text-muted/40 pl-11 pr-12 py-3 rounded-full text-sm font-mono focus:border-accent focus:outline-none transition-colors"
                                         placeholder="**********"
                                     />
                                     <button
@@ -206,7 +206,7 @@ export default function LoginPage() {
                                     type="button"
                                     onClick={handleWalletLogin}
                                     disabled={isConnecting}
-                                    className="w-full flex items-center justify-center gap-2 bg-[#1c1c28] border border-hairline py-3.5 px-6 rounded-full font-mono text-sm text-ink hover:border-accent hover:text-accent transition-all duration-300 active:scale-[0.98]"
+                                    className="w-full flex items-center justify-center gap-2 bg-[#0b0f17] border border-white/10 py-3.5 px-6 rounded-full font-mono text-sm text-ink hover:border-accent hover:text-accent transition-all duration-300 active:scale-[0.98]"
                                 >
                                     {isConnecting ? (
                                         <>
@@ -219,7 +219,7 @@ export default function LoginPage() {
                                 </button>
                                 
                                 {walletError && (
-                                    <p className="font-mono text-xs text-rose-400 bg-rose-500/5 border border-rose-500/10 p-3 rounded-xl">
+                                    <p className="font-mono text-xs text-rose-400 bg-rose-500/5 border border-rose-500/10 p-3 rounded-2xl">
                                         {walletError}
                                     </p>
                                 )}
@@ -228,7 +228,7 @@ export default function LoginPage() {
                     )}
 
                     {/* Bottom toggle / link */}
-                    <div className="text-center font-mono text-xs text-muted mt-8 pt-4 border-t border-hairline flex flex-col gap-2.5">
+                    <div className="text-center font-mono text-xs text-muted mt-8 pt-4 border-t border-white/10 flex flex-col gap-2.5">
                         <div>
                             Don&apos;t have access yet?{' '}
                             <Link href="/signup" className="text-accent font-semibold hover:underline decoration-accent/40">

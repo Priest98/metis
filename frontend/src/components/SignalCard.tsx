@@ -104,7 +104,7 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
             variants={shakeVariants}
             animate={paymentStatus === 'failed' ? 'failed' : ''}
             whileHover={shouldReduceMotion ? {} : { y: -4, borderColor: 'rgba(255,255,255,0.08)', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}
-            className="group relative bg-[#090d16]/80 rounded-2xl p-6 border border-white/[0.03] transition-all duration-300 glow-indigo overflow-hidden"
+            className="group relative bg-[#182030] rounded-[1.75rem] p-6 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] transition-all duration-300 overflow-hidden"
         >
             
             {/* Visual gradient overlay matching BUY/SELL direction */}
@@ -118,7 +118,7 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                     <div>
                         <h3 className="text-2xl font-bold tracking-tight text-white">{signal.symbol}</h3>
                         <div className="flex items-center gap-2 mt-1.5">
-                            <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md ${
+                            <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-3 py-0.5 rounded-full ${
                                 isBuy 
                                     ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-glow-emerald' 
                                     : 'bg-rose-500/10 text-rose-400 border border-rose-500/20 text-glow-rose'
@@ -126,7 +126,7 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                                 {isBuy ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                                 {signal.direction}
                             </span>
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-full">
                                 <Clock className="w-3 h-3" />
                                 {formatDistanceToNow(new Date(signal.created_at), { addSuffix: true })}
                             </span>
@@ -158,7 +158,7 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                 </div>
 
                 {/* Blurable Pricing Targets Box */}
-                <div className="relative mb-5 bg-[#05070c]/60 rounded-xl p-3 border border-white/[0.02]">
+                <div className="relative mb-5 bg-black/20 rounded-2xl p-3 border border-white/5">
                     <div className={`grid grid-cols-3 gap-3 transition-all duration-300 ${signal.gated ? 'blur-[5px] select-none pointer-events-none' : ''}`}>
                         <PriceElement label="Entry Price" value={signal.entry_price} color="text-indigo-300" gated={signal.gated} />
                         <PriceElement label="Stop Loss" value={signal.stop_loss} color="text-rose-400" gated={signal.gated} />
@@ -173,7 +173,7 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                                 initial={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.3 }}
-                                className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/60 rounded-xl backdrop-blur-[2px]"
+                                className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/60 rounded-2xl backdrop-blur-[2px]"
                             >
                                 <div className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shadow-lg">
                                     <Lock className="w-3.5 h-3.5 text-amber-400" />
@@ -186,14 +186,14 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
 
                 {/* Key Metrics */}
                 <div className="grid grid-cols-2 gap-3 mb-5">
-                    <div className="flex items-center gap-2.5 bg-white/[0.01] border border-white/[0.02] rounded-xl p-3">
+                    <div className="flex items-center gap-2.5 bg-white/5 border border-white/5 rounded-2xl p-3">
                         <Zap className="w-4 h-4 text-indigo-400" />
                         <div>
                             <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide">Win Prob</span>
                             <span className="text-xs font-bold text-slate-300">{signal.probability_score.toFixed(0)}%</span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2.5 bg-white/[0.01] border border-white/[0.02] rounded-xl p-3">
+                    <div className="flex items-center gap-2.5 bg-white/5 border border-white/5 rounded-2xl p-3">
                         <Target className="w-4 h-4 text-amber-400" />
                         <div>
                             <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide">Risk/Reward</span>
@@ -204,23 +204,23 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
 
                 {/* Technical Meta Tag badges */}
                 <div className="flex flex-wrap gap-1.5 mb-5">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                         signal.confidence_level === 'High' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
                         signal.confidence_level === 'Medium' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 
                         'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                     }`}>
                         {signal.confidence_level} Confidence
                     </span>
-                    <span className="text-[10px] font-bold text-slate-400 bg-white/[0.03] border border-white/[0.04] px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-bold text-slate-400 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-full">
                         {signal.risk_rating} Risk
                     </span>
-                    <span className="text-[10px] font-bold text-slate-400 bg-white/[0.03] border border-white/[0.04] px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-bold text-slate-400 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-full">
                         {signal.gated ? 'Nano Gated' : `${signal.position_sizing.toFixed(1)}% Allocation`}
                     </span>
                 </div>
 
                 {/* Trade Setup Explanation Box */}
-                <div className="bg-[#05070c]/50 rounded-xl p-3 border border-white/[0.02] mb-5">
+                <div className="bg-black/10 rounded-2xl p-3 border border-white/5 mb-5">
                     <p className={`text-xs leading-relaxed transition-all duration-300 ${
                         signal.gated ? 'text-slate-500 italic' : 'text-slate-300'
                     }`}>
@@ -234,14 +234,14 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                         <button
                             onClick={handleUnlock}
                             disabled={paymentStatus === 'processing' || paymentStatus === 'success'}
-                            className={`w-full flex items-center justify-center gap-2 font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-lg text-sm select-none relative overflow-hidden ${
+                            className={`w-full flex items-center justify-center gap-2 font-semibold py-3.5 px-6 rounded-full transition-all duration-300 shadow-lg text-sm select-none relative overflow-hidden active:scale-[0.98] ${
                                 paymentStatus === 'processing'
                                     ? 'bg-[#4f46e5]/40 text-indigo-200 border border-indigo-500/20 cursor-wait'
                                     : paymentStatus === 'success'
-                                    ? 'bg-emerald-600 text-white shadow-emerald-500/10'
+                                    ? 'bg-emerald-600 text-white shadow-emerald-500/20'
                                     : paymentStatus === 'failed'
-                                    ? 'bg-rose-600 text-white shadow-rose-500/10'
-                                    : 'bg-indigo-600 hover:bg-indigo-500 text-white hover:shadow-indigo-500/20 active:scale-[0.98]'
+                                    ? 'bg-rose-600 text-white shadow-rose-500/20'
+                                    : 'bg-white text-black hover:bg-accent hover:text-black shadow-white/10 hover:shadow-accent/15'
                             }`}
                         >
                             {/* Glass shimmer overlay during processing */}

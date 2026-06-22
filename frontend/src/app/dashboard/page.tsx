@@ -8,6 +8,10 @@ import SignalCard from '@/components/SignalCard';
 import AgentFleetTerminal from '@/components/AgentFleetTerminal';
 import AgentLog from '@/components/AgentLog';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import DemoSimulator from '@/components/DemoSimulator';
+import AgentLeaderboard from '@/components/AgentLeaderboard';
+import LivePaymentFeed from '@/components/LivePaymentFeed';
+import AgentNetworkGraph from '@/components/AgentNetworkGraph';
 import api from '@/lib/api';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -493,23 +497,24 @@ export default function Dashboard() {
             <div className="max-w-6xl mx-auto">
 
                 {/* ── Page Header ─────────────────────────────── */}
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between py-8 border-b border-hairline gap-4 mb-8">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between py-8 border-b border-white/5 gap-4 mb-8">
                     <div>
                         <p className="eyebrow mb-2">live engine active</p>
                         <h1 className="font-display text-3xl font-semibold text-ink tracking-tight">QuantFlow Terminal</h1>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex gap-3 flex-wrap">
+                        <DemoSimulator />
                         <button
                             onClick={fetchSignals}
                             disabled={isRefreshing}
-                            className="font-mono flex items-center gap-1.5 border border-hairline px-4 py-2 text-xs text-ink transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
+                            className="font-mono flex items-center gap-1.5 border border-white/10 bg-[#182030] px-4 py-2 rounded-full text-xs text-ink transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
                         >
                             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                             Refresh
                         </button>
                         <button
                             onClick={logout}
-                            className="font-mono flex items-center gap-1.5 border border-hairline px-4 py-2 text-xs text-ink transition-colors hover:border-block hover:text-block"
+                            className="font-mono flex items-center gap-1.5 border border-white/10 bg-[#182030] px-4 py-2 rounded-full text-xs text-ink transition-colors hover:border-block hover:text-block hover:bg-block/10 duration-300"
                         >
                             <LogOut className="w-3.5 h-3.5" />
                             Log Out
@@ -536,39 +541,25 @@ export default function Dashboard() {
                 )}
 
                 {/* Tab Navigation */}
-                <div className="flex border-b border-hairline mb-8 gap-6 overflow-x-auto whitespace-nowrap">
-                    <button
-                        onClick={() => setActiveTab('terminal')}
-                        className={`font-mono text-xs uppercase tracking-wider pb-3 border-b-2 transition-all ${
-                            activeTab === 'terminal' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-ink'
-                        }`}
-                    >
-                        Quant Terminal Feed
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('marketplace')}
-                        className={`font-mono text-xs uppercase tracking-wider pb-3 border-b-2 transition-all ${
-                            activeTab === 'marketplace' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-ink'
-                        }`}
-                    >
-                        Agent Marketplace
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('wallet')}
-                        className={`font-mono text-xs uppercase tracking-wider pb-3 border-b-2 transition-all ${
-                            activeTab === 'wallet' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-ink'
-                        }`}
-                    >
-                        Wallet &amp; Agent Manager
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('log')}
-                        className={`font-mono text-xs uppercase tracking-wider pb-3 border-b-2 transition-all ${
-                            activeTab === 'log' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-ink'
-                        }`}
-                    >
-                        Agent Log
-                    </button>
+                <div className="inline-flex border border-white/10 p-1.5 rounded-full bg-[#182030] gap-2 mb-8 overflow-x-auto max-w-full">
+                    {[
+                        { id: 'terminal', label: 'Quant Terminal Feed' },
+                        { id: 'marketplace', label: 'Agent Marketplace' },
+                        { id: 'wallet', label: 'Wallet & Agent Manager' },
+                        { id: 'log', label: 'Agent Log' }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={`font-mono text-xs uppercase tracking-wider py-2 px-5 rounded-full transition-all duration-300 ${
+                                activeTab === tab.id
+                                    ? 'bg-accent text-background font-bold shadow-md'
+                                    : 'text-muted hover:text-ink'
+                            }`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
                 </div>
 
                 {/* ── Main Layout ──────────────────────────────── */}
@@ -598,11 +589,11 @@ export default function Dashboard() {
                                     initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
-                                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                                    className="space-y-8"
+                                    transition={{ duration: 0.3 }}
+                                    className="space-y-4"
                                 >
                                     {/* Price Chart */}
-                                    <div className="border border-hairline bg-surface p-6">
+                                    <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
                                         <div className="flex items-center justify-between mb-6">
                                             <div>
                                                 <p className="eyebrow mb-1">active workspace</p>
@@ -623,9 +614,9 @@ export default function Dashboard() {
                                                     <button
                                                         key={sym}
                                                         onClick={() => setSelectedSymbol(sym)}
-                                                        className={`font-mono px-3 py-1 text-xs transition-all border ${selectedSymbol === sym
+                                                        className={`font-mono px-3.5 py-1 text-xs transition-all border rounded-full ${selectedSymbol === sym
                                                                 ? 'border-accent text-accent bg-accent/5'
-                                                                : 'border-hairline text-muted hover:text-ink hover:border-white/20'
+                                                                : 'border-white/10 text-muted hover:text-ink hover:border-white/20'
                                                             }`}
                                                     >
                                                         {sym.replace('USDT', '')}
@@ -633,6 +624,7 @@ export default function Dashboard() {
                                                 ))}
                                             </div>
                                         </div>
+
 
                                         <div className="h-[280px] w-full mt-4">
                                             <ResponsiveContainer width="100%" height="100%">
@@ -697,7 +689,7 @@ export default function Dashboard() {
                                         {/* Left 2 Cols: Directory & Leaderboard */}
                                         <div className="lg:col-span-2 space-y-8">
                                             {/* Catalog */}
-                                            <div className="border border-hairline bg-surface p-6">
+                                            <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
                                                 <div className="mb-6">
                                                     <p className="eyebrow mb-1">agent marketplace</p>
                                                     <h3 className="font-display text-lg font-semibold text-ink">Active Agent Catalog</h3>
@@ -709,14 +701,14 @@ export default function Dashboard() {
                                                         <div 
                                                             key={agent.id}
                                                             onClick={() => setSelectedMarketplaceAgent(agent)}
-                                                            className="border border-hairline bg-background/50 p-5 hover:border-accent cursor-pointer transition-colors relative overflow-hidden"
+                                                            className="border border-white/10 bg-black/20 p-5 hover:border-accent cursor-pointer transition-all hover:scale-[1.01] relative overflow-hidden rounded-[1.25rem] shadow-md"
                                                         >
                                                             <div className="flex justify-between items-start mb-3">
                                                                 <div>
                                                                     <h4 className="font-display font-bold text-sm text-ink">{agent.name}</h4>
                                                                     <span className="font-mono text-[9px] text-muted">ID: {agent.id}</span>
                                                                 </div>
-                                                                <span className={`font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 border ${
+                                                                <span className={`font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 border rounded-full ${
                                                                     agent.type === 'Signal' ? 'border-accent/30 text-accent bg-accent/5' :
                                                                     agent.type === 'Risk' ? 'border-approve/30 text-approve bg-approve/5' :
                                                                     agent.type === 'Sentiment' ? 'border-indigo-500/30 text-indigo-400 bg-indigo-500/5' :
@@ -728,7 +720,7 @@ export default function Dashboard() {
                                                             <p className="font-mono text-[10px] text-muted line-clamp-2 mb-4 leading-relaxed h-8">
                                                                 {agent.desc}
                                                             </p>
-                                                            <div className="flex items-center justify-between font-mono text-[10px] border-t border-hairline/50 pt-3">
+                                                            <div className="flex items-center justify-between font-mono text-[10px] border-t border-white/5 pt-3">
                                                                 <div>
                                                                     <span className="text-muted block text-[8px] uppercase">reputation</span>
                                                                     <span className="text-ink font-semibold">{agent.reputation}/100</span>
@@ -743,59 +735,15 @@ export default function Dashboard() {
                                                 </div>
                                             </div>
 
-                                            {/* Leaderboard */}
-                                            <div className="border border-hairline bg-surface p-6">
-                                                <div className="mb-6 flex justify-between items-center pb-2 border-b border-hairline/80">
-                                                    <div>
-                                                        <p className="eyebrow mb-1">ranking directory</p>
-                                                        <h3 className="font-display text-lg font-semibold text-ink">Agent Leaderboard</h3>
-                                                    </div>
-                                                    <Award className="w-5 h-5 text-accent" />
-                                                </div>
-                                                <div className="overflow-x-auto">
-                                                    <table className="w-full font-mono text-xs text-left">
-                                                        <thead>
-                                                            <tr className="text-muted/60 border-b border-hairline/50 pb-2">
-                                                                <th className="py-2 font-medium">Agent</th>
-                                                                <th className="py-2 font-medium">Type</th>
-                                                                <th className="py-2 font-medium text-right">Success Rate</th>
-                                                                <th className="py-2 font-medium text-right">USDC Earned</th>
-                                                                <th className="py-2 font-medium text-right">Reputation</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody className="divide-y divide-hairline/30">
-                                                            {marketplaceAgents.map((agent, index) => (
-                                                                <tr key={agent.id} className="hover:bg-white/[0.01]">
-                                                                    <td className="py-3 font-semibold text-ink flex items-center gap-2">
-                                                                        <span className="text-muted text-[10px]">{index + 1}.</span>
-                                                                        {agent.name}
-                                                                    </td>
-                                                                    <td className="py-3">
-                                                                        <span className={`text-[10px] uppercase border px-2 py-0.5 ${
-                                                                            agent.type === 'Signal' ? 'border-accent/30 text-accent bg-accent/5' :
-                                                                            agent.type === 'Risk' ? 'border-approve/30 text-approve bg-approve/5' :
-                                                                            agent.type === 'Sentiment' ? 'border-indigo-500/30 text-indigo-400 bg-indigo-500/5' :
-                                                                            'border-amber-500/30 text-amber-400 bg-amber-500/5'
-                                                                        }`}>
-                                                                            {agent.type}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td className="py-3 text-right font-bold text-approve">{agent.accuracy}%</td>
-                                                                    <td className="py-3 text-right text-ink font-semibold">${agent.revenue.toFixed(2)}</td>
-                                                                    <td className="py-3 text-right font-bold text-accent">{agent.reputation}/100</td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
+                                            {/* Leaderboard — live P&L ranking */}
+                                            <AgentLeaderboard />
                                         </div>
 
                                         {/* Right 1 Col: Agent Factory */}
                                         <div className="space-y-8">
                                             {/* Creator Form */}
-                                            <div className="border border-hairline bg-surface p-6">
-                                                <div className="mb-6 pb-2 border-b border-hairline/80 flex items-center justify-between">
+                                            <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
+                                                <div className="mb-6 pb-2 border-b border-white/5 flex items-center justify-between">
                                                     <div>
                                                         <p className="eyebrow mb-1">instantiation engine</p>
                                                         <h3 className="font-display text-lg font-semibold text-ink">Agent Factory</h3>
@@ -811,7 +759,7 @@ export default function Dashboard() {
                                                             value={newAgentName}
                                                             onChange={(e) => setNewAgentName(e.target.value)}
                                                             placeholder="e.g. SOL Trend Hunter"
-                                                            className="w-full bg-background border border-hairline text-ink placeholder:text-muted/50 px-4 py-2.5 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                            className="w-full bg-background border border-white/10 text-ink placeholder:text-muted/50 px-4.5 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                             required
                                                         />
                                                     </div>
@@ -822,7 +770,7 @@ export default function Dashboard() {
                                                             <select
                                                                 value={newAgentType}
                                                                 onChange={(e) => setNewAgentType(e.target.value)}
-                                                                className="w-full bg-background border border-hairline text-ink px-3 py-2.5 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                                className="w-full bg-background border border-white/10 text-ink px-4 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                             >
                                                                 <option value="Signal">Signal</option>
                                                                 <option value="Risk">Risk</option>
@@ -835,7 +783,7 @@ export default function Dashboard() {
                                                             <select
                                                                 value={newAgentStrategy}
                                                                 onChange={(e) => setNewAgentStrategy(e.target.value)}
-                                                                className="w-full bg-background border border-hairline text-ink px-3 py-2.5 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                                className="w-full bg-background border border-white/10 text-ink px-4 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                             >
                                                                 <option value="Momentum Squeeze">Momentum</option>
                                                                 <option value="Mean Reversion">Mean Rev</option>
@@ -852,14 +800,14 @@ export default function Dashboard() {
                                                             step="0.0001"
                                                             value={newAgentBudget}
                                                             onChange={(e) => setNewAgentBudget(e.target.value)}
-                                                            className="w-full bg-background border border-hairline text-ink px-4 py-2.5 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                            className="w-full bg-background border border-white/10 text-ink px-4.5 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                             required
                                                         />
                                                     </div>
 
                                                     <button
                                                         type="submit"
-                                                        className="w-full bg-accent text-background font-mono text-xs font-bold py-3 hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
+                                                        className="w-full bg-white text-background hover:bg-accent font-mono text-xs font-bold py-3.5 rounded-full transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-lg shadow-white/5"
                                                     >
                                                         <Plus className="w-3.5 h-3.5" />
                                                         Instantiate Agent
@@ -868,8 +816,8 @@ export default function Dashboard() {
                                             </div>
 
                                             {/* Transaction Ledger */}
-                                            <div className="border border-hairline bg-surface p-6">
-                                                <div className="mb-4 flex items-center justify-between pb-2 border-b border-hairline">
+                                            <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
+                                                <div className="mb-4 flex items-center justify-between pb-2 border-b border-white/5">
                                                     <div>
                                                         <p className="eyebrow mb-1">verification ledger</p>
                                                         <h3 className="font-display text-sm font-semibold text-ink">Arc L1 Sandbox</h3>
@@ -878,7 +826,7 @@ export default function Dashboard() {
                                                 </div>
                                                 <div className="space-y-3 max-h-[220px] overflow-y-auto font-mono text-[10px] leading-relaxed text-muted pr-2">
                                                     {txLedger.map((tx, idx) => (
-                                                        <div key={idx} className="border-b border-hairline/25 pb-3">
+                                                        <div key={idx} className="border-b border-white/5 pb-3">
                                                             <div className="flex justify-between text-[8px] text-muted mb-1">
                                                                 <span>[{tx.time}]</span>
                                                                 <span className="text-approve">{tx.status}</span>
@@ -901,7 +849,7 @@ export default function Dashboard() {
                                     {/* Agent Drawer/Modal Overlay */}
                                     {selectedMarketplaceAgent && (
                                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-                                            <div className="border border-hairline bg-surface max-w-md w-full p-6 relative">
+                                            <div className="border border-white/10 bg-[#182030] shadow-2xl max-w-md w-full p-8 rounded-[1.75rem] relative">
                                                 <button 
                                                     onClick={() => setSelectedMarketplaceAgent(null)}
                                                     className="absolute top-4 right-4 font-mono text-muted hover:text-ink text-xs"
@@ -911,7 +859,7 @@ export default function Dashboard() {
                                                 <div className="mb-4">
                                                     <span className="font-mono text-[8px] text-accent uppercase tracking-wider block mb-1">Agent Identity Profile</span>
                                                     <h3 className="font-display text-xl font-bold text-ink">{selectedMarketplaceAgent.name}</h3>
-                                                    <span className="font-mono text-[9px] text-muted break-all bg-background px-2.5 py-1 border border-hairline mt-1 block">
+                                                    <span className="font-mono text-[9px] text-muted break-all bg-black/20 px-3.5 py-1.5 border border-white/5 mt-1.5 block rounded-full">
                                                         Address: {selectedMarketplaceAgent.address}
                                                     </span>
                                                 </div>
@@ -919,7 +867,7 @@ export default function Dashboard() {
                                                     <p className="text-slate-300 leading-relaxed text-[11px]">
                                                         {selectedMarketplaceAgent.desc}
                                                     </p>
-                                                    <div className="grid grid-cols-2 gap-3 bg-background border border-hairline p-3">
+                                                    <div className="grid grid-cols-2 gap-3 bg-black/20 border border-white/5 p-4 rounded-2xl">
                                                         <div>
                                                             <span className="text-muted block text-[8px] uppercase">Category</span>
                                                             <span className="text-ink font-semibold">{selectedMarketplaceAgent.type} Agent</span>
@@ -945,7 +893,7 @@ export default function Dashboard() {
                                                             <span className="text-ink font-semibold">{selectedMarketplaceAgent.signals} total</span>
                                                         </div>
                                                     </div>
-                                                    <div className="bg-background border border-hairline p-3">
+                                                    <div className="bg-black/20 border border-white/5 p-4 rounded-2xl">
                                                         <span className="text-muted block text-[8px] uppercase mb-1">Agent Learning Log</span>
                                                         <p className="text-[10px] text-accent">
                                                             [Feedback loop active] Pattern strength reinforcement: +{(100 - selectedMarketplaceAgent.accuracy)/5}% precision scaling based on last prediction run.
@@ -953,7 +901,7 @@ export default function Dashboard() {
                                                     </div>
                                                     <button 
                                                         onClick={() => setSelectedMarketplaceAgent(null)}
-                                                        className="w-full bg-ink text-background font-bold py-2.5 hover:bg-accent transition-colors mt-2"
+                                                        className="w-full bg-white text-background font-semibold py-3 hover:bg-accent transition-colors rounded-full mt-2"
                                                     >
                                                         Dismiss Profile
                                                     </button>
@@ -973,18 +921,18 @@ export default function Dashboard() {
                                     className="space-y-8"
                                 >
                                     {/* Detailed Embedded Wallet Card */}
-                                    <div className="border border-hairline bg-surface p-6">
+                                    <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
                                         <p className="eyebrow mb-2">Embedded USDC Wallet</p>
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                             <div>
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <span className="font-mono text-xs text-muted">Address:</span>
-                                                    <span className="font-mono text-xs text-ink font-semibold break-all bg-background px-2.5 py-1 border border-hairline select-all">
+                                                    <span className="font-mono text-xs text-ink font-semibold break-all bg-black/20 px-3.5 py-1.5 border border-white/5 rounded-full select-all">
                                                         {walletInfo?.wallet_address || '0x000...'}
                                                     </span>
                                                     <button
                                                         onClick={() => copyToClipboard(walletInfo?.wallet_address || '')}
-                                                        className="p-1 border border-hairline hover:border-accent text-muted hover:text-accent transition-colors"
+                                                        className="p-1.5 border border-white/10 bg-white/5 rounded-full hover:border-accent text-muted hover:text-accent transition-colors"
                                                         title="Copy Address"
                                                     >
                                                         {copiedAddress ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -1013,14 +961,14 @@ export default function Dashboard() {
                                             </div>
                                             <button
                                                 onClick={() => router.push('/faucet')}
-                                                className="font-mono self-start md:self-center bg-accent text-background px-5 py-3 text-xs font-semibold hover:bg-white transition-colors"
+                                                className="font-mono self-start md:self-center bg-white text-background px-6 py-3.5 rounded-full text-xs font-bold transition-all active:scale-[0.98] shadow-md"
                                             >
                                                 ⛽ Go to Faucet
                                             </button>
                                         </div>
 
                                         {/* Link Secondary External Wallet */}
-                                        <div className="mt-8 pt-6 border-t border-hairline">
+                                        <div className="mt-8 pt-6 border-t border-white/5">
                                             <p className="eyebrow mb-3">Optional External Wallet Connection</p>
                                             <div className="space-y-3 max-w-lg">
                                                 <div className="flex gap-2">
@@ -1028,7 +976,7 @@ export default function Dashboard() {
                                                         type="button"
                                                         onClick={connectWallet}
                                                         disabled={isConnectingWallet}
-                                                        className="font-mono border border-hairline px-3 py-2 text-[10px] uppercase tracking-wider text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40 shrink-0"
+                                                        className="font-mono border border-white/10 bg-white/5 px-4.5 py-2.5 rounded-full text-[10px] uppercase tracking-wider text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40 shrink-0"
                                                     >
                                                         {isConnectingWallet ? 'Connecting...' : 'Connect Wallet'}
                                                     </button>
@@ -1041,12 +989,12 @@ export default function Dashboard() {
                                                         placeholder="0x..."
                                                         value={externalWalletInput}
                                                         onChange={(e) => setExternalWalletInput(e.target.value)}
-                                                        className="flex-1 bg-background border border-hairline text-ink placeholder:text-muted px-4 py-2 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                        className="flex-1 bg-background border border-white/10 text-ink placeholder:text-muted px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                     />
                                                     <button
                                                         type="submit"
                                                         disabled={externalWalletLoading}
-                                                        className="font-mono border border-hairline px-4 py-2 text-xs text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40 shrink-0"
+                                                        className="font-mono border border-white/10 bg-white/5 px-5 py-2.5 rounded-full text-xs text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40 shrink-0"
                                                     >
                                                         {externalWalletLoading ? 'Saving...' : 'Link Wallet'}
                                                     </button>
@@ -1066,23 +1014,23 @@ export default function Dashboard() {
                                     </div>
 
                                     {/* AI Agent Wallets & Budgets */}
-                                    <div className="border border-hairline bg-surface p-6">
+                                    <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
                                         <p className="eyebrow mb-4">Programmable AI Agent Wallets</p>
 
                                         {/* List Agents */}
                                         <div className="space-y-4 mb-8">
                                             {agents.map((agent) => (
-                                                <div key={agent.id} className="border border-hairline p-4 bg-background flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                                <div key={agent.id} className="border border-white/10 p-5 bg-black/20 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
                                                     <div>
                                                         <div className="flex items-center gap-2 mb-1.5">
                                                             <span className="font-display text-sm font-semibold text-ink">{agent.name}</span>
-                                                            <span className={`font-mono text-[9px] px-1.5 py-0.5 border ${
+                                                            <span className={`font-mono text-[9px] px-2.5 py-0.5 border rounded-full ${
                                                                 agent.is_active ? 'text-approve border-approve/30 bg-approve/5' : 'text-block border-block/30 bg-block/5'
                                                             }`}>
                                                                 {agent.is_active ? 'ACTIVE' : 'PAUSED'}
                                                             </span>
                                                             {agent.yield_loop_active && (
-                                                                <span className="font-mono text-[9px] px-1.5 py-0.5 border text-accent border-accent/30 bg-accent/5">
+                                                                <span className="font-mono text-[9px] px-2.5 py-0.5 border rounded-full text-accent border-accent/30 bg-accent/5">
                                                                     YIELD ACTIVE (5.5% APY)
                                                                 </span>
                                                             )}
@@ -1091,7 +1039,7 @@ export default function Dashboard() {
                                                             <span className="font-mono text-[10px] text-muted truncate max-w-xs">{agent.wallet_address}</span>
                                                             <button
                                                                 onClick={() => copyToClipboard(agent.wallet_address, true, agent.id)}
-                                                                className="text-muted hover:text-ink transition-colors"
+                                                                className="p-1 border border-white/10 bg-white/5 rounded-full text-muted hover:text-ink transition-colors"
                                                             >
                                                                 {copiedAgentAddress === agent.id ? <Check className="w-3 h-3 text-approve" /> : <Copy className="w-3 h-3" />}
                                                             </button>
@@ -1112,17 +1060,17 @@ export default function Dashboard() {
                                                     <div className="flex items-center gap-3">
                                                         <button
                                                             onClick={() => openFundModal(agent)}
-                                                            className="font-mono border border-accent/40 text-accent hover:border-accent px-3 py-1.5 text-xs flex items-center gap-1.5 transition-colors"
+                                                            className="font-mono border border-accent/40 text-accent hover:bg-accent hover:text-background px-4 py-2 rounded-full text-xs flex items-center gap-1.5 transition-colors"
                                                         >
                                                             <CircleDollarSign className="w-3.5 h-3.5" />
                                                             Fund Agent
                                                         </button>
                                                         <button
                                                             onClick={() => handleToggleAgentActive(agent.id, agent.is_active)}
-                                                            className={`font-mono border px-3 py-1.5 text-xs flex items-center gap-1.5 transition-colors ${
+                                                            className={`font-mono border px-4 py-2 rounded-full text-xs flex items-center gap-1.5 transition-colors ${
                                                                 agent.is_active
-                                                                    ? 'border-block/40 text-block hover:border-block'
-                                                                    : 'border-approve/40 text-approve hover:border-approve'
+                                                                    ? 'border-block/40 text-block hover:bg-block/10'
+                                                                    : 'border-approve/40 text-approve hover:bg-approve/10'
                                                             }`}
                                                         >
                                                             {agent.is_active ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
@@ -1131,10 +1079,10 @@ export default function Dashboard() {
                                                         <button
                                                             onClick={() => handleToggleYieldLoop(agent.id, agent.yield_loop_active)}
                                                             disabled={togglingYield === agent.id}
-                                                            className={`font-mono border px-3 py-1.5 text-xs flex items-center gap-1.5 transition-colors ${
+                                                            className={`font-mono border px-4 py-2 rounded-full text-xs flex items-center gap-1.5 transition-colors ${
                                                                 agent.yield_loop_active
                                                                     ? 'border-accent text-accent hover:bg-accent/5'
-                                                                    : 'border-hairline text-muted hover:text-ink hover:border-white/20'
+                                                                    : 'border-white/10 text-muted hover:text-ink hover:border-white/20'
                                                             }`}
                                                         >
                                                             <RefreshCw className={`w-3.5 h-3.5 ${togglingYield === agent.id ? 'animate-spin' : ''}`} />
@@ -1146,7 +1094,7 @@ export default function Dashboard() {
                                         </div>
 
                                         {/* Create Agent Form */}
-                                        <div className="pt-6 border-t border-hairline">
+                                        <div className="pt-6 border-t border-white/5">
                                             <h4 className="font-display text-sm font-semibold text-ink mb-4">Provision New AI Agent</h4>
                                             <form onSubmit={handleCreateAgent} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                                                 <div className="md:col-span-2">
@@ -1157,7 +1105,7 @@ export default function Dashboard() {
                                                         placeholder="e.g. Risk Audit Agent"
                                                         value={agentNameInput}
                                                         onChange={(e) => setAgentNameInput(e.target.value)}
-                                                        className="w-full bg-background border border-hairline text-ink placeholder:text-muted px-4 py-2.5 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                        className="w-full bg-background border border-white/10 text-ink placeholder:text-muted px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                     />
                                                 </div>
                                                 <div>
@@ -1168,7 +1116,7 @@ export default function Dashboard() {
                                                         min="0.0"
                                                         value={agentBudgetInput}
                                                         onChange={(e) => setAgentBudgetInput(parseFloat(e.target.value))}
-                                                        className="w-full bg-background border border-hairline text-ink px-4 py-2.5 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                        className="w-full bg-background border border-white/10 text-ink px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                     />
                                                 </div>
                                                 <div>
@@ -1179,13 +1127,13 @@ export default function Dashboard() {
                                                         min="0.0"
                                                         value={agentBalanceInput}
                                                         onChange={(e) => setAgentBalanceInput(parseFloat(e.target.value))}
-                                                        className="w-full bg-background border border-hairline text-ink px-4 py-2.5 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                        className="w-full bg-background border border-white/10 text-ink px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                     />
                                                 </div>
                                                 <button
                                                     type="submit"
                                                     disabled={createAgentLoading || !agentNameInput}
-                                                    className="md:col-span-4 font-mono bg-ink text-background py-3 text-xs font-semibold hover:bg-accent transition-colors disabled:opacity-40"
+                                                    className="md:col-span-4 font-mono bg-white text-background py-3.5 text-xs font-bold hover:bg-accent transition-colors rounded-full active:scale-[0.98] disabled:opacity-40"
                                                 >
                                                     {createAgentLoading ? 'Provisioning Agent...' : 'Deploy Agent Wallet'}
                                                 </button>
@@ -1194,12 +1142,12 @@ export default function Dashboard() {
                                     </div>
 
                                     {/* Ledger / Microtransaction history */}
-                                    <div className="border border-hairline bg-surface p-6">
+                                    <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
                                         <p className="eyebrow mb-4">Arc L1 Transaction History (Ledger)</p>
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left font-mono text-xs text-muted border-collapse">
                                                 <thead>
-                                                    <tr className="border-b border-hairline text-[10px] uppercase text-muted">
+                                                    <tr className="border-b border-white/5 text-[10px] uppercase text-muted">
                                                         <th className="py-2.5">Date</th>
                                                         <th>Transaction Hash</th>
                                                         <th>Purpose</th>
@@ -1214,7 +1162,7 @@ export default function Dashboard() {
                                                                 initial={{ opacity: 0 }}
                                                                 animate={{ opacity: 1 }}
                                                                 exit={{ opacity: 0 }}
-                                                                className="border-b border-hairline"
+                                                                className="border-b border-white/5"
                                                             >
                                                                 <td colSpan={4} className="py-8 text-center text-[11px] text-muted italic">
                                                                     No transactions logged. Use the faucet or unlock signals to seed the ledger.
@@ -1229,7 +1177,7 @@ export default function Dashboard() {
                                                                     animate={{ opacity: 1, y: 0 }}
                                                                     exit={{ opacity: 0 }}
                                                                     transition={{ duration: 0.3, ease: 'easeOut' }}
-                                                                    className="border-b border-hairline hover:bg-white/[0.01]"
+                                                                    className="border-b border-white/5 hover:bg-white/[0.01]"
                                                                 >
                                                                     <td className="py-3 pr-4 text-[10px]">
                                                                         {tx.created_at ? new Date(tx.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'}
@@ -1269,8 +1217,8 @@ export default function Dashboard() {
                         {/* Wallet Quick Card */}
                         <div
                             onClick={() => setActiveTab('wallet')}
-                            className={`border bg-surface p-5 cursor-pointer transition-all hover:scale-[1.01] ${
-                                activeTab === 'wallet' ? 'border-accent' : 'border-hairline hover:border-accent/40'
+                            className={`border bg-[#182030] shadow-xl p-5 cursor-pointer transition-all rounded-[1.5rem] hover:scale-[1.01] ${
+                                activeTab === 'wallet' ? 'border-accent' : 'border-white/10 hover:border-accent/40'
                             }`}
                         >
                             <div className="flex items-center justify-between mb-4">
@@ -1288,8 +1236,8 @@ export default function Dashboard() {
                         </div>
 
                         {/* AI Copilot */}
-                        <div className="border border-hairline bg-surface p-5">
-                            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-hairline">
+                        <div className="border border-white/10 bg-[#182030] shadow-xl p-5 rounded-[1.5rem]">
+                            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-white/5">
                                 <BrainCircuit className="w-4 h-4 text-accent" />
                                 <p className="eyebrow">ai copilot analysis</p>
                             </div>
@@ -1299,7 +1247,7 @@ export default function Dashboard() {
                                         <span className="text-muted uppercase tracking-[0.1em]">Market Sentiment</span>
                                         <span className="text-approve">78% BULLISH</span>
                                     </div>
-                                    <div className="w-full bg-background h-1 border border-hairline overflow-hidden">
+                                    <div className="w-full bg-background h-1 border border-white/5 overflow-hidden rounded-full">
                                         <div className="bg-approve h-1" style={{ width: '78%' }} />
                                     </div>
                                 </div>
@@ -1308,7 +1256,7 @@ export default function Dashboard() {
                                         <span className="text-muted uppercase tracking-[0.1em]">Vol Regime (Daily)</span>
                                         <span className="text-accent">HIGH VOLATILITY</span>
                                     </div>
-                                    <div className="w-full bg-background h-1 border border-hairline overflow-hidden">
+                                    <div className="w-full bg-background h-1 border border-white/5 overflow-hidden rounded-full">
                                         <div className="bg-accent h-1" style={{ width: '60%' }} />
                                     </div>
                                 </div>
@@ -1316,8 +1264,8 @@ export default function Dashboard() {
                         </div>
 
                         {/* Exchange Connectors */}
-                        <div className="border border-hairline bg-surface p-5">
-                            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-hairline">
+                        <div className="border border-white/10 bg-[#182030] shadow-xl p-5 rounded-[1.5rem]">
+                            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-white/5">
                                 <Globe2 className="w-4 h-4 text-accent" />
                                 <p className="eyebrow">exchange connectors</p>
                             </div>
@@ -1327,13 +1275,19 @@ export default function Dashboard() {
                                     { name: 'Alpaca API',    status: 'SANDBOX',   color: 'text-review border-review/30' },
                                     { name: 'Polygon Feed',  status: 'ONLINE',    color: 'text-approve border-approve/30' },
                                 ].map(c => (
-                                    <div key={c.name} className="flex justify-between items-center p-2 border border-hairline">
+                                    <div key={c.name} className="flex justify-between items-center p-2.5 border border-white/5 bg-black/10 rounded-xl">
                                         <span className="font-mono text-xs text-muted">{c.name}</span>
-                                        <span className={`font-mono text-[0.6rem] uppercase tracking-[0.15em] border px-2 py-0.5 ${c.color}`}>{c.status}</span>
+                                        <span className={`font-mono text-[0.6rem] uppercase tracking-[0.15em] border px-2.5 py-0.5 rounded-full ${c.color}`}>{c.status}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
+
+                        {/* Live Agent Economy Network Graph */}
+                        <AgentNetworkGraph />
+
+                        {/* Live Agent Transaction Feed */}
+                        <LivePaymentFeed />
 
                     </div>
                 </div>
@@ -1347,7 +1301,7 @@ export default function Dashboard() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="w-full max-w-md border border-hairline bg-surface p-6 relative z-10"
+                            className="w-full max-w-md border border-white/10 bg-[#182030] p-8 rounded-[1.75rem] relative z-10 shadow-2xl"
                         >
                             <h3 className="font-display text-lg font-semibold text-ink mb-2">
                                 Fund Agent: {selectedAgentForFunding.name}
@@ -1368,7 +1322,7 @@ export default function Dashboard() {
                                         required
                                         value={fundingAmountInput}
                                         onChange={(e) => setFundingAmountInput(parseFloat(e.target.value))}
-                                        className="w-full bg-background border border-hairline text-ink placeholder:text-muted px-4 py-2.5 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                        className="w-full bg-background border border-white/10 text-ink placeholder:text-muted px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                     />
                                 </div>
 
@@ -1386,14 +1340,14 @@ export default function Dashboard() {
                                             setFundAgentModalOpen(false);
                                             setSelectedAgentForFunding(null);
                                         }}
-                                        className="font-mono border border-hairline px-4 py-2 text-xs text-muted hover:text-ink transition-colors"
+                                        className="font-mono border border-white/10 bg-white/5 px-5 py-2.5 rounded-full text-xs text-muted hover:text-ink transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={fundingLoading}
-                                        className="font-mono bg-accent text-background px-4 py-2 text-xs font-semibold hover:bg-white transition-colors disabled:opacity-40"
+                                        className="font-mono bg-white text-background px-5 py-2.5 rounded-full text-xs font-bold transition-all disabled:opacity-40 active:scale-[0.98]"
                                     >
                                         {fundingLoading ? 'Sending On-Chain...' : 'Confirm Funding'}
                                     </button>

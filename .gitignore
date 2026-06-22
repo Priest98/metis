@@ -86,3 +86,6 @@ temp/
 data/
 *.csv
 *.parquet
+
+# Duplicate temp directories
+Canteen/

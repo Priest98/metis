@@ -26,26 +26,9 @@ async def seed_data():
     user_password = "Password123!"
     user_id = None
     
-    try:
-        # Try signing in first
-        auth_res = supabase_client.client.auth.sign_in_with_password({"email": user_email, "password": user_password})
-        if auth_res.user:
-            user_id = auth_res.user.id
-            print(f"ℹ️ Authenticated as {user_email}: {user_id}")
-    except Exception as e:
-        # If sign in fails, try sign up
-        try:
-            auth_res = supabase_client.client.auth.sign_up({"email": user_email, "password": user_password})
-            if auth_res.user:
-                user_id = auth_res.user.id
-                print(f"✅ Signed up {user_email}: {user_id}")
-        except Exception as e2:
-            print(f"❌ Auth failed: {e2}")
-            return
-            
-    if not user_id:
-        print("❌ Could not get user ID. Exiting.")
-        return
+    # Bypassing auth via pre-created user ID
+    user_id = "7b7af4a9-fde8-4c5b-9212-9431f86e20c2"
+    print(f"ℹ️ Bypassing auth. Using existing user_id: {user_id}")
 
     # 1.5 Ensure user exists in public.users (for FK)
     try:

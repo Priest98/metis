@@ -13,7 +13,7 @@ export default function StrategiesPage() {
     };
 
     return (
-        <main className="min-h-screen px-5 py-8 sm:px-8 max-w-6xl mx-auto space-y-12">
+        <main className="min-h-screen px-5 pt-24 pb-12 sm:px-8 max-w-6xl mx-auto space-y-12">
 
             {/* Header */}
             <div>
@@ -27,7 +27,7 @@ export default function StrategiesPage() {
             </div>
 
             {/* Strategy Creation Form */}
-            <section className="border-t border-hairline pt-8">
+            <section className="border-t border-white/10 pt-8">
                 <StrategyForm onSuccess={handleStrategyCreated} />
             </section>
 
@@ -37,7 +37,7 @@ export default function StrategiesPage() {
                 <h2 className="font-display text-xl font-semibold text-ink mb-6">
                     Active Strategies
                 </h2>
-                <div className="border-t border-hairline pt-6">
+                <div className="border-t border-white/10 pt-6">
                     <StrategyList />
                 </div>
             </section>

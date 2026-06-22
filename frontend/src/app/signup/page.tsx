@@ -54,7 +54,7 @@ export default function SignupPage() {
     };
 
     return (
-        <main className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-6 relative overflow-hidden">
+        <main className="min-h-screen bg-[#0b0f17] flex items-center justify-center p-6 relative overflow-hidden">
             {/* Background Watermark & Diagonal Streaks */}
             <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none z-0 overflow-hidden">
                 <h1 className="font-display font-black text-[22vw] tracking-widest text-[#ffffff]/[0.015] select-none uppercase">
@@ -96,7 +96,7 @@ export default function SignupPage() {
                 </div>
 
                 {/* Form Card */}
-                <div className="border border-hairline bg-[#111118]/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.8)] text-left">
+                <div className="border border-white/10 bg-[#182030]/90 backdrop-blur-xl p-8 rounded-[1.75rem] shadow-2xl text-left">
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {/* Name Grid */}
                         <div className="grid grid-cols-2 gap-4">
@@ -114,7 +114,7 @@ export default function SignupPage() {
                                         type="text"
                                         value={firstName}
                                         onChange={(e) => setFirstName(e.target.value)}
-                                        className="w-full bg-[#1c1c28]/60 border border-hairline text-ink placeholder:text-muted/40 pl-11 pr-4 py-2.5 rounded-full text-sm font-mono focus:border-accent/65 focus:outline-none transition-colors"
+                                        className="w-full bg-black/20 border border-white/10 text-ink placeholder:text-muted/40 pl-11 pr-4 py-2.5 rounded-full text-sm font-mono focus:border-accent focus:outline-none transition-colors"
                                         placeholder="John"
                                     />
                                 </div>
@@ -133,7 +133,7 @@ export default function SignupPage() {
                                         type="text"
                                         value={lastName}
                                         onChange={(e) => setLastName(e.target.value)}
-                                        className="w-full bg-[#1c1c28]/60 border border-hairline text-ink placeholder:text-muted/40 pl-11 pr-4 py-2.5 rounded-full text-sm font-mono focus:border-accent/65 focus:outline-none transition-colors"
+                                        className="w-full bg-black/20 border border-white/10 text-ink placeholder:text-muted/40 pl-11 pr-4 py-2.5 rounded-full text-sm font-mono focus:border-accent focus:outline-none transition-colors"
                                         placeholder="Doe"
                                     />
                                 </div>
@@ -156,7 +156,7 @@ export default function SignupPage() {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-[#1c1c28]/60 border border-hairline text-ink placeholder:text-muted/40 pl-11 pr-4 py-2.5 rounded-full text-sm font-mono focus:border-accent/65 focus:outline-none transition-colors"
+                                    className="w-full bg-black/20 border border-white/10 text-ink placeholder:text-muted/40 pl-11 pr-4 py-2.5 rounded-full text-sm font-mono focus:border-accent focus:outline-none transition-colors"
                                     placeholder="Enter your email here"
                                 />
                             </div>
@@ -177,7 +177,7 @@ export default function SignupPage() {
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-[#1c1c28]/60 border border-hairline text-ink placeholder:text-muted/40 pl-11 pr-12 py-2.5 rounded-full text-sm font-mono focus:border-accent/65 focus:outline-none transition-colors"
+                                    className="w-full bg-black/20 border border-white/10 text-ink placeholder:text-muted/40 pl-11 pr-12 py-2.5 rounded-full text-sm font-mono focus:border-accent focus:outline-none transition-colors"
                                     placeholder="Create a password"
                                 />
                                 <button
@@ -200,7 +200,7 @@ export default function SignupPage() {
                         </div>
 
                         {/* EVM Wallet connect wrapper */}
-                        <div className="border border-hairline bg-background/50 p-5 rounded-2xl space-y-3.5">
+                        <div className="border border-white/10 bg-black/20 p-5 rounded-2xl space-y-3.5">
                             <div className="flex items-center justify-between">
                                 <label className="font-mono text-[9px] uppercase tracking-wider text-muted">
                                     External EVM Wallet (Optional)
@@ -217,7 +217,7 @@ export default function SignupPage() {
                             </div>
 
                             {walletAddress ? (
-                                <div className="flex items-center justify-between bg-[#1c1c28]/60 border border-approve/25 px-4 py-2.5 rounded-full">
+                                <div className="flex items-center justify-between bg-[#0b0f17]/60 border border-approve/25 px-4 py-2.5 rounded-full">
                                     <div className="flex items-center gap-2">
                                         <span className="size-2 rounded-full bg-approve animate-pulse" />
                                         <span className="font-mono text-xs text-approve tracking-tight">
@@ -231,7 +231,7 @@ export default function SignupPage() {
                                     type="button"
                                     onClick={connectWallet}
                                     disabled={isConnecting}
-                                    className="w-full flex items-center justify-center gap-2 border border-hairline py-2.5 px-4 rounded-full font-mono text-xs text-ink hover:border-accent hover:text-accent transition-all duration-300 active:scale-[0.98]"
+                                    className="w-full flex items-center justify-center gap-2 border border-white/10 bg-[#0b0f17] py-2.5 px-4 rounded-full font-mono text-xs text-ink hover:border-accent hover:text-accent transition-all duration-300 active:scale-[0.98]"
                                 >
                                     {isConnecting ? (
                                         <>
@@ -259,7 +259,7 @@ export default function SignupPage() {
                     </form>
 
                     {/* Bottom toggle / link */}
-                    <div className="text-center font-mono text-xs text-muted mt-8 pt-4 border-t border-hairline">
+                    <div className="text-center font-mono text-xs text-muted mt-8 pt-4 border-t border-white/10">
                         Already have an account?{' '}
                         <Link href="/login" className="text-accent font-semibold hover:underline decoration-accent/40">
                             Log In
