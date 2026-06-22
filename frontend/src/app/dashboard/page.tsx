@@ -13,7 +13,7 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import {
-    Activity, RefreshCw, Radio, Wallet, BrainCircuit, Globe2, Copy, Check, Plus, Play, Pause, ExternalLink, CircleDollarSign
+    Activity, RefreshCw, Radio, Wallet, BrainCircuit, Globe2, Copy, Check, Plus, Play, Pause, ExternalLink, CircleDollarSign, LogOut
 } from 'lucide-react';
 
 const generateChartData = (symbol: string) => {
@@ -34,7 +34,7 @@ const generateChartData = (symbol: string) => {
 };
 
 export default function Dashboard() {
-    const { user, isLoading: authLoading } = useAuth();
+    const { user, logout, isLoading: authLoading } = useAuth();
     const shouldReduceMotion = useReducedMotion();
     const router = useRouter();
     const [signals, setSignals] = useState<any[]>([]);
@@ -460,6 +460,13 @@ export default function Dashboard() {
                         >
                             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                             Refresh
+                        </button>
+                        <button
+                            onClick={logout}
+                            className="font-mono flex items-center gap-1.5 border border-hairline px-4 py-2 text-xs text-ink transition-colors hover:border-block hover:text-block"
+                        >
+                            <LogOut className="w-3.5 h-3.5" />
+                            Log Out
                         </button>
                     </div>
                 </div>
