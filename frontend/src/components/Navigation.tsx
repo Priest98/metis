@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { LogoMark } from '@/components/LogoMark';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const APP_NAV = [
     { href: '/dashboard',   label: 'signals' },
@@ -132,6 +133,11 @@ export default function Navigation() {
                             login
                         </Link>
                     )}
+                </div>
+
+                {/* ── Theme toggle (always visible) ─────────── */}
+                <div className="px-1 shrink-0">
+                    <ThemeToggle />
                 </div>
 
                 {/* ── CTA pill (always visible) ────────────── */}
