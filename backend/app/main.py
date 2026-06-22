@@ -21,7 +21,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler('logs/app.log') if settings.ENVIRONMENT == "production" else logging.StreamHandler(),
     ]
 )
 
