@@ -771,7 +771,7 @@ export default function Dashboard() {
                                                             <select
                                                                 value={newAgentType}
                                                                 onChange={(e) => setNewAgentType(e.target.value)}
-                                                                className="w-full bg-background border border-white/10 text-ink px-4 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                                className="w-full bg-background border border-white/10 text-ink pl-4 pr-10 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                             >
                                                                 <option value="Signal">Signal</option>
                                                                 <option value="Risk">Risk</option>
@@ -784,7 +784,7 @@ export default function Dashboard() {
                                                             <select
                                                                 value={newAgentStrategy}
                                                                 onChange={(e) => setNewAgentStrategy(e.target.value)}
-                                                                className="w-full bg-background border border-white/10 text-ink px-4 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                                className="w-full bg-background border border-white/10 text-ink pl-4 pr-10 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                             >
                                                                 <option value="Momentum Squeeze">Momentum</option>
                                                                 <option value="Mean Reversion">Mean Rev</option>
