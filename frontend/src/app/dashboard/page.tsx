@@ -41,6 +41,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT');
     const [chartData, setChartData] = useState<any[]>([]);
+    const [livePriceInfo, setLivePriceInfo] = useState<{ price: string; pct: string; up: boolean } | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Wallet Dashboard State
@@ -90,7 +91,98 @@ export default function Dashboard() {
     }, [user]);
 
     useEffect(() => {
-        setChartData(generateChartData(selectedSymbol));
+        let isMounted = true;
+        
+        const fetchChartData = async () => {
+            try {
+                let binanceSymbol = selectedSymbol.toUpperCase();
+                // Normalize symbol formatting: remove slash if any, ensure USDT suffix
+                binanceSymbol = binanceSymbol.replace('/', '');
+                if (!binanceSymbol.endsWith('USDT') && (binanceSymbol === 'BTC' || binanceSymbol === 'ETH' || binanceSymbol === 'SOL' || binanceSymbol === 'BNB')) {
+                    binanceSymbol = `${binanceSymbol}USDT`;
+                }
+
+                // Fetch 30 hours of 1-hour klines from Binance API
+                const klinesRes = await fetch(`https://api.binance.com/api/v3/klines?symbol=${binanceSymbol}&interval=1h&limit=30`);
+                if (!klinesRes.ok) {
+                    throw new Error(`Failed to fetch klines for ${binanceSymbol}`);
+                }
+                const klinesData = await klinesRes.json();
+                
+                // Fetch 24hr ticker data for current price & percentage change
+                const tickerRes = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${binanceSymbol}`);
+                if (!tickerRes.ok) {
+                    throw new Error(`Failed to fetch ticker for ${binanceSymbol}`);
+                }
+                const tickerData = await tickerRes.json();
+
+                if (!isMounted) return;
+
+                const formattedKlines = klinesData.map((item: any) => {
+                    const time = new Date(item[0]);
+                    return {
+                        time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        price: parseFloat(parseFloat(item[4]).toFixed(2)),
+                    };
+                });
+
+                setChartData(formattedKlines);
+
+                const lastPrice = parseFloat(tickerData.lastPrice);
+                const priceChangePercent = parseFloat(tickerData.priceChangePercent);
+                
+                let formattedPrice = '';
+                if (lastPrice >= 1000) {
+                    formattedPrice = `$${lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                } else if (lastPrice >= 1) {
+                    formattedPrice = `$${lastPrice.toFixed(2)}`;
+                } else {
+                    formattedPrice = `$${lastPrice.toFixed(4)}`;
+                }
+
+                setLivePriceInfo({
+                    price: formattedPrice,
+                    pct: (priceChangePercent >= 0 ? '+' : '') + priceChangePercent.toFixed(2) + '%',
+                    up: priceChangePercent >= 0
+                });
+            } catch (err) {
+                // If the pair is not supported on Binance (like EURUSD) or API fails, fall back to simulated data
+                if (isMounted) {
+                    const simulatedData = generateChartData(selectedSymbol);
+                    setChartData(simulatedData);
+                    if (simulatedData.length > 0) {
+                        const lastPrice = simulatedData[simulatedData.length - 1].price;
+                        const firstPrice = simulatedData[0].price;
+                        const changePercent = ((lastPrice - firstPrice) / firstPrice) * 100;
+                        
+                        let formattedPrice = '';
+                        if (lastPrice >= 1000) {
+                            formattedPrice = `$${lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        } else if (lastPrice >= 1) {
+                            formattedPrice = `$${lastPrice.toFixed(2)}`;
+                        } else {
+                            formattedPrice = `$${lastPrice.toFixed(4)}`;
+                        }
+
+                        setLivePriceInfo({
+                            price: formattedPrice,
+                            pct: (changePercent >= 0 ? '+' : '') + changePercent.toFixed(2) + '%',
+                            up: changePercent >= 0
+                        });
+                    } else {
+                        setLivePriceInfo(null);
+                    }
+                }
+            }
+        };
+
+        fetchChartData();
+        const interval = setInterval(fetchChartData, 10000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, [selectedSymbol]);
 
     // Listen to global balance updates to refresh components instantly
@@ -453,7 +545,17 @@ export default function Dashboard() {
                                         <div className="flex items-center justify-between mb-6">
                                             <div>
                                                 <p className="eyebrow mb-1">active workspace</p>
-                                                <h3 className="font-display text-lg font-semibold text-ink">{selectedSymbol} Price Feed</h3>
+                                                <div className="flex items-baseline gap-3">
+                                                    <h3 className="font-display text-lg font-semibold text-ink">{selectedSymbol} Price Feed</h3>
+                                                    {livePriceInfo && (
+                                                        <span className="font-mono text-sm font-semibold flex items-center gap-1.5">
+                                                            <span className="text-ink">{livePriceInfo.price}</span>
+                                                            <span className={livePriceInfo.up ? 'text-approve text-xs' : 'text-block text-xs'}>
+                                                                ({livePriceInfo.pct})
+                                                            </span>
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className="flex gap-2">
                                                 {['BTCUSDT', 'ETHUSDT', 'SOLUSDT'].map((sym) => (

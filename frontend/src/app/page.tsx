@@ -23,8 +23,46 @@ export default function LandingPage() {
     
     // Countdown state (Days:Hours:Minutes:Seconds)
     const [countdown, setCountdown] = useState({ d: 0, h: 4, m: 12, s: 18 });
+    const [livePrices, setLivePrices] = useState<Record<string, { price: string; pct: string; up: boolean }>>({});
 
     useEffect(() => {
+        // Fetch live prices from Binance public API
+        const fetchLivePrices = async () => {
+            try {
+                const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT"]');
+                if (res.ok) {
+                    const data = await res.json();
+                    const newPrices: Record<string, { price: string; pct: string; up: boolean }> = {};
+                    data.forEach((coin: any) => {
+                        const ticker = coin.symbol.replace('USDT', '');
+                        const lastPrice = parseFloat(coin.lastPrice);
+                        const priceChangePercent = parseFloat(coin.priceChangePercent);
+                        
+                        let formattedPrice = '';
+                        if (lastPrice >= 1000) {
+                            formattedPrice = `$${lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        } else if (lastPrice >= 1) {
+                            formattedPrice = `$${lastPrice.toFixed(2)}`;
+                        } else {
+                            formattedPrice = `$${lastPrice.toFixed(4)}`;
+                        }
+
+                        newPrices[ticker] = {
+                            price: formattedPrice,
+                            pct: (priceChangePercent >= 0 ? '+' : '') + priceChangePercent.toFixed(2) + '%',
+                            up: priceChangePercent >= 0
+                        };
+                    });
+                    setLivePrices(newPrices);
+                }
+            } catch (err) {
+                console.error('Failed to fetch live prices', err);
+            }
+        };
+
+        fetchLivePrices();
+        const priceInterval = setInterval(fetchLivePrices, 10000);
+
         // Fetch stats from backend
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
         fetch(`${apiUrl}/stats/`)
@@ -50,7 +88,10 @@ export default function LandingPage() {
             });
         }, 1000);
 
-        return () => clearInterval(timer);
+        return () => {
+            clearInterval(timer);
+            clearInterval(priceInterval);
+        };
     }, []);
 
     const formatNumber = (num: number) => {
@@ -302,21 +343,27 @@ export default function LandingPage() {
                                 </span>
                                 <div className="space-y-3 font-mono text-xs">
                                     {[
-                                        { sym: 'BTC', price: '$67,420.00', pct: '+3.47%', up: true },
-                                        { sym: 'ETH', price: '$3,240.50', pct: '-1.08%', up: false },
-                                        { sym: 'SOL', price: '$145.20', pct: '+5.22%', up: true },
-                                        { sym: 'BNB', price: '$580.40', pct: '-0.15%', up: false }
-                                    ].map(coin => (
-                                        <div key={coin.sym} className="flex justify-between items-center py-0.5">
-                                            <span className="font-bold text-ink">{coin.sym}USDT</span>
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-muted/80">{coin.price}</span>
-                                                <span className={`w-14 text-right font-bold ${coin.up ? 'text-approve' : 'text-block'}`}>
-                                                    {coin.pct}
-                                                </span>
+                                        { sym: 'BTC', fallbackPrice: '$67,420.00', fallbackPct: '+3.47%', fallbackUp: true },
+                                        { sym: 'ETH', fallbackPrice: '$3,240.50', fallbackPct: '-1.08%', fallbackUp: false },
+                                        { sym: 'SOL', fallbackPrice: '$145.20', fallbackPct: '+5.22%', fallbackUp: true },
+                                        { sym: 'BNB', fallbackPrice: '$580.40', fallbackPct: '-0.15%', fallbackUp: false }
+                                    ].map(coin => {
+                                        const live = livePrices[coin.sym];
+                                        const displayPrice = live ? live.price : coin.fallbackPrice;
+                                        const displayPct = live ? live.pct : coin.fallbackPct;
+                                        const isUp = live ? live.up : coin.fallbackUp;
+                                        return (
+                                            <div key={coin.sym} className="flex justify-between items-center py-0.5">
+                                                <span className="font-bold text-ink">{coin.sym}USDT</span>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-muted/80">{displayPrice}</span>
+                                                    <span className={`w-14 text-right font-bold ${isUp ? 'text-approve' : 'text-block'}`}>
+                                                        {displayPct}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </motion.div>
 
@@ -446,23 +493,38 @@ export default function LandingPage() {
                                     </thead>
                                     <tbody className="divide-y divide-hairline/35">
                                         {[
-                                            { pair: 'BTCUSDT', type: 'LONG', entry: '67,420', tp: '71,200', sl: '65,800', typeColor: 'text-approve' },
-                                            { pair: 'ETHUSDT', type: 'SHORT', entry: '3,240', tp: '3,010', sl: '3,380', typeColor: 'text-block' },
-                                            { pair: 'SOLUSDT', type: 'LONG', entry: '145.20', tp: '158.00', sl: '141.50', typeColor: 'text-approve' },
-                                            { pair: 'BNBUSDT', type: 'LONG', entry: '580.40', tp: '620.00', sl: '565.00', typeColor: 'text-approve' }
-                                        ].map((row, i) => (
-                                            <tr key={i} className="hover:bg-white/[0.01]">
-                                                <td className="py-3 font-semibold text-ink">{row.pair}</td>
-                                                <td className={`py-3 text-center font-bold ${row.typeColor}`}>{row.type}</td>
-                                                <td className="py-3 text-right">${row.entry}</td>
-                                                <td className="py-3 text-right text-muted/95">${row.tp} <span className="text-muted/40">/</span> ${row.sl}</td>
-                                                <td className="py-3 text-right">
-                                                    <Link href="/login" className="bg-ink hover:bg-accent text-background font-bold text-[10px] uppercase py-1 px-3.5 rounded-full transition-all">
-                                                        View
-                                                    </Link>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                            { pair: 'BTCUSDT', sym: 'BTC', type: 'LONG', entry: '67,420', tpRatio: 1.05, slRatio: 0.98, typeColor: 'text-approve' },
+                                            { pair: 'ETHUSDT', sym: 'ETH', type: 'SHORT', entry: '3,240', tpRatio: 0.93, slRatio: 1.03, typeColor: 'text-block' },
+                                            { pair: 'SOLUSDT', sym: 'SOL', type: 'LONG', entry: '145.20', tpRatio: 1.08, slRatio: 0.96, typeColor: 'text-approve' },
+                                            { pair: 'BNBUSDT', sym: 'BNB', type: 'LONG', entry: '580.40', tpRatio: 1.05, slRatio: 0.97, typeColor: 'text-approve' }
+                                        ].map((row, i) => {
+                                            const live = livePrices[row.sym];
+                                            let displayEntry = row.entry;
+                                            let displayTp = (parseFloat(row.entry.replace(/,/g, '')) * row.tpRatio).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                            let displaySl = (parseFloat(row.entry.replace(/,/g, '')) * row.slRatio).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                            
+                                            if (live) {
+                                                const rawPrice = parseFloat(live.price.replace(/[$,]/g, ''));
+                                                if (!isNaN(rawPrice)) {
+                                                    displayEntry = rawPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                                    displayTp = (rawPrice * row.tpRatio).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                                    displaySl = (rawPrice * row.slRatio).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                                }
+                                            }
+                                            return (
+                                                <tr key={i} className="hover:bg-white/[0.01]">
+                                                    <td className="py-3 font-semibold text-ink">{row.pair}</td>
+                                                    <td className={`py-3 text-center font-bold ${row.typeColor}`}>{row.type}</td>
+                                                    <td className="py-3 text-right">${displayEntry}</td>
+                                                    <td className="py-3 text-right text-muted/95">${displayTp} <span className="text-muted/40">/</span> ${displaySl}</td>
+                                                    <td className="py-3 text-right">
+                                                        <Link href="/login" className="bg-ink hover:bg-accent text-background font-bold text-[10px] uppercase py-1 px-3.5 rounded-full transition-all">
+                                                            View
+                                                        </Link>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
