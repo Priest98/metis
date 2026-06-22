@@ -60,7 +60,7 @@ export default function QuantCopilot() {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 font-mono">
+        <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 font-mono">
             {/* Pulsing Toggle Button */}
             <motion.button
                 onClick={() => setIsOpen(prev => !prev)}
@@ -97,7 +97,7 @@ export default function QuantCopilot() {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 30 }}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
-                        className="absolute bottom-16 right-0 w-[340px] sm:w-[380px] h-[480px] bg-[#101524] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                        className="absolute bottom-16 right-0 w-[calc(100vw-32px)] sm:w-[380px] h-[480px] bg-[#101524] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
                     >
                         {/* Header */}
                         <div className="p-4 bg-black/40 border-b border-white/5 flex items-center justify-between">

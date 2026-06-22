@@ -144,6 +144,7 @@ const EVOLUTION_LOGS: Record<string, string[]> = {
 
 function AgentDetail({ agent }: { agent: AgentRecord }) {
     const cfg = TYPE_CONFIG[agent.type];
+    const trend = agent.history[agent.history.length - 1] >= agent.history[0];
     return (
         <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -168,6 +169,23 @@ function AgentDetail({ agent }: { agent: AgentRecord }) {
                 <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05] col-span-2 sm:col-span-1">
                     <p className="font-mono text-[9px] text-muted uppercase tracking-wider mb-1">About</p>
                     <p className="font-mono text-[10px] text-muted leading-relaxed">{agent.desc}</p>
+                </div>
+
+                {/* Mobile-only stats */}
+                <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05] sm:hidden">
+                    <p className="font-mono text-[9px] text-muted uppercase tracking-wider mb-1">Win Rate</p>
+                    <p className={`font-mono text-sm font-bold ${agent.winRate >= 85 ? 'text-approve' : agent.winRate >= 75 ? 'text-[#f5a623]' : 'text-muted'}`}>
+                        {agent.winRate}%
+                    </p>
+                </div>
+                <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05] sm:hidden flex flex-col justify-between">
+                    <p className="font-mono text-[9px] text-muted uppercase tracking-wider mb-1">Performance Trend</p>
+                    <div className="flex items-center gap-2">
+                        <MiniSparkline data={agent.history} />
+                        <span className={`font-mono text-[9px] font-semibold ${trend ? 'text-approve' : 'text-block'}`}>
+                            {trend ? '📈 UP' : '📉 DOWN'}
+                        </span>
+                    </div>
                 </div>
 
                 {/* Evolution Log */}
@@ -293,13 +311,13 @@ export default function AgentLeaderboard() {
             </div>
 
             {/* Column headers */}
-            <div className="grid grid-cols-[32px_1fr_80px_60px_70px_48px_20px] gap-x-3 px-5 py-2 border-b border-white/[0.04]">
+            <div className="grid grid-cols-[32px_1fr_80px_20px] sm:grid-cols-[32px_1fr_80px_60px_70px_48px_20px] gap-x-1 sm:gap-x-3 px-3 sm:px-5 py-2 border-b border-white/[0.04]">
                 <span className="font-mono text-[9px] text-muted/50 uppercase tracking-wider">#</span>
                 <span className="font-mono text-[9px] text-muted/50 uppercase tracking-wider">Agent</span>
                 <span className="font-mono text-[9px] text-muted/50 uppercase tracking-wider text-right">Earned</span>
-                <span className="font-mono text-[9px] text-muted/50 uppercase tracking-wider text-right">Win %</span>
-                <span className="font-mono text-[9px] text-muted/50 uppercase tracking-wider">Reputation</span>
-                <span className="font-mono text-[9px] text-muted/50 uppercase tracking-wider">Chart</span>
+                <span className="font-mono text-[9px] text-muted/50 uppercase tracking-wider text-right hidden sm:block">Win %</span>
+                <span className="font-mono text-[9px] text-muted/50 uppercase tracking-wider hidden sm:block">Reputation</span>
+                <span className="font-mono text-[9px] text-muted/50 uppercase tracking-wider hidden sm:block">Chart</span>
                 <span />
             </div>
 
@@ -318,7 +336,7 @@ export default function AgentLeaderboard() {
                                 onClick={() => toggle(agent.id)}
                                 animate={isFlashing ? { backgroundColor: ['rgba(215,255,62,0.04)', 'rgba(0,0,0,0)'] } : {}}
                                 transition={{ duration: 0.8 }}
-                                className="w-full grid grid-cols-[32px_1fr_80px_60px_70px_48px_20px] gap-x-3 items-center px-5 py-3 hover:bg-white/[0.02] transition-colors text-left"
+                                className="w-full grid grid-cols-[32px_1fr_80px_20px] sm:grid-cols-[32px_1fr_80px_60px_70px_48px_20px] gap-x-1 sm:gap-x-3 items-center px-3 sm:px-5 py-3 hover:bg-white/[0.02] transition-colors text-left"
                             >
                                 {/* Rank */}
                                 <span className="font-mono text-sm">
@@ -347,20 +365,22 @@ export default function AgentLeaderboard() {
                                 </div>
 
                                 {/* Win rate */}
-                                <div className="text-right">
+                                <div className="text-right hidden sm:block">
                                     <p className={`font-mono text-xs font-bold ${agent.winRate >= 85 ? 'text-approve' : agent.winRate >= 75 ? 'text-[#f5a623]' : 'text-muted'}`}>
                                         {agent.winRate}%
                                     </p>
                                 </div>
 
                                 {/* Reputation */}
-                                <div className="flex flex-col gap-1">
+                                <div className="flex-col gap-1 hidden sm:flex">
                                     <RepDots score={agent.reputation} />
                                     <p className="font-mono text-[9px] text-muted">{agent.reputation.toFixed(1)}</p>
                                 </div>
 
                                 {/* Sparkline */}
-                                <MiniSparkline data={agent.history} />
+                                <div className="hidden sm:block">
+                                    <MiniSparkline data={agent.history} />
+                                </div>
 
                                 {/* Expand chevron */}
                                 <div className="text-muted/40">

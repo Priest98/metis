@@ -12,91 +12,26 @@ import DemoSimulator from '@/components/DemoSimulator';
 import AgentLeaderboard from '@/components/AgentLeaderboard';
 import LivePaymentFeed from '@/components/LivePaymentFeed';
 import AgentNetworkGraph from '@/components/AgentNetworkGraph';
-import QuantCopilot from '@/components/QuantCopilot';
 import api from '@/lib/api';
 import {
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
-} from 'recharts';
-import {
-    Activity, RefreshCw, Radio, Wallet, BrainCircuit, Globe2, Copy, Check, Plus, Play, Pause, ExternalLink, CircleDollarSign, LogOut, Cpu, Award, Shield, Zap, Lock, Terminal
+    Activity, RefreshCw, Wallet, BrainCircuit, Globe2, Copy, Check, Plus, Play, Pause, ExternalLink, CircleDollarSign, LogOut, Cpu, Shield, Zap, Search, Bell, Sun, Moon, MoreHorizontal, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
-
-const generateChartData = (symbol: string) => {
-    const points = 30;
-    const data = [];
-    let price = symbol === 'BTCUSDT' ? 62000 : symbol === 'ETHUSDT' ? 3300 : 135;
-    const volatility = symbol === 'BTCUSDT' ? 400 : symbol === 'ETHUSDT' ? 25 : 1.5;
-
-    for (let i = points; i >= 0; i--) {
-        const time = new Date(Date.now() - i * 3600000);
-        price = price + (Math.random() - 0.48) * volatility;
-        data.push({
-            time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            price: parseFloat(price.toFixed(2)),
-        });
-    }
-    return data;
-};
 
 export default function Dashboard() {
     const { user, logout, isLoading: authLoading } = useAuth();
     const shouldReduceMotion = useReducedMotion();
     const router = useRouter();
+
     const [signals, setSignals] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT');
-    const [chartData, setChartData] = useState<any[]>([]);
     const [livePriceInfo, setLivePriceInfo] = useState<{ price: string; pct: string; up: boolean } | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
-    // Wallet Dashboard State
-    const [activeTab, setActiveTab] = useState<'terminal' | 'wallet' | 'log' | 'marketplace'>('terminal');
+    // Mockup navigation tab state
+    const [activeNavTab, setActiveNavTab] = useState<'dashboard' | 'trade' | 'market' | 'analytics' | 'portfolio' | 'otc'>('dashboard');
 
-    // Agent Marketplace State
-    const [marketplaceAgents, setMarketplaceAgents] = useState<any[]>([
-        { id: '1', name: 'BTC Alpha Agent', type: 'Signal', accuracy: 84, price: 0.001, reputation: 96, revenue: 14.50, creator: 'System', status: 'Active', address: '0x8f93a9b1c720481dad32', signals: 1240, failed: 210, desc: 'Scans high-probability BTC breakout patterns using custom Bollinger Band squeezing logic.' },
-        { id: '2', name: 'ETH Momentum Agent', type: 'Signal', accuracy: 78, price: 0.0008, reputation: 92, revenue: 8.90, creator: 'System', status: 'Active', address: '0x3c2b9a71f0921a83efd2', signals: 980, failed: 215, desc: 'Identifies strong short-term ETH trends using RSI divergence checks and volume spread analysis.' },
-        { id: '3', name: 'Risk Guardian', type: 'Risk', accuracy: 98, price: 0.0005, reputation: 98, revenue: 4.85, creator: 'System', status: 'Active', address: '0xfa72910c830e294b61ef', signals: 2220, failed: 45, desc: 'Computes multi-timeframe correlation matrices and validates risk-to-reward ratios before allowing execution.' },
-        { id: '4', name: 'Sentiment Oracle', type: 'Sentiment', accuracy: 74, price: 0.0003, reputation: 90, revenue: 2.10, creator: 'System', status: 'Active', address: '0x291a82d0194bc82d0b81', signals: 1540, failed: 400, desc: 'Processes real-time Twitter/X sentiment and macroeconomic news context via specialized LLM embeddings.' },
-        { id: '5', name: 'Arbitrage Strategy Agent', type: 'Strategy', accuracy: 88, price: 0.0015, reputation: 95, revenue: 22.40, creator: 'System', status: 'Active', address: '0x991b2c40381f9a2b8e0c', signals: 540, failed: 65, desc: 'Coordinates execution across multiple DeFi pools, balancing yield rates and gas friction.' }
-    ]);
-    const [selectedMarketplaceAgent, setSelectedMarketplaceAgent] = useState<any | null>(null);
-    const [txLedger, setTxLedger] = useState<any[]>([
-        { hash: '0xarc9f88d27a1928cf3b8f', from: 'StrategyAgent.wallet', to: 'SignalAgent.wallet', amount: '0.001000', type: 'Signal Unlock Fee', status: 'Finalized', time: '16:02:11' },
-        { hash: '0xarc18fa90c2941fa8b88e', from: 'StrategyAgent.wallet', to: 'RiskAgent.wallet', amount: '0.000500', type: 'Risk Validation Fee', status: 'Finalized', time: '16:02:12' },
-        { hash: '0xarc3c2b92d8e0e8e8f802', from: 'StrategyAgent.wallet', to: 'SentimentAgent.wallet', amount: '0.000300', type: 'Sentiment Check Fee', status: 'Finalized', time: '16:02:12' }
-    ]);
-
-    // Agent Factory Form State
-    const [newAgentName, setNewAgentName] = useState('');
-    const [newAgentType, setNewAgentType] = useState('Signal');
-    const [newAgentStrategy, setNewAgentStrategy] = useState('Momentum Squeeze');
-    const [newAgentBudget, setNewAgentBudget] = useState('0.001000');
-
-    const handleCreateNewAgent = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newAgentName) return;
-        const newId = String(marketplaceAgents.length + 1);
-        const randomAddress = '0x' + Array.from({length: 20}, () => Math.floor(Math.random()*16).toString(16)).join('');
-        const newAgent = {
-            id: newId,
-            name: newAgentName,
-            type: newAgentType,
-            accuracy: 80,
-            price: parseFloat(newAgentBudget) || 0.001,
-            reputation: 80,
-            revenue: 0.0,
-            creator: 'User',
-            status: 'Active',
-            address: randomAddress,
-            signals: 0,
-            failed: 0,
-            desc: `Custom user-instantiated agent executing ${newAgentStrategy} rules.`
-        };
-        setMarketplaceAgents(prev => [...prev, newAgent]);
-        setNewAgentName('');
-        alert(`Agent "${newAgentName}" successfully instantiated at address ${randomAddress}!`);
-    };
+    // Wallet & Agent Data
     const [walletInfo, setWalletInfo] = useState<any>({ wallet_address: '', wallet_balance: 0.0, external_wallet: '' });
     const [txHistory, setTxHistory] = useState<any[]>([]);
     const [agents, setAgents] = useState<any[]>([]);
@@ -110,20 +45,35 @@ export default function Dashboard() {
     const [walletSuccess, setWalletSuccess] = useState<string | null>(null);
     const [isConnectingWallet, setIsConnectingWallet] = useState(false);
 
-    // Agent Creation State
-    const [agentNameInput, setAgentNameInput] = useState('');
-    const [agentBudgetInput, setAgentBudgetInput] = useState(1.0);
-    const [agentBalanceInput, setAgentBalanceInput] = useState(5.0);
-    const [createAgentLoading, setCreateAgentLoading] = useState(false);
-    const [togglingYield, setTogglingYield] = useState<string | null>(null);
+    // Agent Marketplace Catalog State
+    const [marketplaceAgents, setMarketplaceAgents] = useState<any[]>([
+        { id: '1', name: 'BTC Alpha Agent', type: 'Signal', accuracy: 84, price: 0.001, reputation: 96, revenue: 14.50, creator: 'System', status: 'Active', address: '0x8f93a9b1c720481dad32', signals: 1240, failed: 210, desc: 'Scans high-probability BTC breakout patterns using custom Bollinger Band squeezing logic.' },
+        { id: '2', name: 'ETH Momentum Agent', type: 'Signal', accuracy: 78, price: 0.0008, reputation: 92, revenue: 8.90, creator: 'System', status: 'Active', address: '0x3c2b9a71f0921a83efd2', signals: 980, failed: 215, desc: 'Identifies strong short-term ETH trends using RSI divergence checks and volume spread analysis.' },
+        { id: '3', name: 'Risk Guardian', type: 'Risk', accuracy: 98, price: 0.0005, reputation: 98, revenue: 4.85, creator: 'System', status: 'Active', address: '0xfa72910c830e294b61ef', signals: 2220, failed: 45, desc: 'Computes multi-timeframe correlation matrices and validates risk-to-reward ratios before allowing execution.' },
+        { id: '4', name: 'Sentiment Oracle', type: 'Sentiment', accuracy: 74, price: 0.0003, reputation: 90, revenue: 2.10, creator: 'System', status: 'Active', address: '0x291a82d0194bc82d0b81', signals: 1540, failed: 400, desc: 'Processes real-time Twitter/X sentiment and macroeconomic news context via specialized LLM embeddings.' },
+        { id: '5', name: 'Arbitrage Strategy Agent', type: 'Strategy', accuracy: 88, price: 0.0015, reputation: 95, revenue: 22.40, creator: 'System', status: 'Active', address: '0x991b2c40381f9a2b8e0c', signals: 540, failed: 65, desc: 'Coordinates execution across multiple DeFi pools, balancing yield rates and gas friction.' }
+    ]);
+    const [selectedMarketplaceAgent, setSelectedMarketplaceAgent] = useState<any | null>(null);
 
-    // Agent Funding State
+    // Agent Creation Form State
+    const [newAgentName, setNewAgentName] = useState('');
+    const [newAgentType, setNewAgentType] = useState('Signal');
+    const [newAgentStrategy, setNewAgentStrategy] = useState('Momentum Squeeze');
+    const [newAgentBudget, setNewAgentBudget] = useState('0.001000');
+
+    // Funding Modal State
     const [fundAgentModalOpen, setFundAgentModalOpen] = useState(false);
     const [selectedAgentForFunding, setSelectedAgentForFunding] = useState<any>(null);
     const [fundingAmountInput, setFundingAmountInput] = useState<number>(5.0);
     const [fundingLoading, setFundingLoading] = useState(false);
     const [fundingError, setFundingError] = useState<string | null>(null);
     const [fundingSuccess, setFundingSuccess] = useState<string | null>(null);
+    const [togglingYield, setTogglingYield] = useState<string | null>(null);
+
+    const [agentNameInput, setAgentNameInput] = useState('');
+    const [agentBudgetInput, setAgentBudgetInput] = useState(1.0);
+    const [agentBalanceInput, setAgentBalanceInput] = useState(5.0);
+    const [createAgentLoading, setCreateAgentLoading] = useState(false);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -142,101 +92,44 @@ export default function Dashboard() {
     }, [user]);
 
     useEffect(() => {
-        let isMounted = true;
-        
-        const fetchChartData = async () => {
+        const fetchLivePrices = async () => {
             try {
-                let binanceSymbol = selectedSymbol.toUpperCase();
-                // Normalize symbol formatting: remove slash if any, ensure USDT suffix
-                binanceSymbol = binanceSymbol.replace('/', '');
-                if (!binanceSymbol.endsWith('USDT') && (binanceSymbol === 'BTC' || binanceSymbol === 'ETH' || binanceSymbol === 'SOL' || binanceSymbol === 'BNB')) {
+                let binanceSymbol = selectedSymbol.toUpperCase().replace('/', '');
+                if (!binanceSymbol.endsWith('USDT') && ['BTC', 'ETH', 'SOL', 'BNB'].includes(binanceSymbol)) {
                     binanceSymbol = `${binanceSymbol}USDT`;
                 }
-
-                // Fetch 30 hours of 1-hour klines from Binance API
-                const klinesRes = await fetch(`https://api.binance.com/api/v3/klines?symbol=${binanceSymbol}&interval=1h&limit=30`);
-                if (!klinesRes.ok) {
-                    throw new Error(`Failed to fetch klines for ${binanceSymbol}`);
-                }
-                const klinesData = await klinesRes.json();
-                
-                // Fetch 24hr ticker data for current price & percentage change
                 const tickerRes = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${binanceSymbol}`);
-                if (!tickerRes.ok) {
-                    throw new Error(`Failed to fetch ticker for ${binanceSymbol}`);
-                }
-                const tickerData = await tickerRes.json();
-
-                if (!isMounted) return;
-
-                const formattedKlines = klinesData.map((item: any) => {
-                    const time = new Date(item[0]);
-                    return {
-                        time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        price: parseFloat(parseFloat(item[4]).toFixed(2)),
-                    };
-                });
-
-                setChartData(formattedKlines);
-
-                const lastPrice = parseFloat(tickerData.lastPrice);
-                const priceChangePercent = parseFloat(tickerData.priceChangePercent);
-                
-                let formattedPrice = '';
-                if (lastPrice >= 1000) {
-                    formattedPrice = `$${lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                } else if (lastPrice >= 1) {
-                    formattedPrice = `$${lastPrice.toFixed(2)}`;
-                } else {
-                    formattedPrice = `$${lastPrice.toFixed(4)}`;
-                }
-
-                setLivePriceInfo({
-                    price: formattedPrice,
-                    pct: (priceChangePercent >= 0 ? '+' : '') + priceChangePercent.toFixed(2) + '%',
-                    up: priceChangePercent >= 0
-                });
-            } catch (err) {
-                // If the pair is not supported on Binance (like EURUSD) or API fails, fall back to simulated data
-                if (isMounted) {
-                    const simulatedData = generateChartData(selectedSymbol);
-                    setChartData(simulatedData);
-                    if (simulatedData.length > 0) {
-                        const lastPrice = simulatedData[simulatedData.length - 1].price;
-                        const firstPrice = simulatedData[0].price;
-                        const changePercent = ((lastPrice - firstPrice) / firstPrice) * 100;
-                        
-                        let formattedPrice = '';
-                        if (lastPrice >= 1000) {
-                            formattedPrice = `$${lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                        } else if (lastPrice >= 1) {
-                            formattedPrice = `$${lastPrice.toFixed(2)}`;
-                        } else {
-                            formattedPrice = `$${lastPrice.toFixed(4)}`;
-                        }
-
-                        setLivePriceInfo({
-                            price: formattedPrice,
-                            pct: (changePercent >= 0 ? '+' : '') + changePercent.toFixed(2) + '%',
-                            up: changePercent >= 0
-                        });
+                if (tickerRes.ok) {
+                    const tickerData = await tickerRes.json();
+                    const lastPrice = parseFloat(tickerData.lastPrice);
+                    const priceChangePercent = parseFloat(tickerData.priceChangePercent);
+                    
+                    let formattedPrice = '';
+                    if (lastPrice >= 1000) {
+                        formattedPrice = `$${lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    } else if (lastPrice >= 1) {
+                        formattedPrice = `$${lastPrice.toFixed(2)}`;
                     } else {
-                        setLivePriceInfo(null);
+                        formattedPrice = `$${lastPrice.toFixed(4)}`;
                     }
+
+                    setLivePriceInfo({
+                        price: formattedPrice,
+                        pct: (priceChangePercent >= 0 ? '+' : '') + priceChangePercent.toFixed(2) + '%',
+                        up: priceChangePercent >= 0
+                    });
                 }
+            } catch (err) {
+                console.error('Failed to fetch live symbol price:', err);
             }
         };
 
-        fetchChartData();
-        const interval = setInterval(fetchChartData, 10000);
-
-        return () => {
-            isMounted = false;
-            clearInterval(interval);
-        };
+        fetchLivePrices();
+        const interval = setInterval(fetchLivePrices, 10000);
+        return () => clearInterval(interval);
     }, [selectedSymbol]);
 
-    // Listen to global balance updates to refresh components instantly
+    // Listen to global balance updates
     useEffect(() => {
         const handleBalanceUpdate = () => {
             fetchWalletInfo();
@@ -293,17 +186,29 @@ export default function Dashboard() {
         }
     };
 
-    const handleFaucet = async () => {
-        setFaucetLoading(true);
-        try {
-            const res = await api.post('/wallet/faucet');
-            setWalletInfo((prev: any) => ({ ...prev, wallet_balance: res.data.wallet_balance }));
-            fetchTxHistory();
-        } catch (e) {
-            console.error('Faucet seeding failed', e);
-        } finally {
-            setFaucetLoading(false);
-        }
+    const handleCreateNewAgent = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newAgentName) return;
+        const newId = String(marketplaceAgents.length + 1);
+        const randomAddress = '0x' + Array.from({length: 20}, () => Math.floor(Math.random()*16).toString(16)).join('');
+        const newAgent = {
+            id: newId,
+            name: newAgentName,
+            type: newAgentType,
+            accuracy: 80,
+            price: parseFloat(newAgentBudget) || 0.001,
+            reputation: 80,
+            revenue: 0.0,
+            creator: 'User',
+            status: 'Active',
+            address: randomAddress,
+            signals: 0,
+            failed: 0,
+            desc: `Custom user-instantiated agent executing ${newAgentStrategy} rules.`
+        };
+        setMarketplaceAgents(prev => [...prev, newAgent]);
+        setNewAgentName('');
+        alert(`Agent "${newAgentName}" successfully provisioned at address ${randomAddress}!`);
     };
 
     const openFundModal = (agent: any) => {
@@ -352,33 +257,22 @@ export default function Dashboard() {
                 if (accounts && accounts.length > 0) {
                     const connectedAddress = accounts[0];
                     setExternalWalletInput(connectedAddress);
-                    
-                    // Auto-link to save the user an extra step
                     setExternalWalletLoading(true);
                     try {
                         await api.post('/wallet/me/external', { external_wallet: connectedAddress });
                         setWalletInfo((prev: any) => ({ ...prev, external_wallet: connectedAddress }));
                         setWalletSuccess('EVM Wallet connected and linked successfully!');
                     } catch (linkErr: any) {
-                        console.error('Failed to auto-link wallet after connection', linkErr);
-                        let errMsg = linkErr.response?.data?.detail || linkErr.message || 'Connected, but failed to link to account.';
-                        if (Array.isArray(errMsg)) {
-                            errMsg = errMsg.map((d: any) => d.msg).join(', ');
-                        } else if (typeof errMsg === 'object') {
-                            errMsg = JSON.stringify(errMsg);
-                        }
-                        setWalletError(errMsg);
+                        console.error('Failed to link wallet', linkErr);
+                        setWalletError(linkErr.response?.data?.detail || linkErr.message || 'Failed to link wallet.');
                     } finally {
                         setExternalWalletLoading(false);
                     }
-                } else {
-                    setWalletError('No accounts found.');
                 }
             } else {
                 setWalletError('No EVM wallet detected. Please install MetaMask.');
             }
         } catch (err: any) {
-            console.error('Wallet connection error', err);
             setWalletError(err.message || 'Failed to connect wallet.');
         } finally {
             setIsConnectingWallet(false);
@@ -390,36 +284,18 @@ export default function Dashboard() {
         setExternalWalletLoading(true);
         setWalletError(null);
         setWalletSuccess(null);
-        
         const trimmedAddress = externalWalletInput.trim();
-        
         if (!trimmedAddress) {
             setWalletError('Wallet address cannot be empty.');
             setExternalWalletLoading(false);
             return;
         }
-        
-        const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-        if (!ethAddressRegex.test(trimmedAddress)) {
-            setWalletError('Invalid Ethereum address format. Must start with 0x followed by 40 hex characters.');
-            setExternalWalletLoading(false);
-            return;
-        }
-        
         try {
             await api.post('/wallet/me/external', { external_wallet: trimmedAddress });
             setWalletInfo((prev: any) => ({ ...prev, external_wallet: trimmedAddress }));
-            setExternalWalletInput(trimmedAddress);
             setWalletSuccess('External wallet linked successfully!');
         } catch (err: any) {
-            console.error('Failed to update external wallet', err);
-            let errMsg = err.response?.data?.detail || err.message || 'Failed to link wallet.';
-            if (Array.isArray(errMsg)) {
-                errMsg = errMsg.map((d: any) => d.msg).join(', ');
-            } else if (typeof errMsg === 'object') {
-                errMsg = JSON.stringify(errMsg);
-            }
-            setWalletError(errMsg);
+            setWalletError(err.response?.data?.detail || err.message || 'Failed to link wallet.');
         } finally {
             setExternalWalletLoading(false);
         }
@@ -467,7 +343,6 @@ export default function Dashboard() {
             fetchWalletInfo();
             fetchTxHistory();
         } catch (e: any) {
-            console.error('Failed to toggle agent yield loop', e);
             alert(e.response?.data?.detail || e.message || 'Toggle yield loop failed');
         } finally {
             setTogglingYield(null);
@@ -487,870 +362,855 @@ export default function Dashboard() {
 
     if (authLoading || !user) {
         return (
-            <main className="min-h-screen bg-background flex items-center justify-center">
-                <div className="h-6 w-6 animate-spin border-b-2 border-accent" />
+            <main className="min-h-screen bg-[#06060c] flex items-center justify-center">
+                <div className="h-6 w-6 animate-spin border-b-2 border-purple-500" />
             </main>
         );
     }
 
     return (
-        <main className="min-h-screen bg-background text-ink pb-16 px-5 sm:px-8">
-            <div className="max-w-6xl mx-auto">
-
-                {/* ── Page Header ─────────────────────────────── */}
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between py-8 border-b border-white/5 gap-4 mb-8">
-                    <div>
-                        <p className="eyebrow mb-2">live engine active</p>
-                        <h1 className="font-display text-3xl font-semibold text-ink tracking-tight">QuantFlow Terminal</h1>
+        <div className="min-h-screen bg-[#06060c] text-[#ECEEF4] font-sans selection:bg-[#7c3aed] selection:text-white pb-12">
+            
+            {/* ─── STYLED COINIX NAVBAR ─── */}
+            <header className="border-b border-white/[0.04] bg-[#06060c]/50 backdrop-blur-md sticky top-0 z-40">
+                <div className="mx-auto max-w-7xl px-6 h-18 flex items-center justify-between">
+                    
+                    {/* Brand */}
+                    <div className="flex items-center gap-2.5">
+                        <div className="size-8 rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] flex items-center justify-center border border-white/10">
+                            <svg className="size-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3" />
+                            </svg>
+                        </div>
+                        <span className="font-display text-base font-bold tracking-tight text-white uppercase">Coinix</span>
                     </div>
-                    <div className="flex gap-3 flex-wrap">
-                        <DemoSimulator />
-                        <button
-                            onClick={fetchSignals}
-                            disabled={isRefreshing}
-                            className="font-mono flex items-center gap-1.5 border border-white/10 bg-[#182030] px-4 py-2 rounded-full text-xs text-ink transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
-                        >
-                            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-                            Refresh
+
+                    {/* Navigation tabs */}
+                    <nav className="hidden lg:flex items-center bg-[#11111d] border border-white/[0.04] p-1 rounded-full">
+                        {[
+                            { id: 'dashboard', label: 'Dashboard' },
+                            { id: 'trade', label: 'Trade' },
+                            { id: 'market', label: 'Market' },
+                            { id: 'analytics', label: 'Analytics' },
+                            { id: 'portfolio', label: 'Portfolio' }
+                        ].map((t) => (
+                            <button
+                                key={t.id}
+                                onClick={() => setActiveNavTab(t.id as any)}
+                                className={`font-mono text-xs font-semibold px-5 py-2.5 rounded-full transition-all duration-300 ${
+                                    activeNavTab === t.id
+                                        ? 'bg-white text-black font-bold shadow-md'
+                                        : 'text-[#8b93a5] hover:text-white'
+                                }`}
+                            >
+                                {t.label}
+                            </button>
+                        ))}
+                    </nav>
+
+                    {/* Right Tools row */}
+                    <div className="flex items-center gap-4">
+                        <button className="p-2 text-[#8b93a5] hover:text-white transition-colors" aria-label="Search">
+                            <Search className="size-4.5" />
                         </button>
-                        <button
-                            onClick={logout}
-                            className="font-mono flex items-center gap-1.5 border border-white/10 bg-[#182030] px-4 py-2 rounded-full text-xs text-ink transition-colors hover:border-block hover:text-block hover:bg-block/10 duration-300"
-                        >
-                            <LogOut className="w-3.5 h-3.5" />
-                            Log Out
+                        <button className="p-2 text-[#8b93a5] hover:text-white transition-colors relative" aria-label="Notifications">
+                            <Bell className="size-4.5" />
+                            <span className="absolute top-1.5 right-1.5 size-1.5 bg-[#8b5cf6] rounded-full" />
                         </button>
+                        <div className="hidden sm:flex border border-white/[0.04] bg-[#12121e]/30 rounded-full p-0.5">
+                            <button className="p-1.5 text-white bg-white/5 rounded-full" aria-label="Light mode">
+                                <Sun className="size-3.5" />
+                            </button>
+                            <button className="p-1.5 text-[#8b93a5] hover:text-white" aria-label="Dark mode">
+                                <Moon className="size-3.5" />
+                            </button>
+                        </div>
+                        
+                        {/* Profile display & logout */}
+                        <div className="flex items-center gap-2.5 border-l border-white/[0.06] pl-4">
+                            <div className="size-8 rounded-full bg-[#1b1b2f] border border-purple-500/30 flex items-center justify-center font-bold text-xs text-purple-400">
+                                {user?.email ? user.email.slice(0, 2).toUpperCase() : 'DS'}
+                            </div>
+                            <span className="hidden md:inline font-mono text-xs text-[#8b93a5]">
+                                {user?.email ? user.email.split('@')[0] : 'Dylan Stone'}
+                            </span>
+                            <button 
+                                onClick={logout} 
+                                className="p-2 text-[#8b93a5] hover:text-[#ff5d5d] transition-colors"
+                                title="Sign Out"
+                            >
+                                <LogOut className="size-4" />
+                            </button>
+                        </div>
                     </div>
                 </div>
+            </header>
 
-                {/* Onboarding Alert Banner */}
-                {showOnboarding && (
-                    <div className="mb-8 border border-accent bg-accent/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div>
-                            <p className="eyebrow text-accent mb-1">Onboarding complete</p>
-                            <p className="font-mono text-sm text-ink">
-                                Your AI trading wallet is ready. You can now access and pay for signals instantly.
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => setShowOnboarding(false)}
-                            className="font-mono border border-hairline px-4 py-2 text-xs text-ink hover:border-accent hover:text-accent transition-colors shrink-0"
-                        >
-                            Dismiss
-                        </button>
-                    </div>
-                )}
-
-                {/* Tab Navigation */}
-                <div className="inline-flex border border-white/10 p-1.5 rounded-full bg-[#182030] gap-2 mb-8 overflow-x-auto max-w-full">
+            {/* Mobile Tab Selectors */}
+            <div className="lg:hidden mx-auto max-w-7xl px-6 mt-4">
+                <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar border-b border-white/[0.04]">
                     {[
-                        { id: 'terminal', label: 'Quant Terminal Feed' },
-                        { id: 'marketplace', label: 'Agent Marketplace' },
-                        { id: 'wallet', label: 'Wallet & Agent Manager' },
-                        { id: 'log', label: 'Agent Log' }
-                    ].map(tab => (
+                        { id: 'dashboard', label: 'Dashboard' },
+                        { id: 'trade', label: 'Trade' },
+                        { id: 'market', label: 'Market' },
+                        { id: 'analytics', label: 'Analytics' },
+                        { id: 'portfolio', label: 'Portfolio' }
+                    ].map((t) => (
                         <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
-                            className={`font-mono text-xs uppercase tracking-wider py-2 px-5 rounded-full transition-all duration-300 ${
-                                activeTab === tab.id
-                                    ? 'bg-accent text-background font-bold shadow-md'
-                                    : 'text-muted hover:text-ink'
+                            key={t.id}
+                            onClick={() => setActiveNavTab(t.id as any)}
+                            className={`shrink-0 font-mono text-xs font-semibold px-4.5 py-2 rounded-full border ${
+                                activeNavTab === t.id
+                                    ? 'bg-white border-white text-black'
+                                    : 'border-white/[0.06] bg-[#12121e]/30 text-[#8b93a5]'
                             }`}
                         >
-                            {tab.label}
+                            {t.label}
                         </button>
                     ))}
                 </div>
+            </div>
 
-                {/* ── Main Layout ──────────────────────────────── */}
-                <div className="flex flex-col lg:flex-row gap-8 items-start">
+            {/* ─── MAIN CONTENT CONTAINER ─── */}
+            <main className="mx-auto max-w-7xl px-6 mt-8">
+                
+                <AnimatePresence mode="wait">
+                    
+                    {/* TAB 1: COINIX GRAPHIC DASHBOARD VIEW */}
+                    {activeNavTab === 'dashboard' && (
+                        <motion.div
+                            key="dashboard"
+                            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-8"
+                        >
+                            {/* Welcome Hero header Row */}
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                                <div className="text-left">
+                                    <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-white">
+                                        Welcome, {user?.email ? user.email.split('@')[0] : 'Dylan Stone'}
+                                    </h1>
+                                    <p className="text-xs text-[#8b93a5] mt-1.5">
+                                        Track user activity, trading trends, and crypto revenue with real time analytics.
+                                    </p>
+                                </div>
 
-                    {/* Left Panel */}
-                    <div className="flex-1 w-full min-w-0">
-                        <AnimatePresence mode="wait">
-                        {activeTab === 'log' ? (
-                                <motion.div
-                                    key="log"
-                                    initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="space-y-4"
-                                >
-                                    <div>
-                                        <p className="eyebrow mb-2">agent execution log</p>
-                                        <p className="font-mono text-xs text-muted mb-4">Live step-by-step trace of each agent run — payment → regime → backtest → risk → signal.</p>
-                                    </div>
-                                    <AgentLog autoDemo={true} maxLines={60} />
-                                </motion.div>
-                            ) : activeTab === 'terminal' ? (
-                                <motion.div
-                                    key="terminal"
-                                    initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="space-y-4"
-                                >
-                                    {/* Price Chart */}
-                                    <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
-                                        <div className="flex items-center justify-between mb-6">
-                                            <div>
-                                                <p className="eyebrow mb-1">active workspace</p>
-                                                <div className="flex items-baseline gap-3">
-                                                    <h3 className="font-display text-lg font-semibold text-ink">{selectedSymbol} Price Feed</h3>
-                                                    {livePriceInfo && (
-                                                        <span className="font-mono text-sm font-semibold flex items-center gap-1.5">
-                                                            <span className="text-ink">{livePriceInfo.price}</span>
-                                                            <span className={livePriceInfo.up ? 'text-approve text-xs' : 'text-block text-xs'}>
-                                                                ({livePriceInfo.pct})
-                                                            </span>
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                {['BTCUSDT', 'ETHUSDT', 'SOLUSDT'].map((sym) => (
-                                                    <button
-                                                        key={sym}
-                                                        onClick={() => setSelectedSymbol(sym)}
-                                                        className={`font-mono px-3.5 py-1 text-xs transition-all border rounded-full ${selectedSymbol === sym
-                                                                ? 'border-accent text-accent bg-accent/5'
-                                                                : 'border-white/10 text-muted hover:text-ink hover:border-white/20'
-                                                            }`}
-                                                    >
-                                                        {sym.replace('USDT', '')}
-                                                    </button>
-                                                ))}
+                                {/* Four mini metrics right-hand stats */}
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 shrink-0">
+                                    {[
+                                        { label: 'Expenses', value: '$3,120', change: '-5.6%', isUp: false },
+                                        { label: 'Savings', value: '$4,200', change: '+9.1%', isUp: true },
+                                        { label: 'Investing', value: '$8,540', change: '+15.4%', isUp: true },
+                                        { label: 'Trading', value: '$12,368', change: '+32.7%', isUp: true }
+                                    ].map((m, idx) => (
+                                        <div key={idx} className="border border-white/[0.04] bg-[#12121e]/40 p-4 rounded-2xl text-left">
+                                            <span className="font-mono text-[9px] text-[#8b93a5] uppercase block mb-1">{m.label}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-display text-sm font-bold text-white">{m.value}</span>
+                                                <span className={`font-mono text-[8px] font-semibold px-1.5 py-0.5 rounded ${
+                                                    m.isUp ? 'text-[#22c787] bg-[#22c787]/10' : 'text-[#ff5d5d] bg-[#ff5d5d]/10'
+                                                }`}>
+                                                    {m.change}
+                                                </span>
                                             </div>
                                         </div>
+                                    ))}
+                                </div>
+                            </div>
 
-
-                                        <div className="h-[280px] w-full mt-4">
-                                            <ResponsiveContainer width="100%" height="100%">
-                                                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                                    <defs>
-                                                        <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                                                            <stop offset="5%"  stopColor="#D7FF3E" stopOpacity={0.15} />
-                                                            <stop offset="95%" stopColor="#D7FF3E" stopOpacity={0} />
-                                                        </linearGradient>
-                                                    </defs>
-                                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                                                    <XAxis dataKey="time" stroke="rgba(255,255,255,0.15)" fontSize={10} fontFamily="var(--font-jetbrains)" />
-                                                    <YAxis domain={['auto', 'auto']} stroke="rgba(255,255,255,0.15)" fontSize={10} fontFamily="var(--font-jetbrains)" />
-                                                    <Tooltip
-                                                        contentStyle={{ backgroundColor: '#111118', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 0 }}
-                                                        labelStyle={{ color: '#8b93a5', fontSize: '10px', fontFamily: 'var(--font-jetbrains)' }}
-                                                        itemStyle={{ color: '#D7FF3E', fontSize: '12px', fontFamily: 'var(--font-jetbrains)' }}
-                                                    />
-                                                    <Area type="monotone" dataKey="price" stroke="#D7FF3E" strokeWidth={1.5} fillOpacity={1} fill="url(#priceGradient)" />
-                                                </AreaChart>
-                                            </ResponsiveContainer>
-                                        </div>
-                                    </div>
-
-                                    {/* Autonomous Agent Fleet Terminal */}
-                                    <AgentFleetTerminal />
-
-                                    {/* Signals */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 pb-4 border-b border-hairline">
-                                            <span className="inline-block size-1.5 rounded-full bg-accent animate-pulse" />
-                                            <p className="eyebrow">signal marketplace</p>
-                                        </div>
-
-                                        {loading ? (
-                                            <div className="flex items-center justify-center py-20">
-                                                <div className="h-6 w-6 animate-spin border-b-2 border-accent" />
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {signals.map((signal) => (
-                                                    <div key={signal.id} onClick={() => setSelectedSymbol(signal.symbol)} className="cursor-pointer">
-                                                        <SignalCard signal={signal} />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            ) : activeTab === 'marketplace' ? (
-                                <motion.div
-                                    key="marketplace"
-                                    initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
-                                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                                    className="space-y-8"
-                                >
-                                    {/* Marketplace Grid and Agent Factory */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                            {/* Dashboard Core Grid (Total Balance, Your Assets, Leaders) */}
+                            <div className="grid lg:grid-cols-12 gap-8 items-start">
+                                
+                                {/* Col 1: Balance & Top Assets Table */}
+                                <div className="lg:col-span-4 space-y-8">
+                                    
+                                    {/* Total Balance Card */}
+                                    <div className="border border-white/[0.06] bg-[#12121e]/30 p-6 rounded-[2rem] text-left relative overflow-hidden shadow-xl">
+                                        <div className="absolute right-0 top-0 w-24 h-24 bg-purple-500/5 rounded-full blur-xl pointer-events-none" />
                                         
-                                        {/* Left 2 Cols: Directory & Leaderboard */}
-                                        <div className="lg:col-span-2 space-y-8">
-                                            {/* Catalog */}
-                                            <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
-                                                <div className="mb-6">
-                                                    <p className="eyebrow mb-1">agent marketplace</p>
-                                                    <h3 className="font-display text-lg font-semibold text-ink">Active Agent Catalog</h3>
-                                                    <p className="font-mono text-xs text-muted mt-1">Hire cooperative agents. Micropayments verified via Arc L1 Ledger.</p>
+                                        <div className="flex justify-between items-center mb-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className="p-1.5 bg-[#1b1b2f] border border-white/[0.04] rounded-lg text-[#8b93a5]">
+                                                    <Wallet className="size-3.5" />
                                                 </div>
-                                                
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {marketplaceAgents.map((agent) => (
-                                                        <div 
-                                                            key={agent.id}
-                                                            onClick={() => setSelectedMarketplaceAgent(agent)}
-                                                            className="border border-white/10 bg-black/20 p-5 hover:border-accent cursor-pointer transition-all hover:scale-[1.01] relative overflow-hidden rounded-[1.25rem] shadow-md"
-                                                        >
-                                                            <div className="flex justify-between items-start mb-3">
-                                                                <div>
-                                                                    <h4 className="font-display font-bold text-sm text-ink">{agent.name}</h4>
-                                                                    <span className="font-mono text-[9px] text-muted">ID: {agent.id}</span>
-                                                                </div>
-                                                                <span className={`font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 border rounded-full ${
-                                                                    agent.type === 'Signal' ? 'border-accent/30 text-accent bg-accent/5' :
-                                                                    agent.type === 'Risk' ? 'border-approve/30 text-approve bg-approve/5' :
-                                                                    agent.type === 'Sentiment' ? 'border-indigo-500/30 text-indigo-400 bg-indigo-500/5' :
-                                                                    'border-amber-500/30 text-amber-400 bg-amber-500/5'
-                                                                }`}>
-                                                                    {agent.type}
-                                                                </span>
-                                                            </div>
-                                                            <p className="font-mono text-[10px] text-muted line-clamp-2 mb-4 leading-relaxed h-8">
-                                                                {agent.desc}
-                                                            </p>
-                                                            <div className="flex items-center justify-between font-mono text-[10px] border-t border-white/5 pt-3">
-                                                                <div>
-                                                                    <span className="text-muted block text-[8px] uppercase">reputation</span>
-                                                                    <span className="text-ink font-semibold">{agent.reputation}/100</span>
-                                                                </div>
-                                                                <div className="text-right">
-                                                                    <span className="text-muted block text-[8px] uppercase">price / fee</span>
-                                                                    <span className="text-accent font-bold">{agent.price.toFixed(4)} USDC</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                <span className="font-mono text-[10px] text-[#8b93a5] uppercase tracking-wider">Total Balance</span>
                                             </div>
-
-                                            {/* Leaderboard — live P&L ranking */}
-                                            <AgentLeaderboard />
+                                            <span className="font-mono text-[9px] text-purple-400 font-bold border border-purple-500/25 px-2 py-0.5 rounded-full uppercase tracking-wider bg-purple-500/5">
+                                                USD
+                                            </span>
                                         </div>
 
-                                        {/* Right 1 Col: Agent Factory */}
-                                        <div className="space-y-8">
-                                            {/* Creator Form */}
-                                            <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
-                                                <div className="mb-6 pb-2 border-b border-white/5 flex items-center justify-between">
-                                                    <div>
-                                                        <p className="eyebrow mb-1">instantiation engine</p>
-                                                        <h3 className="font-display text-lg font-semibold text-ink">Agent Factory</h3>
-                                                    </div>
-                                                    <Cpu className="w-5 h-5 text-accent animate-pulse" />
-                                                </div>
-                                                
-                                                <form onSubmit={handleCreateNewAgent} className="space-y-4">
-                                                    <div>
-                                                        <label className="font-mono text-[10px] text-muted uppercase tracking-wider mb-2 block">Agent Name</label>
-                                                        <input 
-                                                            type="text" 
-                                                            value={newAgentName}
-                                                            onChange={(e) => setNewAgentName(e.target.value)}
-                                                            placeholder="e.g. SOL Trend Hunter"
-                                                            className="w-full bg-background border border-white/10 text-ink placeholder:text-muted/50 px-4.5 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
-                                                            required
-                                                        />
-                                                    </div>
-
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div>
-                                                            <label className="font-mono text-[10px] text-muted uppercase tracking-wider mb-2 block">Agent Type</label>
-                                                            <select
-                                                                value={newAgentType}
-                                                                onChange={(e) => setNewAgentType(e.target.value)}
-                                                                className="w-full bg-background border border-white/10 text-ink pl-4 pr-10 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
-                                                            >
-                                                                <option value="Signal">Signal</option>
-                                                                <option value="Risk">Risk</option>
-                                                                <option value="Sentiment">Sentiment</option>
-                                                                <option value="Strategy">Strategy</option>
-                                                            </select>
-                                                        </div>
-                                                        <div>
-                                                            <label className="font-mono text-[10px] text-muted uppercase tracking-wider mb-2 block">Strategy Logic</label>
-                                                            <select
-                                                                value={newAgentStrategy}
-                                                                onChange={(e) => setNewAgentStrategy(e.target.value)}
-                                                                className="w-full bg-background border border-white/10 text-ink pl-4 pr-10 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
-                                                            >
-                                                                <option value="Momentum Squeeze">Momentum</option>
-                                                                <option value="Mean Reversion">Mean Rev</option>
-                                                                <option value="Sentiment Analytics">Sentiment</option>
-                                                                <option value="Cross Asset Arbitrage">Arbitrage</option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="font-mono text-[10px] text-muted uppercase tracking-wider mb-2 block">Operating Fee (USDC)</label>
-                                                        <input 
-                                                            type="number" 
-                                                            step="0.0001"
-                                                            value={newAgentBudget}
-                                                            onChange={(e) => setNewAgentBudget(e.target.value)}
-                                                            className="w-full bg-background border border-white/10 text-ink px-4.5 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
-                                                            required
-                                                        />
-                                                    </div>
-
-                                                    <button
-                                                        type="submit"
-                                                        className="w-full bg-white text-background hover:bg-accent font-mono text-xs font-bold py-3.5 rounded-full transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-lg shadow-white/5"
-                                                    >
-                                                        <Plus className="w-3.5 h-3.5" />
-                                                        Instantiate Agent
-                                                    </button>
-                                                </form>
-                                            </div>
-
-                                            {/* Transaction Ledger */}
-                                            <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
-                                                <div className="mb-4 flex items-center justify-between pb-2 border-b border-white/5">
-                                                    <div>
-                                                        <p className="eyebrow mb-1">verification ledger</p>
-                                                        <h3 className="font-display text-sm font-semibold text-ink">Arc L1 Sandbox</h3>
-                                                    </div>
-                                                    <Terminal className="w-4 h-4 text-accent" />
-                                                </div>
-                                                <div className="space-y-3 max-h-[220px] overflow-y-auto font-mono text-[10px] leading-relaxed text-muted pr-2">
-                                                    {txLedger.map((tx, idx) => (
-                                                        <div key={idx} className="border-b border-white/5 pb-3">
-                                                            <div className="flex justify-between text-[8px] text-muted mb-1">
-                                                                <span>[{tx.time}]</span>
-                                                                <span className="text-approve">{tx.status}</span>
-                                                            </div>
-                                                            <div className="text-ink font-semibold flex justify-between">
-                                                                <span>{tx.type}</span>
-                                                                <span className="text-accent">{tx.amount} USDC</span>
-                                                            </div>
-                                                            <div className="text-[8px] text-slate-500 break-all mt-0.5">
-                                                                Hash: {tx.hash}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    </div>
-
-                                    {/* Agent Drawer/Modal Overlay */}
-                                    {selectedMarketplaceAgent && (
-                                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-                                            <div className="border border-white/10 bg-[#182030] shadow-2xl max-w-md w-full p-8 rounded-[1.75rem] relative">
-                                                <button 
-                                                    onClick={() => setSelectedMarketplaceAgent(null)}
-                                                    className="absolute top-4 right-4 font-mono text-muted hover:text-ink text-xs"
-                                                >
-                                                    [esc]
-                                                </button>
-                                                <div className="mb-4">
-                                                    <span className="font-mono text-[8px] text-accent uppercase tracking-wider block mb-1">Agent Identity Profile</span>
-                                                    <h3 className="font-display text-xl font-bold text-ink">{selectedMarketplaceAgent.name}</h3>
-                                                    <span className="font-mono text-[9px] text-muted break-all bg-black/20 px-3.5 py-1.5 border border-white/5 mt-1.5 block rounded-full">
-                                                        Address: {selectedMarketplaceAgent.address}
-                                                    </span>
-                                                </div>
-                                                <div className="space-y-4 font-mono text-xs mt-4">
-                                                    <p className="text-slate-300 leading-relaxed text-[11px]">
-                                                        {selectedMarketplaceAgent.desc}
-                                                    </p>
-                                                    <div className="grid grid-cols-2 gap-3 bg-black/20 border border-white/5 p-4 rounded-2xl">
-                                                        <div>
-                                                            <span className="text-muted block text-[8px] uppercase">Category</span>
-                                                            <span className="text-ink font-semibold">{selectedMarketplaceAgent.type} Agent</span>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-muted block text-[8px] uppercase">Creator</span>
-                                                            <span className="text-ink font-semibold">{selectedMarketplaceAgent.creator}</span>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-muted block text-[8px] uppercase">Accuracy Rate</span>
-                                                            <span className="text-approve font-bold">{selectedMarketplaceAgent.accuracy}%</span>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-muted block text-[8px] uppercase">Reputation</span>
-                                                            <span className="text-accent font-bold">{selectedMarketplaceAgent.reputation}/100</span>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-muted block text-[8px] uppercase">Total Revenue</span>
-                                                            <span className="text-ink font-bold">${selectedMarketplaceAgent.revenue.toFixed(2)} USDC</span>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-muted block text-[8px] uppercase">Predictions</span>
-                                                            <span className="text-ink font-semibold">{selectedMarketplaceAgent.signals} total</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="bg-black/20 border border-white/5 p-4 rounded-2xl">
-                                                        <span className="text-muted block text-[8px] uppercase mb-1">Agent Learning Log</span>
-                                                        <p className="text-[10px] text-accent">
-                                                            [Feedback loop active] Pattern strength reinforcement: +{(100 - selectedMarketplaceAgent.accuracy)/5}% precision scaling based on last prediction run.
-                                                        </p>
-                                                    </div>
-                                                    <button 
-                                                        onClick={() => setSelectedMarketplaceAgent(null)}
-                                                        className="w-full bg-white text-background font-semibold py-3 hover:bg-accent transition-colors rounded-full mt-2"
-                                                    >
-                                                        Dismiss Profile
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </motion.div>
-                            ) : (
-                                /* Wallet Manager Tab View */
-                                <motion.div
-                                    key="wallet"
-                                    initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
-                                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                                    className="space-y-8"
-                                >
-                                    {/* Detailed Embedded Wallet Card */}
-                                    <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
-                                        <p className="eyebrow mb-2">Embedded USDC Wallet</p>
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                        <div className="space-y-5">
                                             <div>
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <span className="font-mono text-xs text-muted">Address:</span>
-                                                    <span className="font-mono text-xs text-ink font-semibold break-all bg-black/20 px-3.5 py-1.5 border border-white/5 rounded-full select-all">
-                                                        {walletInfo?.wallet_address || '0x000...'}
-                                                    </span>
-                                                    <button
-                                                        onClick={() => copyToClipboard(walletInfo?.wallet_address || '')}
-                                                        className="p-1.5 border border-white/10 bg-white/5 rounded-full hover:border-accent text-muted hover:text-accent transition-colors"
-                                                        title="Copy Address"
-                                                    >
-                                                        {copiedAddress ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                                                    </button>
+                                                <div className="font-display text-3xl font-black text-white tracking-tight flex items-baseline gap-1">
+                                                    <span>$</span>
+                                                    <span>{(403540.26 + walletInfo.wallet_balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                                 </div>
-                                                <div className="flex items-baseline gap-2">
-                                                    <span className="font-mono text-3xl font-bold text-ink leading-none">
-                                                        <AnimatedNumber value={walletInfo?.wallet_balance ?? 0.0} precision={6} />
-                                                    </span>
-                                                    <span className="font-mono text-sm text-accent font-semibold">USDC</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    <p className="font-mono text-[10px] text-muted uppercase tracking-[0.15em]">
-                                                        Arc L1 Sandbox Testnet Asset
-                                                    </p>
-                                                    <span className="text-muted font-mono text-[10px]">•</span>
-                                                    <a
-                                                        href="https://faucet.circle.com"
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="font-mono text-[10px] text-accent hover:underline flex items-center gap-1"
-                                                    >
-                                                        Circle Faucet <ExternalLink className="w-2.5 h-2.5" />
-                                                    </a>
-                                                </div>
+                                                <span className="font-mono text-[8px] text-[#8b93a5] uppercase block mt-1.5">
+                                                    Includes {(walletInfo.wallet_balance).toFixed(2)} USDC Embedded Wallet Balance
+                                                </span>
                                             </div>
-                                            <button
-                                                onClick={() => router.push('/faucet')}
-                                                className="font-mono self-start md:self-center bg-white text-background px-6 py-3.5 rounded-full text-xs font-bold transition-all active:scale-[0.98] shadow-md"
-                                            >
-                                                ⛽ Go to Faucet
-                                            </button>
-                                        </div>
 
-                                        {/* Link Secondary External Wallet */}
-                                        <div className="mt-8 pt-6 border-t border-white/5">
-                                            <p className="eyebrow mb-3">Optional External Wallet Connection</p>
-                                            <div className="space-y-3 max-w-lg">
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={connectWallet}
-                                                        disabled={isConnectingWallet}
-                                                        className="font-mono border border-white/10 bg-white/5 px-4.5 py-2.5 rounded-full text-[10px] uppercase tracking-wider text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40 shrink-0"
-                                                    >
-                                                        {isConnectingWallet ? 'Connecting...' : 'Connect Wallet'}
-                                                    </button>
-                                                </div>
-                                                
-                                                <form onSubmit={handleUpdateExternalWallet} className="flex gap-3">
-                                                    <input
-                                                        type="text"
-                                                        required
-                                                        placeholder="0x..."
-                                                        value={externalWalletInput}
-                                                        onChange={(e) => setExternalWalletInput(e.target.value)}
-                                                        className="flex-1 bg-background border border-white/10 text-ink placeholder:text-muted px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
-                                                    />
-                                                    <button
-                                                        type="submit"
-                                                        disabled={externalWalletLoading}
-                                                        className="font-mono border border-white/10 bg-white/5 px-5 py-2.5 rounded-full text-xs text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40 shrink-0"
-                                                    >
-                                                        {externalWalletLoading ? 'Saving...' : 'Link Wallet'}
-                                                    </button>
-                                                </form>
-                                                
-                                                {walletSuccess && (
-                                                    <p className="font-mono text-[10px] text-[#22c55e]">{walletSuccess}</p>
-                                                )}
-                                                {walletError && (
-                                                    <p className="font-mono text-[10px] text-rose-400">{walletError}</p>
-                                                )}
+                                            {/* Quick Actions Row */}
+                                            <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-white/[0.04]">
+                                                <button
+                                                    onClick={() => setActiveNavTab('portfolio')}
+                                                    className="font-mono text-[10px] font-semibold bg-white text-black hover:bg-purple-400 hover:text-white py-2.5 rounded-full transition-colors flex items-center justify-center gap-1"
+                                                >
+                                                    Deposit
+                                                </button>
+                                                <button
+                                                    onClick={() => setActiveNavTab('portfolio')}
+                                                    className="font-mono text-[10px] font-semibold bg-[#1c1c2b] text-white hover:bg-white/10 py-2.5 rounded-full transition-colors flex items-center justify-center gap-1"
+                                                >
+                                                    Withdraw
+                                                </button>
+                                                <button
+                                                    onClick={() => setActiveNavTab('portfolio')}
+                                                    className="font-mono text-[10px] font-semibold bg-[#1c1c2b] text-white hover:bg-white/10 py-2.5 rounded-full transition-colors flex items-center justify-center gap-1"
+                                                >
+                                                    Transfer
+                                                </button>
+                                                <button
+                                                    onClick={() => setActiveNavTab('portfolio')}
+                                                    className="font-mono text-[10px] font-semibold bg-[#1c1c2b] text-white hover:bg-white/10 py-2.5 rounded-full transition-colors flex items-center justify-center gap-1"
+                                                >
+                                                    Swap
+                                                </button>
                                             </div>
-                                            <p className="font-mono text-[10px] text-muted mt-2">
-                                                Specify a secondary external USDC wallet address for custom payouts.
-                                            </p>
                                         </div>
                                     </div>
 
-                                    {/* AI Agent Wallets & Budgets */}
-                                    <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
-                                        <p className="eyebrow mb-4">Programmable AI Agent Wallets</p>
+                                    {/* Top Assets Card */}
+                                    <div className="border border-white/[0.04] bg-[#12121e]/30 p-6 rounded-[2rem] text-left">
+                                        <div className="mb-4">
+                                            <h3 className="font-display font-bold text-sm text-white">Top Assets</h3>
+                                            <span className="font-mono text-[9px] text-[#8b93a5] block mt-0.5">Asset allocations by value</span>
+                                        </div>
 
-                                        {/* List Agents */}
-                                        <div className="space-y-4 mb-8">
-                                            {agents.map((agent) => (
-                                                <div key={agent.id} className="border border-white/10 p-5 bg-black/20 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
-                                                    <div>
-                                                        <div className="flex items-center gap-2 mb-1.5">
-                                                            <span className="font-display text-sm font-semibold text-ink">{agent.name}</span>
-                                                            <span className={`font-mono text-[9px] px-2.5 py-0.5 border rounded-full ${
-                                                                agent.is_active ? 'text-approve border-approve/30 bg-approve/5' : 'text-block border-block/30 bg-block/5'
-                                                            }`}>
-                                                                {agent.is_active ? 'ACTIVE' : 'PAUSED'}
-                                                            </span>
-                                                            {agent.yield_loop_active && (
-                                                                <span className="font-mono text-[9px] px-2.5 py-0.5 border rounded-full text-accent border-accent/30 bg-accent/5">
-                                                                    YIELD ACTIVE (5.5% APY)
-                                                                </span>
-                                                            )}
+                                        <div className="space-y-3 font-mono text-xs">
+                                            {[
+                                                { name: 'Solana', sym: 'SOL', price: '$0.2724', pct: '+2.85%', isUp: true },
+                                                { name: 'Avalanche', sym: 'AVAX', price: '$17.89', pct: '-0.85%', isUp: false },
+                                                { name: 'Polkadot', sym: 'DOT', price: '$6.23', pct: '+3.40%', isUp: true },
+                                                { name: 'Ethereum', sym: 'ETH', price: '$1,850.75', pct: '-1.15%', isUp: false },
+                                                { name: 'Cardano', sym: 'ADA', price: '$0.4352', pct: '+0.75%', isUp: true }
+                                            ].map((a) => (
+                                                <div key={a.sym} className="flex justify-between items-center py-2 border-b border-white/[0.03] last:border-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="size-6 rounded-lg bg-[#1b1b2f] flex items-center justify-center text-[10px] font-bold text-white">
+                                                            {a.sym.slice(0,2)}
                                                         </div>
-                                                        <div className="flex items-center gap-2 mb-2.5">
-                                                            <span className="font-mono text-[10px] text-muted truncate max-w-xs">{agent.wallet_address}</span>
-                                                            <button
-                                                                onClick={() => copyToClipboard(agent.wallet_address, true, agent.id)}
-                                                                className="p-1 border border-white/10 bg-white/5 rounded-full text-muted hover:text-ink transition-colors"
-                                                            >
-                                                                {copiedAgentAddress === agent.id ? <Check className="w-3 h-3 text-approve" /> : <Copy className="w-3 h-3" />}
-                                                            </button>
-                                                        </div>
-                                                        <div className="grid grid-cols-2 gap-x-6 gap-y-1">
-                                                            <span className="font-mono text-[10px] text-muted">Wallet Balance:</span>
-                                                            <span className="font-mono text-[10px] text-ink font-semibold"><AnimatedNumber value={agent.wallet_balance} precision={6} /> USDC</span>
-                                                            <span className="font-mono text-[10px] text-muted">Daily Spending Cap:</span>
-                                                            <span className="font-mono text-[10px] text-ink font-semibold"><AnimatedNumber value={agent.daily_budget} precision={2} /> USDC</span>
-                                                            <span className="font-mono text-[10px] text-muted">Spent Today:</span>
-                                                            <span className="font-mono text-[10px] text-accent font-semibold"><AnimatedNumber value={agent.spent_today} precision={6} /> USDC</span>
-                                                            <span className="font-mono text-[10px] text-muted">Yield Pool Balance:</span>
-                                                            <span className="font-mono text-[10px] text-ink font-semibold"><AnimatedNumber value={agent.yield_loop_balance || 0.0} precision={6} /> USDC</span>
-                                                            <span className="font-mono text-[10px] text-muted">Interest Accrued:</span>
-                                                            <span className="font-mono text-[10px] text-approve font-semibold"><AnimatedNumber value={agent.yield_loop_interest_earned || 0.0} precision={8} /> USDC</span>
+                                                        <div>
+                                                            <span className="font-bold text-white block text-[11px] leading-tight">{a.name}</span>
+                                                            <span className="text-[8px] text-[#8b93a5] block leading-tight">{a.sym}</span>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <button
-                                                            onClick={() => openFundModal(agent)}
-                                                            className="font-mono border border-accent/40 text-accent hover:bg-accent hover:text-background px-4 py-2 rounded-full text-xs flex items-center gap-1.5 transition-colors"
-                                                        >
-                                                            <CircleDollarSign className="w-3.5 h-3.5" />
-                                                            Fund Agent
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleToggleAgentActive(agent.id, agent.is_active)}
-                                                            className={`font-mono border px-4 py-2 rounded-full text-xs flex items-center gap-1.5 transition-colors ${
-                                                                agent.is_active
-                                                                    ? 'border-block/40 text-block hover:bg-block/10'
-                                                                    : 'border-approve/40 text-approve hover:bg-approve/10'
-                                                            }`}
-                                                        >
-                                                            {agent.is_active ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                                                            {agent.is_active ? 'Pause Agent' : 'Resume Agent'}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleToggleYieldLoop(agent.id, agent.yield_loop_active)}
-                                                            disabled={togglingYield === agent.id}
-                                                            className={`font-mono border px-4 py-2 rounded-full text-xs flex items-center gap-1.5 transition-colors ${
-                                                                agent.yield_loop_active
-                                                                    ? 'border-accent text-accent hover:bg-accent/5'
-                                                                    : 'border-white/10 text-muted hover:text-ink hover:border-white/20'
-                                                            }`}
-                                                        >
-                                                            <RefreshCw className={`w-3.5 h-3.5 ${togglingYield === agent.id ? 'animate-spin' : ''}`} />
-                                                            {agent.yield_loop_active ? 'Disable Yield' : 'Enable Yield'}
-                                                        </button>
+                                                    <div className="text-right">
+                                                        <span className="text-white block text-[11px] font-semibold">{a.price}</span>
+                                                        <span className={`text-[8px] font-bold block ${a.isUp ? 'text-[#22c787]' : 'text-[#ff5d5d]'}`}>
+                                                            {a.pct}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
+                                    </div>
+                                </div>
 
-                                        {/* Create Agent Form */}
-                                        <div className="pt-6 border-t border-white/5">
-                                            <h4 className="font-display text-sm font-semibold text-ink mb-4">Provision New AI Agent</h4>
-                                            <form onSubmit={handleCreateAgent} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                                                <div className="md:col-span-2">
-                                                    <label className="font-mono text-[10px] text-muted uppercase tracking-wider block mb-1.5">Agent Identity</label>
-                                                    <input
-                                                        type="text"
-                                                        required
-                                                        placeholder="e.g. Risk Audit Agent"
-                                                        value={agentNameInput}
-                                                        onChange={(e) => setAgentNameInput(e.target.value)}
-                                                        className="w-full bg-background border border-white/10 text-ink placeholder:text-muted px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
-                                                    />
-                                                </div>
+                                {/* Col 2: Your Assets Grid & Leaders */}
+                                <div className="lg:col-span-8 space-y-8">
+                                    
+                                    <div className="grid md:grid-cols-12 gap-8 items-start">
+                                        
+                                        {/* Your Assets Grid (8 cols) */}
+                                        <div className="md:col-span-7 space-y-6 text-left">
+                                            <div className="flex justify-between items-center">
                                                 <div>
-                                                    <label className="font-mono text-[10px] text-muted uppercase tracking-wider block mb-1.5">Daily Budget (USDC)</label>
-                                                    <input
-                                                        type="number"
-                                                        step="0.01"
-                                                        min="0.0"
-                                                        value={agentBudgetInput}
-                                                        onChange={(e) => setAgentBudgetInput(parseFloat(e.target.value))}
-                                                        className="w-full bg-background border border-white/10 text-ink px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
-                                                    />
+                                                    <h3 className="font-display font-bold text-sm text-white">Your assets</h3>
+                                                    <span className="font-mono text-[9px] text-[#8b93a5] block mt-0.5">Live tracking your assets</span>
                                                 </div>
-                                                <div>
-                                                    <label className="font-mono text-[10px] text-muted uppercase tracking-wider block mb-1.5">Funding (USDC)</label>
-                                                    <input
-                                                        type="number"
-                                                        step="0.01"
-                                                        min="0.0"
-                                                        value={agentBalanceInput}
-                                                        onChange={(e) => setAgentBalanceInput(parseFloat(e.target.value))}
-                                                        className="w-full bg-background border border-white/10 text-ink px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
-                                                    />
+                                                <div className="flex items-center gap-1.5 font-mono text-[8px] text-[#8b93a5]">
+                                                    <span>Updated 10 sec</span>
+                                                    <RefreshCw className="size-2.5 animate-spin" />
                                                 </div>
-                                                <button
-                                                    type="submit"
-                                                    disabled={createAgentLoading || !agentNameInput}
-                                                    className="md:col-span-4 font-mono bg-white text-background py-3.5 text-xs font-bold hover:bg-accent transition-colors rounded-full active:scale-[0.98] disabled:opacity-40"
-                                                >
-                                                    {createAgentLoading ? 'Provisioning Agent...' : 'Deploy Agent Wallet'}
-                                                </button>
-                                            </form>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                {[
+                                                    { name: 'Cardano', pair: 'ADA/USDT', balance: '$3,420', pct: '+5.1%', isUp: true },
+                                                    { name: 'Solana', pair: 'SOL/USDT', balance: '$168.75', pct: '+3.2%', isUp: true },
+                                                    { name: 'Avalanche', pair: 'AVAX/USDT', balance: '$35.40', pct: '+6.0%', isUp: true },
+                                                    { name: 'Polkadot', pair: 'DOT/USDT', balance: '$24.89', pct: '+2.8%', isUp: true }
+                                                ].map((a, idx) => (
+                                                    <div key={idx} className="border border-white/[0.04] bg-[#12121e]/30 p-5 rounded-2xl hover:border-purple-500/10 transition-colors">
+                                                        <div className="flex justify-between items-start mb-3">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <div className="size-5 rounded bg-[#1b1b2f] flex items-center justify-center font-bold text-[9px] text-white">
+                                                                    {a.name.slice(0, 2)}
+                                                                </div>
+                                                                <div>
+                                                                    <span className="font-display font-bold text-[10px] text-white block leading-tight">{a.name}</span>
+                                                                    <span className="font-mono text-[7px] text-[#8b93a5] block leading-tight">{a.pair}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-baseline justify-between font-mono mt-4">
+                                                            <span className="text-sm font-bold text-white">{a.balance}</span>
+                                                            <span className={`text-[8px] font-bold ${a.isUp ? 'text-[#22c787]' : 'text-[#ff5d5d]'}`}>
+                                                                {a.pct}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
+
+                                        {/* Market Leaders (5 cols) */}
+                                        <div className="md:col-span-5 border border-white/[0.04] bg-[#12121e]/30 p-6 rounded-[2rem] text-left">
+                                            <div className="flex justify-between items-center mb-6">
+                                                <h3 className="font-display font-bold text-sm text-white">Market Leaders</h3>
+                                                <div className="flex bg-[#11111d] p-0.5 border border-white/[0.04] rounded-lg font-mono text-[8px] font-bold">
+                                                    <span className="px-2 py-1 text-[#8b93a5]">Week</span>
+                                                    <span className="px-2 py-1 bg-white text-black rounded-md">Month</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Colored Capsule Progress row */}
+                                            <div className="flex gap-2.5 mb-6">
+                                                <div className="flex-1 space-y-1.5 text-center">
+                                                    <span className="font-mono text-[8px] text-[#22c787] font-semibold block">+3.1%</span>
+                                                    <div className="h-6 w-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 opacity-80" />
+                                                </div>
+                                                <div className="flex-1 space-y-1.5 text-center">
+                                                    <span className="font-mono text-[8px] text-purple-400 font-semibold block">+2.4%</span>
+                                                    <div className="h-6 w-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 opacity-80" />
+                                                </div>
+                                                <div className="flex-1 space-y-1.5 text-center">
+                                                    <span className="font-mono text-[8px] text-pink-400 font-semibold block">+1.3%</span>
+                                                    <div className="h-6 w-full rounded-full bg-gradient-to-r from-pink-500 to-red-500 opacity-80" />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3.5 font-mono text-xs pt-4 border-t border-white/[0.04]">
+                                                {[
+                                                    { name: 'Bitcoin', sym: 'BTC', price: '$2,384.00', color: 'bg-blue-400' },
+                                                    { name: 'Ethereum', sym: 'ETH', price: '$1,834.50', color: 'bg-purple-400' },
+                                                    { name: 'Cardano', sym: 'ADA', price: '$834.50', color: 'bg-pink-400' }
+                                                ].map((coin) => (
+                                                    <div key={coin.sym} className="flex justify-between items-center">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={`size-1.5 rounded-full ${coin.color}`} />
+                                                            <span className="text-white font-semibold">{coin.name}</span>
+                                                            <span className="text-[#8b93a5] text-[9px]">({coin.sym})</span>
+                                                        </div>
+                                                        <span className="text-[#8b93a5] font-semibold">{coin.price}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
                                     </div>
 
-                                    {/* Ledger / Microtransaction history */}
-                                    <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
-                                        <p className="eyebrow mb-4">Arc L1 Transaction History (Ledger)</p>
+                                    {/* Transactions History Card */}
+                                    <div className="border border-white/[0.04] bg-[#12121e]/30 p-6 rounded-[2rem] text-left">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                                            <div>
+                                                <h3 className="font-display font-bold text-sm text-white">Transactions History</h3>
+                                                <span className="font-mono text-[9px] text-[#8b93a5] block mt-0.5">Asset validation logs</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <div className="relative">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Search"
+                                                        className="bg-transparent border border-white/[0.04] text-white placeholder:text-[#8b93a5]/35 pl-7 pr-3 py-1.5 rounded-lg text-[9px] font-mono focus:outline-none"
+                                                    />
+                                                    <Search className="absolute left-2.5 top-2.5 size-3 text-[#8b93a5]/40" />
+                                                </div>
+                                                <div className="flex bg-[#11111d] p-0.5 border border-white/[0.04] rounded-lg font-mono text-[7px] font-bold">
+                                                    {['1D', '7D', '1M', '1Y'].map(t => (
+                                                        <span key={t} className={`px-1.5 py-1 ${t === '1Y' ? 'bg-white text-black rounded' : 'text-[#8b93a5]'}`}>{t}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div className="overflow-x-auto">
-                                            <table className="w-full text-left font-mono text-xs text-muted border-collapse">
+                                            <table className="w-full text-left font-mono text-[10px] text-[#8b93a5] border-collapse">
                                                 <thead>
-                                                    <tr className="border-b border-white/5 text-[10px] uppercase text-muted">
-                                                        <th className="py-2.5">Date</th>
-                                                        <th>Transaction Hash</th>
-                                                        <th>Purpose</th>
-                                                        <th className="text-right">Amount</th>
+                                                    <tr className="border-b border-white/[0.04] text-[8px] uppercase tracking-wider text-[#8b93a5]/60">
+                                                        <th className="py-2.5 w-6"><input type="checkbox" className="rounded" /></th>
+                                                        <th>Assets</th>
+                                                        <th>Price</th>
+                                                        <th>Market Cap</th>
+                                                        <th>Volume 24h</th>
+                                                        <th>Price Graph</th>
+                                                        <th className="text-right">Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <AnimatePresence initial={false}>
-                                                        {txHistory.length === 0 ? (
-                                                            <motion.tr
-                                                                key="empty"
-                                                                initial={{ opacity: 0 }}
-                                                                animate={{ opacity: 1 }}
-                                                                exit={{ opacity: 0 }}
-                                                                className="border-b border-white/5"
-                                                            >
-                                                                <td colSpan={4} className="py-8 text-center text-[11px] text-muted italic">
-                                                                    No transactions logged. Use the faucet or unlock signals to seed the ledger.
-                                                                </td>
-                                                            </motion.tr>
-                                                        ) : (
-                                                            txHistory.map((tx) => (
-                                                                <motion.tr
-                                                                    key={tx.id}
-                                                                    layout
-                                                                    initial={{ opacity: 0, y: -8 }}
-                                                                    animate={{ opacity: 1, y: 0 }}
-                                                                    exit={{ opacity: 0 }}
-                                                                    transition={{ duration: 0.3, ease: 'easeOut' }}
-                                                                    className="border-b border-white/5 hover:bg-white/[0.01]"
-                                                                >
-                                                                    <td className="py-3 pr-4 text-[10px]">
-                                                                        {tx.created_at ? new Date(tx.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'}
-                                                                    </td>
-                                                                    <td className="font-mono text-[10px] text-accent pr-4">
-                                                                        <a
-                                                                            href={`https://testnet.arcscan.app/tx/${tx.tx_hash}`}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="hover:underline flex items-center gap-1 inline-flex"
-                                                                        >
-                                                                            {tx.tx_hash.substring(0, 12)}...{tx.tx_hash.substring(58)}
-                                                                            <ExternalLink className="w-2.5 h-2.5" />
-                                                                        </a>
-                                                                    </td>
-                                                                    <td className="text-ink pr-4">{tx.purpose}</td>
-                                                                    <td className="text-right font-semibold text-ink">
-                                                                        {tx.sender_address === walletInfo?.wallet_address ? '-' : '+'}
-                                                                        <AnimatedNumber value={tx.amount} precision={6} /> USDC
-                                                                    </td>
-                                                                </motion.tr>
-                                                            ))
-                                                        )}
-                                                    </AnimatePresence>
+                                                    {[
+                                                        { name: 'Chainlink', sym: 'LINK', price: '$24.89', cap: '$12B', vol: '$850M', up: true, sparkline: [10, 15, 8, 14, 19, 13, 21, 24] },
+                                                        { name: 'Polkadot', sym: 'DOT', price: '$35.67', cap: '$36B', vol: '$2.9B', up: true, sparkline: [8, 12, 16, 11, 15, 23, 29, 35] },
+                                                        { name: 'Polygon', sym: 'MATIC', price: '$1.23', cap: '$9.5B', vol: '$1.1B', up: false, sparkline: [25, 22, 19, 21, 14, 16, 9, 7] },
+                                                        { name: 'Solana', sym: 'SOL', price: '$45.32', cap: '$14B', vol: '$2.3B', up: true, sparkline: [12, 18, 15, 22, 28, 25, 38, 45] },
+                                                        { name: 'Avalanche', sym: 'AVAX', price: '$520.48', cap: '$377B', vol: '$18B', up: false, sparkline: [45, 41, 46, 38, 32, 34, 28, 24] }
+                                                    ].map((row, idx) => (
+                                                        <tr key={idx} className="border-b border-white/[0.03] hover:bg-white/[0.01]">
+                                                            <td className="py-3"><input type="checkbox" className="rounded" /></td>
+                                                            <td className="font-semibold text-white">
+                                                                <span className="block text-[11px] leading-tight">{row.name}</span>
+                                                                <span className="text-[8px] text-[#8b93a5] block leading-tight">{row.sym}</span>
+                                                            </td>
+                                                            <td className="text-white font-semibold">{row.price}</td>
+                                                            <td>{row.cap}</td>
+                                                            <td>{row.vol}</td>
+                                                            <td>
+                                                                {/* Custom SVG Sparkline */}
+                                                                <svg className="w-16 h-6" viewBox="0 0 80 30" fill="none">
+                                                                    <path
+                                                                        d={`M ${row.sparkline.map((val, i) => `${(i * 80) / 7} ${30 - val}`).join(' L ')}`}
+                                                                        stroke={row.up ? '#22c787' : '#ff5d5d'}
+                                                                        strokeWidth="1.5"
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                    />
+                                                                </svg>
+                                                            </td>
+                                                            <td className="text-right">
+                                                                <button className="p-1 hover:text-white transition-colors" aria-label="Action">
+                                                                    <MoreHorizontal className="size-4" />
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
+                                </div>
 
-                    {/* Right Panel: Sidebar */}
-                    <div className="w-full lg:w-[300px] shrink-0 space-y-5">
+                            </div>
+                        </motion.div>
+                    )}
 
-                        {/* Wallet Quick Card */}
-                        <div
-                            onClick={() => setActiveTab('wallet')}
-                            className={`border bg-[#182030] shadow-xl p-5 cursor-pointer transition-all rounded-[1.5rem] hover:scale-[1.01] ${
-                                activeTab === 'wallet' ? 'border-accent' : 'border-white/10 hover:border-accent/40'
-                            }`}
+                    {/* TAB 2: TRADE ROUTE (ACTIVE SIGNALS FEED) */}
+                    {activeNavTab === 'trade' && (
+                        <motion.div
+                            key="trade"
+                            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-8 text-left"
                         >
-                            <div className="flex items-center justify-between mb-4">
-                                <p className="eyebrow">nanopayments wallet</p>
-                                <a href="https://faucet.arc.network" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-white transition-colors">
-                                    <Wallet className="w-4 h-4" />
-                                </a>
-                            </div>
-                            <span className="font-mono block text-2xl font-semibold text-ink leading-none">
-                                <AnimatedNumber value={walletInfo?.wallet_balance ?? user?.wallet_balance ?? 0.0} precision={6} /> USDC
-                            </span>
-                            <span className="font-mono block text-[0.65rem] text-muted mt-1.5 uppercase tracking-[0.12em]">
-                                Arc L1 Sandbox
-                            </span>
-                        </div>
-
-                        {/* AI Copilot */}
-                        <div className="border border-white/10 bg-[#182030] shadow-xl p-5 rounded-[1.5rem]">
-                            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-white/5">
-                                <BrainCircuit className="w-4 h-4 text-accent" />
-                                <p className="eyebrow">ai copilot analysis</p>
-                            </div>
-                            <div className="space-y-4">
+                            <div className="flex justify-between items-center pb-4 border-b border-white/[0.04]">
                                 <div>
-                                    <div className="flex justify-between font-mono text-[11px] mb-1.5">
-                                        <span className="text-muted uppercase tracking-[0.1em]">Market Sentiment</span>
-                                        <span className="text-approve">78% BULLISH</span>
+                                    <h2 className="font-display text-xl font-bold text-white">Active Quant Signals</h2>
+                                    <p className="font-mono text-xs text-[#8b93a5] mt-1">Live trading coordinator feed initialized via Arc L1 micropayments.</p>
+                                </div>
+                                <button
+                                    onClick={fetchSignals}
+                                    disabled={isRefreshing}
+                                    className="font-mono flex items-center gap-1.5 border border-white/[0.06] bg-[#12121e]/40 px-4 py-2 rounded-full text-xs text-white transition-colors hover:border-purple-500 disabled:opacity-40"
+                                >
+                                    <RefreshCw className={`size-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+                                    Sync
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {loading ? (
+                                    <div className="col-span-full flex items-center justify-center py-20">
+                                        <div className="h-6 w-6 animate-spin border-b-2 border-purple-500" />
                                     </div>
-                                    <div className="w-full bg-background h-1 border border-white/5 overflow-hidden rounded-full">
-                                        <div className="bg-approve h-1" style={{ width: '78%' }} />
+                                ) : (
+                                    signals.map((sig) => (
+                                        <div key={sig.id} onClick={() => setSelectedSymbol(sig.symbol)} className="cursor-pointer">
+                                            <SignalCard signal={sig} />
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* TAB 3: MARKET ROUTE (AGENT MARKETPLACE CATALOG & CREATOR) */}
+                    {activeNavTab === 'market' && (
+                        <motion.div
+                            key="market"
+                            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-8 text-left"
+                        >
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                                
+                                {/* Left 2 Columns: Directory */}
+                                <div className="lg:col-span-2 space-y-8">
+                                    <div className="border border-white/[0.04] bg-[#12121e]/30 p-6 rounded-[1.75rem]">
+                                        <div className="mb-6">
+                                            <h3 className="font-display text-lg font-bold text-white">Active Agent Catalog</h3>
+                                            <p className="font-mono text-xs text-[#8b93a5] mt-1">Hire autonomous agents dynamically. Micropayments verified via Arc L1 ledger.</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {marketplaceAgents.map((agent) => (
+                                                <div 
+                                                    key={agent.id}
+                                                    onClick={() => setSelectedMarketplaceAgent(agent)}
+                                                    className="border border-white/[0.04] bg-white/[0.01] p-5 hover:border-purple-500 cursor-pointer transition-all hover:scale-[1.01] relative overflow-hidden rounded-2xl shadow-md"
+                                                >
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <div>
+                                                            <h4 className="font-display font-bold text-sm text-white">{agent.name}</h4>
+                                                            <span className="font-mono text-[9px] text-[#8b93a5]">ID: {agent.id}</span>
+                                                        </div>
+                                                        <span className="font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 border border-purple-500/20 text-purple-400 bg-purple-500/5 rounded-full">
+                                                            {agent.type}
+                                                        </span>
+                                                    </div>
+                                                    <p className="font-mono text-[10px] text-[#8b93a5] line-clamp-2 mb-4 leading-relaxed h-8">
+                                                        {agent.desc}
+                                                    </p>
+                                                    <div className="flex items-center justify-between font-mono text-[10px] border-t border-white/[0.04] pt-3">
+                                                        <div>
+                                                            <span className="text-[#8b93a5] block text-[8px] uppercase">reputation</span>
+                                                            <span className="text-white font-semibold">{agent.reputation}/100</span>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <span className="text-[#8b93a5] block text-[8px] uppercase">fee</span>
+                                                            <span className="text-purple-400 font-bold">{agent.price.toFixed(4)} USDC</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <div className="flex justify-between font-mono text-[11px] mb-1.5">
-                                        <span className="text-muted uppercase tracking-[0.1em]">Vol Regime (Daily)</span>
-                                        <span className="text-accent">HIGH VOLATILITY</span>
+
+                                {/* Right 1 Column: Agent Factory */}
+                                <div className="border border-white/[0.04] bg-[#12121e]/30 p-6 rounded-[1.75rem] space-y-6">
+                                    <div className="pb-2 border-b border-white/[0.04] flex items-center justify-between">
+                                        <div>
+                                            <h3 className="font-display text-base font-bold text-white">Agent Factory</h3>
+                                            <span className="font-mono text-[9px] text-[#8b93a5] block mt-0.5">Provision custom security logic</span>
+                                        </div>
+                                        <Cpu className="size-5 text-purple-400 animate-pulse" />
                                     </div>
-                                    <div className="w-full bg-background h-1 border border-white/5 overflow-hidden rounded-full">
-                                        <div className="bg-accent h-1" style={{ width: '60%' }} />
-                                    </div>
+
+                                    <form onSubmit={handleCreateNewAgent} className="space-y-4 font-mono text-xs">
+                                        <div>
+                                            <label className="text-[10px] text-[#8b93a5] uppercase block mb-1.5">Agent Name</label>
+                                            <input 
+                                                type="text"
+                                                value={newAgentName}
+                                                onChange={(e) => setNewAgentName(e.target.value)}
+                                                placeholder="e.g. BTC Trend Hunter"
+                                                className="w-full bg-[#06060c] border border-white/[0.06] text-white placeholder:text-[#8b93a5]/40 px-4 py-2.5 rounded-full focus:border-purple-500 focus:outline-none"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-[10px] text-[#8b93a5] uppercase block mb-1.5">Role Type</label>
+                                                <select
+                                                    value={newAgentType}
+                                                    onChange={(e) => setNewAgentType(e.target.value)}
+                                                    className="w-full bg-[#06060c] border border-white/[0.06] text-white px-4 py-2.5 rounded-full focus:border-purple-500 focus:outline-none"
+                                                >
+                                                    <option value="Signal">Signal</option>
+                                                    <option value="Risk">Risk</option>
+                                                    <option value="Sentiment">Sentiment</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] text-[#8b93a5] uppercase block mb-1.5">Strategy</label>
+                                                <select
+                                                    value={newAgentStrategy}
+                                                    onChange={(e) => setNewAgentStrategy(e.target.value)}
+                                                    className="w-full bg-[#06060c] border border-white/[0.06] text-white px-4 py-2.5 rounded-full focus:border-purple-500 focus:outline-none"
+                                                >
+                                                    <option value="Momentum Squeeze">Momentum</option>
+                                                    <option value="Mean Reversion">Mean Rev</option>
+                                                    <option value="Sentiment Analysis">Sentiment</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[10px] text-[#8b93a5] uppercase block mb-1.5">Operating Fee (USDC)</label>
+                                            <input 
+                                                type="number"
+                                                step="0.0001"
+                                                value={newAgentBudget}
+                                                onChange={(e) => setNewAgentBudget(e.target.value)}
+                                                className="w-full bg-[#06060c] border border-white/[0.06] text-white px-4 py-2.5 rounded-full focus:border-purple-500"
+                                                required
+                                            />
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            className="w-full bg-white text-black hover:bg-[#7c3aed] hover:text-white font-bold py-3 rounded-full transition-colors flex items-center justify-center gap-1.5"
+                                        >
+                                            <Plus className="size-3.5" />
+                                            Provision Agent
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
+                    )}
 
-                        {/* Exchange Connectors */}
-                        <div className="border border-white/10 bg-[#182030] shadow-xl p-5 rounded-[1.5rem]">
-                            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-white/5">
-                                <Globe2 className="w-4 h-4 text-accent" />
-                                <p className="eyebrow">exchange connectors</p>
-                            </div>
-                            <div className="space-y-2">
-                                {[
-                                    { name: 'Binance API',   status: 'CONNECTED', color: 'text-approve border-approve/30' },
-                                    { name: 'Alpaca API',    status: 'SANDBOX',   color: 'text-review border-review/30' },
-                                    { name: 'Polygon Feed',  status: 'ONLINE',    color: 'text-approve border-approve/30' },
-                                ].map(c => (
-                                    <div key={c.name} className="flex justify-between items-center p-2.5 border border-white/5 bg-black/10 rounded-xl">
-                                        <span className="font-mono text-xs text-muted">{c.name}</span>
-                                        <span className={`font-mono text-[0.6rem] uppercase tracking-[0.15em] border px-2.5 py-0.5 rounded-full ${c.color}`}>{c.status}</span>
+                    {/* TAB 4: ANALYTICS (AGENT TERMINAL & LOGS & GRAPH) */}
+                    {activeNavTab === 'analytics' && (
+                        <motion.div
+                            key="analytics"
+                            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-8 text-left"
+                        >
+                            <div className="grid lg:grid-cols-12 gap-8 items-start">
+                                
+                                {/* Left Column: Agent Fleet Terminal & Logs */}
+                                <div className="lg:col-span-8 space-y-8">
+                                    <AgentFleetTerminal />
+                                    
+                                    <div className="border border-white/[0.04] bg-[#12121e]/30 p-6 rounded-[1.75rem] space-y-4">
+                                        <div>
+                                            <h3 className="font-display font-bold text-sm text-white">Live Execution Logs</h3>
+                                            <p className="font-mono text-xs text-[#8b93a5] mt-1">Live trace of each agent execution cycle settled on the Arc Sandbox L1.</p>
+                                        </div>
+                                        <AgentLog autoDemo={true} maxLines={40} />
                                     </div>
-                                ))}
+                                </div>
+
+                                {/* Right Column: Network Graph & Payment Feed */}
+                                <div className="lg:col-span-4 space-y-8">
+                                    <AgentNetworkGraph />
+                                    <LivePaymentFeed />
+                                </div>
                             </div>
-                        </div>
+                        </motion.div>
+                    )}
 
-                        {/* Live Agent Economy Network Graph */}
-                        <AgentNetworkGraph />
+                    {/* TAB 5: PORTFOLIO (EMBEDDED WALLET & FAUCET MANAGER) */}
+                    {activeNavTab === 'portfolio' && (
+                        <motion.div
+                            key="portfolio"
+                            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-8 text-left"
+                        >
+                            
+                            {/* Embedded Wallet Manager Card */}
+                            <div className="border border-white/[0.06] bg-[#12121e]/30 p-8 rounded-[2rem] space-y-6">
+                                <div className="pb-4 border-b border-white/[0.04]">
+                                    <h2 className="font-display text-lg font-bold text-white">USDC Embedded Wallet</h2>
+                                    <p className="font-mono text-xs text-[#8b93a5] mt-1">Direct wallet configurations supporting gas-free transactions.</p>
+                                </div>
 
-                        {/* Live Agent Transaction Feed */}
-                        <LivePaymentFeed />
+                                <div className="grid md:grid-cols-2 gap-8">
+                                    
+                                    {/* Left Side: Wallet address & balance */}
+                                    <div className="space-y-5">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="font-mono text-[9px] text-[#8b93a5] uppercase">Wallet Address</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-mono text-xs text-white bg-[#06060c] px-3.5 py-2 border border-white/[0.04] rounded-full select-all truncate max-w-xs">
+                                                    {walletInfo?.wallet_address || '0x000...'}
+                                                </span>
+                                                <button
+                                                    onClick={() => copyToClipboard(walletInfo?.wallet_address || '')}
+                                                    className="p-2 border border-white/[0.06] bg-[#12121e]/40 rounded-full hover:border-purple-500 hover:text-purple-400 transition-colors"
+                                                >
+                                                    {copiedAddress ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                                                </button>
+                                            </div>
+                                        </div>
 
-                    </div>
-                </div>
-            </div>
+                                        <div className="flex flex-col gap-1 pt-2">
+                                            <span className="font-mono text-[9px] text-[#8b93a5] uppercase">Total Balance</span>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="font-mono text-3xl font-bold text-white leading-none">
+                                                    <AnimatedNumber value={walletInfo?.wallet_balance ?? 0.0} precision={6} />
+                                                </span>
+                                                <span className="font-mono text-xs text-purple-400 font-bold">USDC</span>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => router.push('/faucet')}
+                                            className="font-mono bg-white text-black hover:bg-purple-400 hover:text-white px-6 py-3 rounded-full text-xs font-bold transition-colors"
+                                        >
+                                            ⛽ Go to Faucet
+                                        </button>
+                                    </div>
+
+                                    {/* Right Side: External connection linking */}
+                                    <div className="space-y-4 border-t md:border-t-0 md:border-l border-white/[0.04] pt-6 md:pt-0 md:pl-8">
+                                        <span className="font-mono text-[10px] text-white uppercase block font-semibold">Optional External Link</span>
+                                        
+                                        <div className="space-y-3">
+                                            <button
+                                                onClick={connectWallet}
+                                                disabled={isConnectingWallet}
+                                                className="font-mono border border-white/[0.06] bg-[#12121e]/30 px-4 py-2.5 rounded-full text-[10px] uppercase text-white hover:border-purple-500 hover:text-purple-400 transition-all"
+                                            >
+                                                {isConnectingWallet ? 'Connecting...' : 'Connect MetaMask'}
+                                            </button>
+
+                                            <form onSubmit={handleUpdateExternalWallet} className="flex gap-2 font-mono text-xs">
+                                                <input
+                                                    type="text"
+                                                    value={externalWalletInput}
+                                                    onChange={(e) => setExternalWalletInput(e.target.value)}
+                                                    placeholder="0x..."
+                                                    className="flex-1 bg-[#06060c] border border-white/[0.06] text-white placeholder:text-[#8b93a5]/40 px-4 py-2.5 rounded-full focus:border-purple-500 focus:outline-none"
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    disabled={externalWalletLoading}
+                                                    className="border border-white/[0.06] bg-[#12121e]/40 px-4 py-2.5 rounded-full hover:border-purple-500 hover:text-purple-400"
+                                                >
+                                                    Link
+                                                </button>
+                                            </form>
+
+                                            {walletSuccess && <p className="font-mono text-[9px] text-[#22c787]">{walletSuccess}</p>}
+                                            {walletError && <p className="font-mono text-[9px] text-[#ff5d5d]">{walletError}</p>}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            {/* provisioned Agents Manager list */}
+                            <div className="border border-white/[0.04] bg-[#12121e]/30 p-8 rounded-[2rem] space-y-6">
+                                <div className="pb-4 border-b border-white/[0.04]">
+                                    <h3 className="font-display text-lg font-bold text-white">Autonomous Agent Wallets</h3>
+                                    <p className="font-mono text-xs text-[#8b93a5] mt-1">Manage funded balances and yields loops.</p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {agents.map((agent) => (
+                                        <div key={agent.id} className="border border-white/[0.04] p-5 bg-white/[0.01] rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                            <div className="text-left">
+                                                <div className="flex items-center gap-2 mb-1.5">
+                                                    <span className="font-display font-bold text-sm text-white">{agent.name}</span>
+                                                    <span className={`font-mono text-[8px] px-2 py-0.5 border rounded-full ${
+                                                        agent.is_active ? 'text-[#22c787] border-[#22c787]/20 bg-[#22c787]/5' : 'text-[#ff5d5d] border-[#ff5d5d]/20 bg-[#ff5d5d]/5'
+                                                    }`}>
+                                                        {agent.is_active ? 'ACTIVE' : 'PAUSED'}
+                                                    </span>
+                                                    {agent.yield_loop_active && (
+                                                        <span className="font-mono text-[8px] px-2 py-0.5 border border-purple-500/25 text-purple-400 bg-purple-500/5 rounded-full">
+                                                            YIELD (5.5% APY)
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="font-mono text-[9px] text-[#8b93a5] mb-2 bg-[#06060c] px-3 py-1.5 border border-white/[0.04] rounded-full inline-block truncate max-w-xs sm:max-w-md">
+                                                    Address: {agent.wallet_address}
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-x-6 gap-y-1 font-mono text-[9px] text-[#8b93a5] max-w-sm">
+                                                    <span>Balance:</span>
+                                                    <span className="text-white font-semibold">{agent.wallet_balance.toFixed(4)} USDC</span>
+                                                    <span>Yield Balance:</span>
+                                                    <span className="text-white font-semibold">{(agent.yield_loop_balance || 0.0).toFixed(4)} USDC</span>
+                                                    <span>Daily Budget:</span>
+                                                    <span className="text-white font-semibold">{agent.daily_budget.toFixed(2)} USDC</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-wrap gap-2.5 font-mono text-[10px]">
+                                                <button
+                                                    onClick={() => openFundModal(agent)}
+                                                    className="border border-purple-500/30 text-purple-300 hover:bg-purple-500 hover:text-white px-4 py-2 rounded-full transition-colors flex items-center gap-1"
+                                                >
+                                                    <CircleDollarSign className="size-3.5" />
+                                                    Fund
+                                                </button>
+                                                <button
+                                                    onClick={() => handleToggleAgentActive(agent.id, agent.is_active)}
+                                                    className={`border px-4 py-2 rounded-full transition-colors ${
+                                                        agent.is_active ? 'border-[#ff5d5d]/20 text-[#ff5d5d]' : 'border-[#22c787]/20 text-[#22c787]'
+                                                    }`}
+                                                >
+                                                    {agent.is_active ? 'Pause' : 'Resume'}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleToggleYieldLoop(agent.id, agent.yield_loop_active)}
+                                                    disabled={togglingYield === agent.id}
+                                                    className="border border-white/[0.06] text-[#8b93a5] hover:text-white px-4 py-2 rounded-full"
+                                                >
+                                                    {agent.yield_loop_active ? 'Disable Yield' : 'Enable Yield'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
+                </AnimatePresence>
+
+            </main>
 
             {/* Fund Agent Modal */}
             <AnimatePresence>
                 {fundAgentModalOpen && selectedAgentForFunding && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/85 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="w-full max-w-md border border-white/10 bg-[#182030] p-8 rounded-[1.75rem] relative z-10 shadow-2xl"
+                            className="border border-white/[0.06] bg-[#12121e] p-6 max-w-sm w-full rounded-2xl text-left font-mono text-xs"
                         >
-                            <h3 className="font-display text-lg font-semibold text-ink mb-2">
-                                Fund Agent: {selectedAgentForFunding.name}
-                            </h3>
-                            <p className="font-mono text-[10px] text-muted mb-4 break-all">
-                                Send USDC on-chain from your main wallet to: {selectedAgentForFunding.wallet_address}
-                            </p>
+                            <h3 className="font-display font-bold text-sm text-white mb-2">Fund Agent: {selectedAgentForFunding.name}</h3>
+                            <p className="text-[#8b93a5] text-[10px] mb-4 leading-relaxed">Top up the agent&apos;s active on-chain balance to execute transactions.</p>
                             
                             <form onSubmit={handleFundAgent} className="space-y-4">
                                 <div>
-                                    <label className="font-mono text-[10px] text-muted uppercase tracking-wider block mb-1.5">
-                                        Funding Amount (USDC)
-                                    </label>
+                                    <label className="text-[9px] text-[#8b93a5] uppercase block mb-1.5">Amount (USDC)</label>
                                     <input
                                         type="number"
-                                        step="0.0001"
-                                        min="0.0001"
-                                        required
+                                        step="0.1"
+                                        min="0.1"
                                         value={fundingAmountInput}
                                         onChange={(e) => setFundingAmountInput(parseFloat(e.target.value))}
-                                        className="w-full bg-background border border-white/10 text-ink placeholder:text-muted px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                        className="w-full bg-[#06060c] border border-white/[0.06] text-white px-4 py-2.5 rounded-full"
+                                        required
                                     />
                                 </div>
 
-                                {fundingError && (
-                                    <p className="font-mono text-xs text-block">{fundingError}</p>
-                                )}
-                                {fundingSuccess && (
-                                    <p className="font-mono text-xs text-approve">{fundingSuccess}</p>
-                                )}
+                                {fundingSuccess && <p className="text-[#22c787] text-[10px]">{fundingSuccess}</p>}
+                                {fundingError && <p className="text-[#ff5d5d] text-[10px]">{fundingError}</p>}
 
-                                <div className="flex justify-end gap-2 pt-2">
+                                <div className="flex gap-3 justify-end pt-2">
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            setFundAgentModalOpen(false);
-                                            setSelectedAgentForFunding(null);
-                                        }}
-                                        className="font-mono border border-white/10 bg-white/5 px-5 py-2.5 rounded-full text-xs text-muted hover:text-ink transition-colors"
+                                        onClick={() => setFundAgentModalOpen(false)}
+                                        className="border border-white/[0.06] px-4 py-2 rounded-full"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={fundingLoading}
-                                        className="font-mono bg-white text-background px-5 py-2.5 rounded-full text-xs font-bold transition-all disabled:opacity-40 active:scale-[0.98]"
+                                        className="bg-[#7c3aed] text-white px-5 py-2 rounded-full"
                                     >
-                                        {fundingLoading ? 'Sending On-Chain...' : 'Confirm Funding'}
+                                        {fundingLoading ? 'Funding...' : 'Confirm'}
                                     </button>
                                 </div>
                             </form>
@@ -1358,7 +1218,66 @@ export default function Dashboard() {
                     </div>
                 )}
             </AnimatePresence>
-            <QuantCopilot />
-        </main>
+
+            {/* Agent Detail Modal overlay */}
+            <AnimatePresence>
+                {selectedMarketplaceAgent && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="border border-white/[0.06] bg-[#12121e] max-w-md w-full p-6 sm:p-8 rounded-[2rem] text-left relative max-h-[90vh] overflow-y-auto"
+                        >
+                            <button 
+                                onClick={() => setSelectedMarketplaceAgent(null)}
+                                className="absolute top-5 right-5 font-mono text-[#8b93a5] hover:text-white text-xs"
+                            >
+                                [esc]
+                            </button>
+                            <div className="mb-4">
+                                <span className="font-mono text-[8px] text-purple-400 uppercase block mb-1">Agent Profile</span>
+                                <h3 className="font-display text-lg font-bold text-white">{selectedMarketplaceAgent.name}</h3>
+                                <span className="font-mono text-[9px] text-[#8b93a5] break-all bg-black/30 px-3.5 py-1.5 border border-white/[0.04] mt-2 block rounded-full">
+                                    Address: {selectedMarketplaceAgent.address}
+                                </span>
+                            </div>
+                            <div className="space-y-4 font-mono text-xs mt-4">
+                                <p className="text-[#8b93a5] leading-relaxed text-[11px]">
+                                    {selectedMarketplaceAgent.desc}
+                                </p>
+                                <div className="grid grid-cols-2 gap-3 bg-black/30 border border-white/[0.04] p-4 rounded-xl">
+                                    <div>
+                                        <span className="text-[#8b93a5] block text-[8px] uppercase">Category</span>
+                                        <span className="text-white font-semibold">{selectedMarketplaceAgent.type}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-[#8b93a5] block text-[8px] uppercase">Creator</span>
+                                        <span className="text-white font-semibold">{selectedMarketplaceAgent.creator}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-[#8b93a5] block text-[8px] uppercase">Accuracy</span>
+                                        <span className="text-[#22c787] font-bold">{selectedMarketplaceAgent.accuracy}%</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-[#8b93a5] block text-[8px] uppercase">Reputation</span>
+                                        <span className="text-purple-400 font-bold">{selectedMarketplaceAgent.reputation}/100</span>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setSelectedMarketplaceAgent(null)}
+                                    className="w-full bg-white text-black font-semibold py-3 rounded-full hover:bg-purple-500 hover:text-white transition-colors mt-2"
+                                >
+                                    Dismiss Profile
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Faucet Demo Simulator Drawer */}
+            <DemoSimulator />
+        </div>
     );
 }

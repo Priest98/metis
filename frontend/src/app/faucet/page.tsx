@@ -463,7 +463,7 @@ export default function FaucetPage() {
                                     </div>
                                     <button
                                         onClick={() => router.push('/dashboard')}
-                                        className="flex items-center gap-2 font-mono bg-ink text-background px-5 py-3 text-xs font-semibold hover:bg-accent transition-colors"
+                                        className="w-full sm:w-auto flex items-center justify-center gap-2 font-mono bg-ink text-background px-5 py-3 text-xs font-semibold hover:bg-accent transition-colors"
                                     >
                                         <Play size={12} />
                                         Go to Dashboard → Unlock Signals
@@ -490,7 +490,7 @@ export default function FaucetPage() {
                                         <label className="font-mono text-[10px] uppercase tracking-widest text-muted block">
                                             Source Network
                                         </label>
-                                        <div className="grid grid-cols-3 gap-2">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                             {['Base Sepolia', 'Arbitrum Sepolia', 'Optimism Sepolia'].map(chain => (
                                                 <button
                                                     key={chain}

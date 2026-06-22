@@ -2,9 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
-import HeroCanvas from '@/components/HeroCanvas';
-import { LogoMark } from '@/components/LogoMark';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import DemoSimulator from '@/components/DemoSimulator';
 
 interface PlatformStats {
@@ -15,22 +13,27 @@ interface PlatformStats {
     total_backtests: number;
 }
 
-// Live hackathon counter — ticks up over time
-const BASE_STATS = { signals: 47, usdc: 0.1432, agents: 5, txns: 312 };
+// Live stats tick configuration
+const BASE_STATS = { signals: 47, usdc: 0.1432, agents: 5, txns: 312, scans: 18076 };
 const SESSION_START = Date.now();
 
 export default function LandingPage() {
     const shouldReduceMotion = useReducedMotion();
-    const easeCurve: [number, number, number, number] = [0.16, 1, 0.3, 1]; // Premium expo-out curve
+    const easeCurve: [number, number, number, number] = [0.16, 1, 0.3, 1]; // Premium bezier expo-out curve
 
     const [stats, setStats] = useState<PlatformStats | null>(null);
-    const [heroEmail, setHeroEmail] = useState('');
     const [liveStats, setLiveStats] = useState(BASE_STATS);
     const [demoOpen, setDemoOpen] = useState(false);
-    
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
     // Countdown state (Days:Hours:Minutes:Seconds)
     const [countdown, setCountdown] = useState({ d: 0, h: 4, m: 12, s: 18 });
     const [livePrices, setLivePrices] = useState<Record<string, { price: string; pct: string; up: boolean }>>({});
+
+    // Demo search address input on the landing page visualized section
+    const [visualizedSearch, setVisualizedSearch] = useState('');
+    const [visualizedRiskResult, setVisualizedRiskResult] = useState<any | null>(null);
+    const [isScanningVisualized, setIsScanningVisualized] = useState(false);
 
     useEffect(() => {
         // Fetch live prices from Binance public API
@@ -89,7 +92,6 @@ export default function LandingPage() {
                 } else if (prev.d > 0) {
                     return { d: prev.d - 1, h: 23, m: 59, s: 59 };
                 } else {
-                    // Reset to a randomized interval to keep it ticking
                     return { d: 0, h: Math.floor(Math.random() * 6), m: Math.floor(Math.random() * 60), s: 59 };
                 }
             });
@@ -110,6 +112,7 @@ export default function LandingPage() {
                 usdc:    parseFloat((BASE_STATS.usdc + elapsed * 0.000028).toFixed(6)),
                 agents:  BASE_STATS.agents,
                 txns:    BASE_STATS.txns + Math.floor(elapsed / 6),
+                scans:   BASE_STATS.scans + Math.floor(elapsed / 4)
             });
         }, 1000);
         return () => clearInterval(id);
@@ -119,13 +122,23 @@ export default function LandingPage() {
         return num < 10 ? `0${num}` : num.toString();
     };
 
-    const handleHeroSubmit = (e: React.FormEvent) => {
+    const handleVisualizedSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        if (heroEmail) {
-            window.location.href = `/login?email=${encodeURIComponent(heroEmail)}`;
-        } else {
-            window.location.href = '/login';
-        }
+        if (!visualizedSearch) return;
+        setIsScanningVisualized(true);
+        setVisualizedRiskResult(null);
+
+        setTimeout(() => {
+            setIsScanningVisualized(false);
+            setVisualizedRiskResult({
+                score: Math.floor(Math.random() * 40) + 50, // 50 - 90
+                riskFactors: [
+                    'Smart Contract containing self-destruct function pattern.',
+                    'High percentage of tokens held by top 3 whale wallets (centralized risk).',
+                    'Multiple transaction re-entrancy warning indicators found.'
+                ]
+            });
+        }, 1800);
     };
 
     // Animation variants
@@ -155,926 +168,761 @@ export default function LandingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-ink font-sans">
+        <div className="min-h-screen bg-[#06060c] text-[#ECEEF4] font-sans selection:bg-[#7c3aed] selection:text-white overflow-hidden">
+            
+            {/* Ambient Background Glows */}
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-[#7c3aed]/10 to-transparent blur-[120px] pointer-events-none" />
+            <div className="absolute top-[20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-bl from-[#7c3aed]/5 to-transparent blur-[150px] pointer-events-none" />
+            <div className="absolute bottom-[10%] left-[20%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-[#7c3aed]/8 to-transparent blur-[120px] pointer-events-none" />
 
-            {/* ────────────────── HERO ─────────────────── */}
-            <section className="relative overflow-hidden border-b border-hairline">
-                <HeroCanvas />
+            {/* ────────────────── HEADER ─────────────────── */}
+            <header className="fixed top-0 inset-x-0 z-50 bg-[#06060c]/70 backdrop-blur-md border-b border-white/[0.04]">
+                <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
+                    
+                    {/* Logo & Branding */}
+                    <Link href="/" className="flex items-center gap-2.5 group">
+                        <div className="size-8 rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] flex items-center justify-center shadow-lg shadow-[#7c3aed]/20 border border-white/10 group-hover:scale-105 transition-transform duration-300">
+                            <svg className="size-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                            </svg>
+                        </div>
+                        <span className="font-display text-lg font-bold tracking-tight text-white uppercase bg-clip-text">
+                            Risor <span className="text-xs text-purple-400 font-mono tracking-widest lowercase">by metis</span>
+                        </span>
+                    </Link>
 
-                {/* Accent glow at base of hero */}
-                <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-x-0 bottom-0 h-96 z-0"
-                    style={{ background: 'radial-gradient(ellipse 70% 80% at 50% 115%, rgba(215,255,62,0.06), transparent 70%)' }}
-                />
+                    {/* Desktop Navigation links */}
+                    <nav className="hidden md:flex items-center gap-8 font-mono text-xs text-[#8b93a5]">
+                        <Link href="/" className="text-white hover:text-purple-400 transition-colors">Home</Link>
+                        <a href="#features" className="hover:text-white transition-colors">Technology</a>
+                        <a href="#capabilities" className="hover:text-white transition-colors font-medium">Features</a>
+                        <Link href="/api-docs" className="hover:text-white transition-colors">Developers</Link>
+                    </nav>
 
-                <div className="relative mx-auto max-w-6xl px-5 py-24 sm:px-8 z-10">
-                    <div className="grid lg:grid-cols-12 gap-16 items-center min-h-[82svh]">
+                    {/* Header Action buttons */}
+                    <div className="hidden md:flex items-center gap-3">
+                        <Link href="/login" className="font-mono text-xs text-[#8b93a5] hover:text-white border border-white/[0.06] hover:border-white/20 bg-[#12121e]/40 px-4 py-2.5 rounded-full transition-colors">
+                            Link Wallet
+                        </Link>
+                        <Link href="/signup" className="font-mono text-xs font-semibold bg-white text-black hover:bg-[#7c3aed] hover:text-white px-5 py-2.5 rounded-full transition-all hover:scale-102 active:scale-98 shadow-md">
+                            Sign Up
+                        </Link>
+                    </div>
+
+                    {/* Mobile menu trigger */}
+                    <button 
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        className="md:hidden p-2 text-white hover:text-purple-400 transition-colors"
+                        aria-label="Toggle mobile menu"
+                    >
+                        <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            {mobileMenuOpen ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                            ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            )}
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Mobile Drawer Menu */}
+                <AnimatePresence>
+                    {mobileMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="md:hidden border-t border-white/[0.04] bg-[#06060c] overflow-hidden"
+                        >
+                            <div className="px-6 py-6 space-y-4 flex flex-col font-mono text-xs">
+                                <Link href="/" onClick={() => setMobileMenuOpen(false)} className="text-white">Home</Link>
+                                <a href="#features" onClick={() => setMobileMenuOpen(false)} className="text-[#8b93a5] hover:text-white">Technology</a>
+                                <a href="#capabilities" onClick={() => setMobileMenuOpen(false)} className="text-[#8b93a5] hover:text-white">Features</a>
+                                <Link href="/api-docs" onClick={() => setMobileMenuOpen(false)} className="text-[#8b93a5] hover:text-white">Developers</Link>
+                                
+                                <div className="pt-4 border-t border-white/[0.06] flex flex-col gap-3">
+                                    <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="text-center text-[#8b93a5] border border-white/[0.06] bg-[#12121e]/40 py-3 rounded-full">
+                                        Link Wallet
+                                    </Link>
+                                    <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="text-center bg-white text-black font-semibold py-3 rounded-full">
+                                        Sign Up
+                                    </Link>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </header>
+
+            {/* ────────────────── HERO SECTION ─────────────────── */}
+            <section className="relative pt-36 pb-24 md:pt-48 md:pb-36 border-b border-white/[0.04]">
+                <div className="mx-auto max-w-7xl px-6">
+                    <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
                         
-                        {/* Left Side: Copywriting & Actions */}
-                        <div className="lg:col-span-7 space-y-6">
-                            <motion.p
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6, ease: easeCurve }}
-                                className="text-accent font-mono text-xs tracking-[0.25em] font-semibold uppercase block"
-                            >
-                                powered by Google Gemini · Arc L1 Network
-                            </motion.p>
+                        {/* Left Column: Copywriting & CTAs */}
+                        <div className="lg:col-span-7 space-y-8 text-left">
+                            <div className="inline-flex items-center gap-2 bg-[#7c3aed]/10 px-3.5 py-1.5 border border-[#7c3aed]/25 rounded-full">
+                                <span className="size-1.5 rounded-full bg-[#8b5cf6] animate-pulse" />
+                                <span className="font-mono text-[10px] text-purple-300 font-bold uppercase tracking-wider">
+                                    Secure Wallet Shield active
+                                </span>
+                            </div>
 
-                            <motion.h1
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8, delay: 0.1, ease: easeCurve }}
-                                className="font-display text-5xl sm:text-6xl font-black leading-[1.05] tracking-tight text-ink uppercase"
-                            >
-                                On-Demand AI <span className="text-accent">Quant Intelligence</span> Platform
-                            </motion.h1>
+                            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.08] tracking-tight text-white">
+                                Scan Your Wallet,<br />
+                                <span className="bg-gradient-to-r from-purple-400 via-indigo-300 to-white bg-clip-text text-transparent">Detect Risk Instantly.</span>
+                            </h1>
 
-                            <motion.p
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8, delay: 0.2, ease: easeCurve }}
-                                className="max-w-xl text-sm sm:text-base text-muted leading-relaxed"
-                            >
-                                Retail traders shouldn&apos;t pay $100/month for signals they use 3 times.
-                                Metis runs AI-powered regime detection, vectorized backtesting, and
-                                precise entry coordination — unlocked for <span className="font-mono text-accent">$0.001 USDC</span> per request.
-                            </motion.p>
+                            <p className="max-w-xl text-sm sm:text-base text-[#8b93a5] leading-relaxed">
+                                A premium dynamic platform to analyze and monitor risk instantly for Web3 users and companies. Verify transaction states, assess smart contract traps, and evaluate safety before executing.
+                            </p>
 
-                            {/* Pill inline Input Field */}
-                            <motion.form
-                                onSubmit={handleHeroSubmit}
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8, delay: 0.3, ease: easeCurve }}
-                                className="relative max-w-md w-full flex items-center bg-[#161622]/40 border border-hairline rounded-full p-1"
-                            >
-                                <input
-                                    type="email"
-                                    value={heroEmail}
-                                    onChange={(e) => setHeroEmail(e.target.value)}
-                                    placeholder="Enter your email here"
-                                    className="bg-transparent text-ink placeholder:text-muted/40 pl-5 pr-32 py-2.5 w-full text-xs font-mono focus:outline-none rounded-full"
-                                />
-                                <button
-                                    type="submit"
-                                    className="absolute right-1 top-1 bottom-1 bg-accent text-background hover:bg-accent/90 font-mono text-xs font-semibold px-5 rounded-full transition-all active:scale-[0.98]"
+                            {/* Button CTA Action Row */}
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+                                <Link 
+                                    href="/signup" 
+                                    className="font-mono text-xs font-semibold bg-white text-black hover:bg-[#7c3aed] hover:text-white px-8 py-4 rounded-full transition-all text-center hover:shadow-lg hover:shadow-purple-500/10 hover:scale-[1.02] active:scale-[0.98]"
                                 >
-                                    Sign Up
-                                </button>
-                            </motion.form>
-
-                            {/* Demo + Quick Links */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.7, delay: 0.4 }}
-                                className="flex items-center gap-4 flex-wrap pt-1"
-                            >
-                                <DemoSimulator
-                                    open={demoOpen}
-                                    onClose={() => setDemoOpen(false)}
-                                    triggerClassName="flex items-center gap-2 font-mono text-xs font-semibold border border-white/15 text-ink px-4 py-2.5 rounded-full hover:border-accent hover:text-accent transition-colors"
-                                />
-                                <button
-                                    onClick={() => setDemoOpen(true)}
-                                    className="flex items-center gap-2 font-mono text-xs font-semibold bg-accent/10 border border-accent/30 text-accent px-4 py-2.5 rounded-full hover:bg-accent hover:text-background transition-colors"
-                                >
-                                    <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-                                    Watch Agent Demo
-                                </button>
-                                <Link href="/demo" className="font-mono text-xs text-muted hover:text-ink transition-colors underline underline-offset-2">
-                                    Judge Mode →
+                                    Get started
                                 </Link>
-                            </motion.div>
+                                
+                                <Link 
+                                    href="/login" 
+                                    className="font-mono text-xs font-semibold border border-white/[0.08] bg-[#12121e]/30 hover:bg-[#18182b]/60 text-white px-8 py-4 rounded-full transition-all text-center hover:border-purple-500/20 active:scale-[0.98]"
+                                >
+                                    View dashboard
+                                </Link>
+                            </div>
 
-                            {/* Identity Provider Row */}
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.8, delay: 0.4 }}
-                                className="space-y-2.5 pt-2"
-                            >
-                                <span className="font-mono text-[10px] text-muted/60 uppercase tracking-widest block">
-                                    Or Connect Instant Terminal
+                            {/* Wallet Integrations */}
+                            <div className="space-y-3.5 pt-4">
+                                <span className="font-mono text-[10px] text-[#8b93a5]/50 uppercase tracking-widest block">
+                                    Supported Auth Providers
                                 </span>
                                 <div className="flex flex-wrap items-center gap-3">
                                     {[
-                                        {
-                                            name: 'Google',
-                                            icon: (
-                                                <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
-                                                    <path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 6.133 1 1 6.133 1 12.24s5.133 11.24 11.24 11.24c6.378 0 10.623-4.484 10.623-10.82 0-.73-.08-1.28-.175-1.832H12.24z"/>
-                                                </svg>
-                                            )
-                                        },
-                                        {
-                                            name: 'Apple',
-                                            icon: (
-                                                <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
-                                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.57 2.95-1.39z"/>
-                                                </svg>
-                                            )
-                                        },
-                                        {
-                                            name: 'Telegram',
-                                            icon: (
-                                                <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
-                                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.37.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .24z"/>
-                                                </svg>
-                                            )
-                                        },
-                                        {
-                                            name: 'EVM Wallet',
-                                            icon: (
-                                                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 0 1 0 .656l-5.603 3.113a.375.375 0 0 1-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112Z" />
-                                                </svg>
-                                            )
-                                        }
-                                    ].map(prov => (
+                                        { name: 'Google', url: '/login', path: 'M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 6.133 1 1 6.133 1 12.24s5.133 11.24 11.24 11.24c6.378 0 10.623-4.484 10.623-10.82 0-.73-.08-1.28-.175-1.832H12.24z' },
+                                        { name: 'Apple', url: '/login', path: 'M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.57 2.95-1.39z' },
+                                        { name: 'Telegram', url: '/login', path: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.37.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .24z' }
+                                    ].map(p => (
                                         <Link
-                                            key={prov.name}
-                                            href="/login"
-                                            title={prov.name}
-                                            className="size-9 rounded-full border border-white/10 bg-[#182030] flex items-center justify-center text-muted hover:border-accent hover:text-accent hover:bg-[#202b3e] transition-all hover:scale-105 active:scale-95"
+                                            key={p.name}
+                                            href={p.url}
+                                            title={p.name}
+                                            className="size-10 rounded-full border border-white/[0.06] bg-[#12121e]/50 flex items-center justify-center text-[#8b93a5] hover:border-purple-500 hover:text-purple-400 hover:bg-[#18182b] transition-all hover:scale-105 active:scale-95 shadow-inner"
                                         >
-                                            {prov.icon}
+                                            <svg className="size-4.5" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d={p.path} />
+                                            </svg>
                                         </Link>
                                     ))}
+                                    
+                                    {/* EVM Wallet button */}
+                                    <Link
+                                        href="/login"
+                                        title="EVM Wallet"
+                                        className="size-10 rounded-full border border-white/[0.06] bg-[#12121e]/50 flex items-center justify-center text-[#8b93a5] hover:border-purple-500 hover:text-purple-400 hover:bg-[#18182b] transition-all hover:scale-105 active:scale-95 shadow-inner"
+                                    >
+                                        <svg className="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 0 1 0 .656l-5.603 3.113a.375.375 0 0 1-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112Z" />
+                                        </svg>
+                                    </Link>
+                                    
+                                    {/* Faucet Link & Demo trigger */}
+                                    <button
+                                        onClick={() => setDemoOpen(true)}
+                                        className="flex items-center gap-1.5 font-mono text-[10px] font-bold border border-[#7c3aed]/30 bg-[#7c3aed]/5 text-purple-300 px-3.5 py-2 rounded-full hover:bg-[#7c3aed] hover:text-white transition-colors"
+                                    >
+                                        <span className="size-1.5 rounded-full bg-purple-400 animate-pulse" />
+                                        Simulate Flow
+                                    </button>
                                 </div>
-                            </motion.div>
+                            </div>
                         </div>
 
-                        {/* Right Side: Stacked Metric Boxes */}
-                        <div className="lg:col-span-5 space-y-6">
+                        {/* Right Column: 3D Render Asset */}
+                        <div className="lg:col-span-5 flex justify-center relative select-none">
                             
-                            {/* Card 1: Next Agent Run */}
+                            {/* Neon glow backdrop */}
+                            <div className="absolute w-72 h-72 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                            
+                            {/* 3D Cylinder Image */}
                             <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.7, delay: 0.2, ease: easeCurve }}
-                                className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem] relative overflow-hidden"
+                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                transition={{ duration: 1, ease: easeCurve }}
+                                className="relative w-80 sm:w-96 aspect-square max-w-full flex items-center justify-center filter drop-shadow-[0_15px_40px_rgba(124,58,237,0.15)]"
                             >
-                                <div className="absolute right-0 top-0 w-24 h-24 bg-accent/5 rounded-full blur-xl pointer-events-none" />
-                                
-                                <div className="flex justify-between items-center mb-4">
-                                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
-                                        Next Agent Update
-                                    </span>
-                                    <div className="flex items-center gap-1.5 bg-[#22c787]/10 px-3 py-0.5 border border-[#22c787]/20 rounded-full">
-                                        <span className="size-1.5 rounded-full bg-[#22c787] animate-pulse" />
-                                        <span className="font-mono text-[9px] text-[#22c787] font-bold uppercase tracking-wider">Active</span>
-                                    </div>
-                                </div>
-
-                                <div className="font-mono text-3xl sm:text-4xl font-semibold tracking-wider text-ink tabular-nums flex items-baseline gap-1.5">
-                                    <span>{formatNumber(countdown.d)}</span>
-                                    <span className="text-xs text-muted">d</span>
-                                    <span className="text-muted/40">:</span>
-                                    <span>{formatNumber(countdown.h)}</span>
-                                    <span className="text-xs text-muted">h</span>
-                                    <span className="text-muted/40">:</span>
-                                    <span>{formatNumber(countdown.m)}</span>
-                                    <span className="text-xs text-muted">m</span>
-                                    <span className="text-muted/40">:</span>
-                                    <span className="text-accent">{formatNumber(countdown.s)}</span>
-                                    <span className="text-xs text-accent">s</span>
-                                </div>
-
-                                <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-3.5">
-                                    <span className="font-mono text-[9px] text-muted/60 uppercase">Epoch #726</span>
-                                    <Link href="/login" className="font-mono text-[10px] text-accent hover:underline flex items-center gap-1 font-semibold uppercase tracking-wider">
-                                        See live agent feed →
-                                    </Link>
-                                </div>
+                                <img
+                                    src="/hero_3d_cylinder.png"
+                                    alt="Risor 3D Cylindrical Shield Asset"
+                                    className="object-contain w-full h-full max-h-[420px] select-none pointer-events-none animate-float"
+                                />
                             </motion.div>
-
-                            {/* Card 2: 24h Signals Volume */}
-                            <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.7, delay: 0.3, ease: easeCurve }}
-                                className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]"
-                            >
-                                <span className="font-mono text-[10px] uppercase tracking-wider text-muted block mb-1.5">
-                                    24h Trading Volume
-                                </span>
-                                <div className="flex items-baseline gap-1.5">
-                                    <span className="font-display text-3xl font-black text-ink">
-                                        {stats ? `$${stats.total_usdc_earned.toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3})}` : '—'}
-                                    </span>
-                                    <span className="font-mono text-xs text-accent font-bold">USDC</span>
-                                </div>
-                                <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3.5">
-                                    <span className="font-mono text-[9px] text-muted/60 uppercase">Settled on Arc L1</span>
-                                    <Link href="/login" className="font-mono text-[10px] text-accent hover:underline flex items-center gap-1 font-semibold uppercase tracking-wider">
-                                        View tx log →
-                                    </Link>
-                                </div>
-                            </motion.div>
-
-                            {/* Card 3: Popular Signals Table */}
-                            <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.7, delay: 0.4, ease: easeCurve }}
-                                className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-5 rounded-[1.75rem]"
-                            >
-                                <span className="font-mono text-[10px] uppercase tracking-wider text-muted block mb-3.5">
-                                    Popular Signals
-                                </span>
-                                <div className="space-y-3 font-mono text-xs">
-                                    {[
-                                        { sym: 'BTC', fallbackPrice: '$67,420.00', fallbackPct: '+3.47%', fallbackUp: true },
-                                        { sym: 'ETH', fallbackPrice: '$3,240.50', fallbackPct: '-1.08%', fallbackUp: false },
-                                        { sym: 'SOL', fallbackPrice: '$145.20', fallbackPct: '+5.22%', fallbackUp: true },
-                                        { sym: 'BNB', fallbackPrice: '$580.40', fallbackPct: '-0.15%', fallbackUp: false }
-                                    ].map(coin => {
-                                        const live = livePrices[coin.sym];
-                                        const displayPrice = live ? live.price : coin.fallbackPrice;
-                                        const displayPct = live ? live.pct : coin.fallbackPct;
-                                        const isUp = live ? live.up : coin.fallbackUp;
-                                        return (
-                                            <div key={coin.sym} className="flex justify-between items-center py-0.5">
-                                                <span className="font-bold text-ink">{coin.sym}USDT</span>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-muted/80">{displayPrice}</span>
-                                                    <span className={`w-14 text-right font-bold ${isUp ? 'text-approve' : 'text-block'}`}>
-                                                        {displayPct}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </motion.div>
-
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* ───────────────── CAPABILITIES DECK ─────────── */}
-            <section className="border-b border-hairline bg-surface/30">
-                <motion.div
-                    variants={sectionRevealVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '-100px' }}
-                    className="mx-auto max-w-6xl px-5 py-20 sm:px-8"
-                >
-                    <div className="flex justify-between items-end mb-12">
-                        <div>
-                            <p className="text-accent font-mono text-[10px] tracking-[0.25em] font-semibold uppercase block mb-3">
-                                agent run types
-                            </p>
-                            <h2 className="font-display text-3xl font-black text-ink uppercase tracking-tight">
-                                Seize Your Next Max Trade
-                            </h2>
-                        </div>
-                        {/* Carousel controls */}
-                        <div className="flex items-center gap-2">
-                            <button className="size-10 rounded-full border border-hairline bg-[#111118]/50 flex items-center justify-center text-muted hover:border-accent hover:text-accent transition-colors">
-                                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                                </svg>
-                            </button>
-                            <button className="size-10 rounded-full border border-hairline bg-[#111118]/50 flex items-center justify-center text-muted hover:border-accent hover:text-accent transition-colors">
-                                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                                </svg>
-                            </button>
-                        </div>
+            {/* ────────────────── POWERED BY ADVANCED AI INTELLIGENCE ─────────────────── */}
+            <section id="features" className="py-24 border-b border-white/[0.04] bg-[#090912]/40 relative">
+                <div className="absolute inset-0 bg-grid-bg opacity-[0.15] pointer-events-none" />
+                <div className="mx-auto max-w-7xl px-6 relative z-10">
+                    
+                    <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+                        <span className="font-mono text-[10px] text-purple-400 font-bold uppercase tracking-[0.25em] block">
+                            Platform Security Core
+                        </span>
+                        <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                            Powered by Advanced AI Intelligence
+                        </h2>
+                        <p className="text-sm text-[#8b93a5] leading-relaxed">
+                            Learn more about our advanced security features and how they keep your wallet safe.
+                        </p>
                     </div>
 
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {[
                             {
-                                type: 'ANALYZE',
-                                label: 'Market regime detection.',
-                                desc: 'Gemini reads live price feeds, order-book depth, and on-chain funding rates to classify the current regime: trending, ranging, or reversal.',
-                                cost: 'real-time · $0.001 USDC',
-                                color: 'text-approve',
-                                dot: 'bg-approve'
+                                num: '01',
+                                title: 'Monitor',
+                                desc: 'Aggregate transaction history, balance trends, and token allocations across multiple chains.'
                             },
                             {
-                                type: 'BACKTEST',
-                                label: 'Strategy validation.',
-                                desc: 'Vectorized simulation across 3 years of OHLCV data. Sharpe ratio, max drawdown, win rate — quantified before you risk a single dollar.',
-                                cost: 'validated · $0.001 USDC',
-                                color: 'text-review',
-                                dot: 'bg-[#f5a623]'
+                                num: '02',
+                                title: 'Analysis',
+                                desc: 'Automatically run threat modeling on smart contracts and protocols you interact with.'
                             },
                             {
-                                type: 'SIGNAL',
-                                label: 'Entry coordinates.',
-                                desc: 'Precise entry price, take-profit levels, stop-loss coordinates, and risk-adjusted position size — ready to execute immediately.',
-                                cost: 'actionable · $0.001 USDC',
-                                color: 'text-accent',
-                                dot: 'bg-accent'
+                                num: '03',
+                                title: 'Prevent',
+                                desc: 'Get alert notifications for malicious addresses, honeypots, and sudden liquidity drains.'
+                            },
+                            {
+                                num: '04',
+                                title: 'Real-Time Analytics',
+                                desc: 'Track gas spikes, block times, and contract interactions in real-time.'
+                            },
+                            {
+                                num: '05',
+                                title: 'Token & Asset Mapping',
+                                desc: 'Map token permissions and approvals to identify hidden risk vectors.'
+                            },
+                            {
+                                num: '06',
+                                title: 'Risk Statistics',
+                                desc: 'Get a comprehensive risk score calculated based on your historical behavior.'
                             }
-                        ].map((m, idx) => (
-                            <motion.div
-                                key={m.type}
-                                variants={itemRevealVariants}
-                                whileHover={shouldReduceMotion ? {} : { y: -6, borderColor: 'rgba(255,255,255,0.18)' }}
-                                className="flex flex-col border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-8 rounded-[1.75rem] transition-all duration-300 relative overflow-hidden group"
+                        ].map((feat) => (
+                            <div 
+                                key={feat.num}
+                                className="group relative border border-white/[0.04] bg-[#12121e]/30 hover:bg-[#18182b]/50 p-8 rounded-[1.75rem] transition-all duration-300 hover:scale-[1.01] hover:border-purple-500/20"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                                <div className={`font-mono text-3xl font-black tracking-tight ${m.color}`}>{m.type}</div>
-                                <div className="font-mono mt-5 text-sm font-semibold text-ink">{m.label}</div>
-                                <p className="mt-3 text-xs leading-relaxed text-muted">{m.desc}</p>
-                                <span className="font-mono mt-8 pt-5 border-t border-white/5 inline-flex items-center gap-1.5 text-[10px] text-muted">
-                                    <span className={`inline-block size-1.5 rounded-full ${m.dot}`} />
-                                    {m.cost}
-                                </span>
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    {/* Sliding indicator dots */}
-                    <div className="flex justify-center gap-1.5 mt-8">
-                        <span className="w-6 h-1.5 bg-accent rounded-full" />
-                        <span className="w-1.5 h-1.5 bg-hairline rounded-full" />
-                        <span className="w-1.5 h-1.5 bg-hairline rounded-full" />
-                    </div>
-                </motion.div>
-            </section>
-
-            {/* ───────────────── QUANT SIGNALS FEED ─────────── */}
-            <section className="border-b border-hairline">
-                <motion.div
-                    variants={sectionRevealVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '-100px' }}
-                    className="mx-auto max-w-6xl px-5 py-24 sm:px-8"
-                >
-                    <div className="grid lg:grid-cols-2 gap-8">
-                        
-                        {/* Table 1: Active Signals */}
-                        <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem] space-y-4">
-                            <div className="flex justify-between items-center pb-2 border-b border-white/5">
-                                <span className="font-display text-lg font-bold text-ink uppercase tracking-tight">
-                                    Active Quant Signals
-                                </span>
-                                <span className="font-mono text-[9px] bg-accent/10 text-accent border border-accent/20 px-2.5 py-0.5 rounded-full uppercase font-bold tracking-wider">
-                                    Live
-                                </span>
+                                <div className="absolute top-6 right-8 font-mono text-[11px] text-purple-500/50 group-hover:text-purple-400 font-semibold">{feat.num}</div>
+                                <h3 className="font-display font-bold text-lg text-white mb-3 group-hover:text-purple-300 transition-colors">{feat.title}</h3>
+                                <p className="text-xs text-[#8b93a5] leading-relaxed">{feat.desc}</p>
                             </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full font-mono text-xs text-left">
-                                    <thead>
-                                        <tr className="text-muted/60 border-b border-white/5">
-                                            <th className="py-2.5 font-medium">Pair</th>
-                                            <th className="py-2.5 font-medium text-center">Type</th>
-                                            <th className="py-2.5 font-medium text-right">Entry</th>
-                                            <th className="py-2.5 font-medium text-right">TP / SL</th>
-                                            <th className="py-2.5 font-medium text-right">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5">
-                                        {[
-                                            { pair: 'BTCUSDT', sym: 'BTC', type: 'LONG', entry: '67,420', tpRatio: 1.05, slRatio: 0.98, typeColor: 'text-approve' },
-                                            { pair: 'ETHUSDT', sym: 'ETH', type: 'SHORT', entry: '3,240', tpRatio: 0.93, slRatio: 1.03, typeColor: 'text-block' },
-                                            { pair: 'SOLUSDT', sym: 'SOL', type: 'LONG', entry: '145.20', tpRatio: 1.08, slRatio: 0.96, typeColor: 'text-approve' },
-                                            { pair: 'BNBUSDT', sym: 'BNB', type: 'LONG', entry: '580.40', tpRatio: 1.05, slRatio: 0.97, typeColor: 'text-approve' }
-                                        ].map((row, i) => {
-                                            const live = livePrices[row.sym];
-                                            let displayEntry = row.entry;
-                                            let displayTp = (parseFloat(row.entry.replace(/,/g, '')) * row.tpRatio).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                                            let displaySl = (parseFloat(row.entry.replace(/,/g, '')) * row.slRatio).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                                            
-                                            if (live) {
-                                                const rawPrice = parseFloat(live.price.replace(/[$,]/g, ''));
-                                                if (!isNaN(rawPrice)) {
-                                                    displayEntry = rawPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                                                    displayTp = (rawPrice * row.tpRatio).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                                                    displaySl = (rawPrice * row.slRatio).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                                                }
-                                            }
-                                            return (
-                                                <tr key={i} className="hover:bg-white/[0.01]">
-                                                    <td className="py-3 font-semibold text-ink">{row.pair}</td>
-                                                    <td className={`py-3 text-center font-bold ${row.typeColor}`}>{row.type}</td>
-                                                    <td className="py-3 text-right">${displayEntry}</td>
-                                                    <td className="py-3 text-right text-muted/95">${displayTp} <span className="text-muted/40">/</span> ${displaySl}</td>
-                                                    <td className="py-3 text-right">
-                                                        <Link href="/login" className="bg-white hover:bg-accent text-background font-bold text-[10px] uppercase py-1.5 px-4 rounded-full transition-all">
-                                                            View
-                                                        </Link>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        {/* Table 2: Top Strategies */}
-                        <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem] space-y-4">
-                            <div className="flex justify-between items-center pb-2 border-b border-white/5">
-                                <span className="font-display text-lg font-bold text-ink uppercase tracking-tight">
-                                    Top Performing Strategies
-                                </span>
-                                <span className="font-mono text-[9px] text-muted uppercase">3y Backtests</span>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full font-mono text-xs text-left">
-                                    <thead>
-                                        <tr className="text-muted/60 border-b border-white/5">
-                                            <th className="py-2.5 font-medium">Strategy</th>
-                                            <th className="py-2.5 font-medium text-center">Win Rate</th>
-                                            <th className="py-2.5 font-medium text-right">Sharpe</th>
-                                            <th className="py-2.5 font-medium text-right">Returns</th>
-                                            <th className="py-2.5 font-medium text-right">Run</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5">
-                                        {[
-                                            { name: 'Momentum Breakout', win: '64.2%', sharpe: '1.84', returns: '+114.5%' },
-                                            { name: 'Mean Reversion', win: '58.7%', sharpe: '1.42', returns: '+89.2%' },
-                                            { name: 'Trend Following', win: '61.5%', sharpe: '1.65', returns: '+102.8%' },
-                                            { name: 'Grid Arbitrage', win: '72.1%', sharpe: '2.10', returns: '+156.4%' }
-                                        ].map((row, i) => (
-                                            <tr key={i} className="hover:bg-white/[0.01]">
-                                                <td className="py-3 font-semibold text-ink">{row.name}</td>
-                                                <td className="py-3 text-center text-approve font-bold">{row.win}</td>
-                                                <td className="py-3 text-right">{row.sharpe}</td>
-                                                <td className="py-3 text-right text-approve font-bold">{row.returns}</td>
-                                                <td className="py-3 text-right">
-                                                    <Link href="/login" className="border border-white/10 hover:border-accent hover:text-accent hover:bg-accent hover:text-background font-bold text-[10px] uppercase py-1.5 px-4 rounded-full transition-all">
-                                                        Run
-                                                    </Link>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                    </div>
-                </motion.div>
-            </section>
-
-            {/* ───────────────── PRODUCT SHOWCASE (MOBILE) ─────────── */}
-            <section className="border-b border-hairline relative overflow-hidden bg-surface/10">
-                <motion.div
-                    variants={sectionRevealVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '-100px' }}
-                    className="mx-auto max-w-6xl px-5 py-24 sm:px-8 grid lg:grid-cols-2 gap-16 items-center"
-                >
-                    <div className="space-y-6">
-                        <p className="text-accent font-mono text-[10px] tracking-[0.25em] font-semibold uppercase block">
-                            trade on the go
-                        </p>
-                        <h2 className="font-display text-4xl font-black text-ink uppercase tracking-tight">
-                            Metis Mobile Terminal.<br />
-                            Trade Anytime, Anywhere.
-                        </h2>
-                        <p className="text-sm text-muted leading-relaxed max-w-lg">
-                            Trade smarter with the Metis responsive web interface. Securely audit active signals, 
-                            manage dynamic agent wallets, monitor strategy backtesting execution, and toggle 
-                            idle funds yield loops directly from your mobile device.
-                        </p>
-                        
-                        {/* QR Code Block & Badges */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pt-4">
-                            <div className="bg-[#182030] border border-white/10 p-3.5 rounded-[1.5rem] flex items-center justify-center shadow-lg shrink-0">
-                                {/* SVG mock QR Code */}
-                                <svg className="size-24 text-ink" viewBox="0 0 100 100" fill="currentColor">
-                                    <path d="M5 5h30v30H5V5zm6 6v18h18V11H11zm59-6h30v30H70V5zm6 6v18h18V11H76ZM5 70h30v30H5V70zm6 6v18h18V76H11zm34-31h10v10H45V45zm15 15h10v10H60V60zm-15 15h10v10H45V75zm15-30h10v10H60V45zm15 15h10v10H75V60zM45 5h10v10H45V5zm0 15h10v10H45V20zm15 10h10v10H60V30zm30 30h10v10H90V60zm-30 15h10v10H60V75zm30 15h10v10H90V90zm-15-15h10v10H75V75z" />
-                                    <rect x="20" y="20" width="4" height="4" />
-                                    <rect x="76" y="20" width="4" height="4" />
-                                    <rect x="20" y="76" width="4" height="4" />
-                                </svg>
-                            </div>
-                            <div className="space-y-3.5">
-                                <p className="font-mono text-xs text-muted">
-                                    Scan QR code to immediately launch the app on your iOS or Android device.
-                                </p>
-                                <div className="flex flex-wrap gap-2.5 font-mono text-[9px] uppercase tracking-wider font-bold">
-                                    {['App Store', 'Google Play', 'Android APK', 'API Docs'].map(item => (
-                                        <span key={item} className="px-3.5 py-1.5 border border-white/10 bg-white/5 text-ink rounded-full">
-                                            {item}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right side: Chip Graphic */}
-                    <div className="flex justify-center relative">
-                        {/* Glow backdrops */}
-                        <div className="absolute size-96 bg-accent/5 rounded-full blur-[80px] pointer-events-none" />
-                        
-                        {/* Core Processor Chip SVG layout */}
-                        <div className="relative w-80 h-80 flex items-center justify-center">
-                            
-                            {/* Circuit lines SVG */}
-                            <svg className="absolute inset-0 size-full text-white/[0.03]" viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                                <circle cx="100" cy="100" r="85" strokeDasharray="3 3" />
-                                <circle cx="100" cy="100" r="65" />
-                                <path d="M100 15v50M100 135v50M15 100h50M135 100h50" />
-                                <path d="m40 40 30 30M160 160l-30-30M160 40l-30 30M40 160l30-30" />
-                            </svg>
-
-                            {/* Outer animated rotating dashed ring */}
-                            <div className="absolute border border-dashed border-accent/25 rounded-full size-64 animate-[spin_25s_linear_infinite]" />
-                            
-                            {/* Inner rotating solid ring */}
-                            <div className="absolute border border-hairline border-t-accent/40 rounded-full size-52 animate-[spin_12s_linear_infinite_reverse]" />
-
-                            {/* Chip Body */}
-                            <div className="w-36 h-36 border border-white/10 bg-[#182030] rounded-[1.75rem] shadow-2xl p-4 flex flex-col justify-between items-center relative z-10 transition-transform duration-500 hover:scale-105">
-                                <div className="w-full flex justify-between">
-                                    <span className="size-2 rounded-full bg-white/10" />
-                                    <span className="size-2 rounded-full bg-white/10" />
-                                </div>
-                                <div className="flex flex-col items-center gap-1.5 py-4">
-                                    <LogoMark width={24} height={24} />
-                                    <span className="font-display text-sm font-semibold text-ink">METIS CORE</span>
-                                    <span className="font-mono text-[8px] text-accent/80 tracking-widest uppercase">Agent L1</span>
-                                </div>
-                                <div className="w-full flex justify-between">
-                                    <span className="size-2 rounded-full bg-white/10" />
-                                    <span className="size-2 rounded-full bg-white/10" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-            </section>
-
-            {/* ───────────────── FEATURE SHOWCASE 1 (YIELD) ─────────── */}
-            <section id="yield-showcase" className="border-b border-hairline">
-                <motion.div
-                    variants={sectionRevealVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '-100px' }}
-                    className="mx-auto max-w-6xl px-5 py-24 sm:px-8 grid lg:grid-cols-12 gap-16 items-center"
-                >
-                    
-                    {/* Left: Desktop / Mobile Mockup */}
-                    <div className="lg:col-span-6 relative flex items-center justify-center">
-                        <div className="absolute size-96 bg-accent/5 rounded-full blur-[85px] pointer-events-none" />
-                        
-                        {/* Mockup layout */}
-                        <div className="relative w-full max-w-md bg-[#182030] border border-white/10 rounded-[1.75rem] shadow-2xl p-5 overflow-hidden group">
-                            
-                            {/* Card Glow Header */}
-                            <div className="absolute right-0 top-0 w-32 h-32 bg-accent/5 rounded-full blur-xl pointer-events-none" />
-
-                            {/* Header row */}
-                            <div className="flex justify-between items-center pb-4 border-b border-white/5">
-                                <div className="flex items-center gap-2">
-                                    <span className="size-2.5 rounded-full bg-accent animate-pulse" />
-                                    <span className="font-mono text-xs font-semibold text-ink">Agent-4 (BTC Momentum)</span>
-                                </div>
-                                <span className="font-mono text-[9px] text-muted">Arc Wallet</span>
-                            </div>
-
-                            {/* Balance info */}
-                            <div className="py-6 space-y-2">
-                                <span className="font-mono text-[10px] text-muted uppercase tracking-wider block">Yield Pool Balance</span>
-                                <div className="flex items-baseline gap-1.5">
-                                    <span className="font-display text-4xl font-black text-ink">52.847</span>
-                                    <span className="font-mono text-xs text-accent font-bold">USDC</span>
-                                </div>
-                                <span className="font-mono text-[9px] text-[#22c787] font-semibold block">
-                                    +0.054 USDC earned interest (+5.50% APY)
-                                </span>
-                            </div>
-
-                            {/* Grid metrics inside mockup */}
-                            <div className="grid grid-cols-2 gap-3.5 border-t border-white/5 pt-4 font-mono text-xs">
-                                <div className="bg-black/10 p-3.5 border border-white/5 rounded-2xl">
-                                    <span className="text-muted/60 block text-[9px] uppercase tracking-wider mb-1">State</span>
-                                    <span className="font-bold text-approve uppercase">Lending Pool</span>
-                                </div>
-                                <div className="bg-black/10 p-3.5 border border-white/5 rounded-2xl">
-                                    <span className="text-muted/60 block text-[9px] uppercase tracking-wider mb-1">Network APY</span>
-                                    <span className="font-bold text-ink">5.50%</span>
-                                </div>
-                            </div>
-
-                            {/* Toggle Button layout */}
-                            <div className="mt-5 bg-background border border-white/5 p-3 rounded-2xl flex items-center justify-between">
-                                <span className="font-mono text-[10px] text-muted">DeFi Yield Loop</span>
-                                <div className="w-10 h-5 bg-[#22c787] rounded-full p-0.5 flex items-center justify-end relative shadow-inner">
-                                    <div className="size-4 bg-[#0a0a0f] rounded-full shadow-md" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right: Text Copy */}
-                    <div className="lg:col-span-6 space-y-6">
-                        <p className="text-accent font-mono text-[10px] tracking-[0.25em] font-semibold uppercase block">
-                            secure trading trend
-                        </p>
-                        <h2 className="font-display text-4xl font-black text-ink uppercase tracking-tight">
-                            Effortless DeFi Personalization
-                        </h2>
-                        <p className="text-sm text-muted leading-relaxed">
-                            Metis Exchange features an autonomous yield loop system built natively for on-chain agent fleets. 
-                            When your deployed agents are not locked in active momentum or breakout setups, their idle capital 
-                            is automatically redirected into verified DeFi lending pools.
-                        </p>
-                        <ul className="space-y-3 font-mono text-xs text-muted/90">
-                            <li className="flex items-center gap-2.5">
-                                <span className="size-1.5 rounded-full bg-accent" />
-                                Earn a dynamic 5.50% interest APY automatically
-                            </li>
-                            <li className="flex items-center gap-2.5">
-                                <span className="size-1.5 rounded-full bg-accent" />
-                                Sub-cent gas fees on the Arc Testnet layer
-                            </li>
-                            <li className="flex items-center gap-2.5">
-                                <span className="size-1.5 rounded-full bg-accent" />
-                                Instant liquidity redemption when trigger conditions hit
-                            </li>
-                        </ul>
-                        <div className="pt-2">
-                            <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-white text-background hover:bg-accent hover:text-background font-mono text-xs font-semibold px-6 py-3.5 rounded-full transition-colors">
-                                Explore Yield Loops →
-                            </Link>
-                        </div>
-                    </div>
-
-                </motion.div>
-            </section>
-
-            {/* ───────────────── FEATURE SHOWCASE 2 (COINS) ─────────── */}
-            <section className="border-b border-hairline bg-[#0c0c14]/40 relative overflow-hidden">
-                <div className="absolute inset-0 bg-grid-bg opacity-30 pointer-events-none" />
-                
-                <motion.div
-                    variants={sectionRevealVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '-100px' }}
-                    className="mx-auto max-w-6xl px-5 py-24 sm:px-8 grid lg:grid-cols-12 gap-16 items-center"
-                >
-                    
-                    {/* Left: Floating glowing coin stack */}
-                    <div className="lg:col-span-6 flex items-center justify-center relative order-last lg:order-first">
-                        <div className="absolute size-96 bg-accent/5 rounded-full blur-[80px] pointer-events-none" />
-                        
-                        <div className="flex gap-4 relative">
-                            {/* Coin 1: USDC */}
-                            <div className="w-20 h-20 bg-gradient-to-tr from-accent/80 to-[#1e1e2d] border border-accent/25 rounded-2xl shadow-xl flex items-center justify-center text-background font-bold text-2xl animate-float">
-                                $
-                            </div>
-                            {/* Coin 2: ETH */}
-                            <div className="w-20 h-20 bg-[#111118]/80 border border-hairline rounded-2xl shadow-xl flex items-center justify-center text-ink font-mono text-lg mt-8" style={{ animationDelay: '1.5s' }}>
-                                Ξ
-                            </div>
-                            {/* Coin 3: BTC */}
-                            <div className="w-20 h-20 bg-[#111118]/80 border border-hairline rounded-2xl shadow-xl flex items-center justify-center text-ink font-mono text-lg mt-16" style={{ animationDelay: '3s' }}>
-                                ₿
-                            </div>
-                            {/* Coin 4: SOL */}
-                            <div className="w-20 h-20 bg-[#111118]/80 border border-hairline rounded-2xl shadow-xl flex items-center justify-center text-ink font-mono text-sm mt-4" style={{ animationDelay: '4.5s' }}>
-                                S
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right: Text details */}
-                    <div className="lg:col-span-6 space-y-6">
-                        <p className="text-accent font-mono text-[10px] tracking-[0.25em] font-semibold uppercase block">
-                            community & guidance
-                        </p>
-                        <h2 className="font-display text-4xl font-black text-ink uppercase tracking-tight">
-                            Join Metis with a community of crypto explorers
-                        </h2>
-                        <p className="text-sm text-muted leading-relaxed">
-                            Embark on an institutional-grade algorithmic trading journey. Build custom strategy nodes, 
-                            evaluate indicators, execute micro-payment verified queries, and share optimized 
-                            rules lists with a decentralized community of quant engineers.
-                        </p>
-                        <div className="pt-2">
-                            <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-accent text-background hover:bg-accent/90 font-mono text-xs font-semibold px-6 py-3 rounded-full transition-colors shadow-lg shadow-accent/15">
-                                Start Exploring Now
-                            </Link>
-                        </div>
-                    </div>
-
-                </motion.div>
-            </section>
-
-            {/* ───────────────── PARTNERS ROW ─────────── */}
-            <section className="border-b border-hairline bg-surface/20 py-10">
-                <div className="mx-auto max-w-6xl px-5 sm:px-8">
-                    <p className="text-center font-mono text-[9px] text-muted/40 uppercase tracking-widest mb-6">
-                        Supported Data & Integration Partners
-                    </p>
-                    <div className="flex flex-wrap justify-center items-center gap-10 sm:gap-16 opacity-35 hover:opacity-50 transition-opacity duration-300">
-                        {['CoinMarketCap', 'TradingView', 'Lepton AI', 'Google Gemini', 'Arc L1'].map(partner => (
-                            <span key={partner} className="font-display text-xs sm:text-sm font-semibold tracking-wider text-muted uppercase">
-                                {partner}
-                            </span>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* ───────────────── SUPPORTED NETWORKS ─────────── */}
-            <section className="border-b border-hairline bg-surface/40">
-                <motion.div
-                    variants={sectionRevealVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '-100px' }}
-                    className="mx-auto max-w-6xl px-5 py-24 sm:px-8"
-                >
-                    <div className="text-center max-w-xl mx-auto mb-14 space-y-3">
-                        <p className="text-accent font-mono text-[10px] tracking-[0.25em] font-semibold uppercase block">
-                            supported collection
-                        </p>
-                        <h2 className="font-display text-3xl font-black text-ink uppercase tracking-tight">
-                            Explore Our Crypto Collection
+            {/* ────────────────── WHAT IT CAN DO ─────────────────── */}
+            <section id="capabilities" className="py-24 border-b border-white/[0.04]">
+                <div className="mx-auto max-w-7xl px-6">
+                    
+                    <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+                        <span className="font-mono text-[10px] text-purple-400 font-bold uppercase tracking-[0.25em] block">
+                            Risk Prevention Suite
+                        </span>
+                        <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                            What It Can Do
                         </h2>
-                        <p className="text-xs text-muted leading-relaxed">
-                            Integrate signals across multiple high-throughput blockchains. Micro-settlements 
-                            execute on Arc Testnet via bridged USDC.
+                        <p className="text-sm text-[#8b93a5] leading-relaxed">
+                            Explore the features and tools we offer to protect your wallet and assets.
                         </p>
                     </div>
 
-                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                        {[
-                            { name: 'Bitcoin Network', ticker: 'BTC', gas: '<0.0001 USDC', speed: '10 min avg', active: '1,428 runs' },
-                            { name: 'Ethereum Network', ticker: 'ETH', gas: '$0.001 USDC', speed: '12 sec avg', active: '4,842 runs' },
-                            { name: 'Solana Network', ticker: 'SOL', gas: '<0.0001 USDC', speed: '400 ms avg', active: '3,612 runs' },
-                            { name: 'Arbitrum One', ticker: 'ARB', gas: '<0.0005 USDC', speed: '250 ms avg', active: '2,947 runs' }
-                        ].map((chain, i) => (
-                            <motion.div
-                                key={i}
-                                variants={itemRevealVariants}
-                                whileHover={shouldReduceMotion ? {} : { y: -4, borderColor: 'rgba(255,255,255,0.12)' }}
-                                className="bg-[#182030] border border-white/10 p-5 rounded-[1.75rem] shadow-[0_15px_30px_rgba(0,0,0,0.3)] transition-all duration-300 space-y-4"
-                            >
-                                <div className="flex justify-between items-center">
-                                    <div className="size-8 rounded-xl bg-background border border-white/5 flex items-center justify-center font-mono font-bold text-xs text-ink">
-                                        {chain.ticker.slice(0, 2)}
+                    <div className="grid lg:grid-cols-12 gap-8 items-stretch">
+                        
+                        {/* Left Column: Transaction Risk & Address Analysis */}
+                        <div className="lg:col-span-7 flex flex-col gap-8">
+                            
+                            {/* Card 1: Transaction Risk Detection */}
+                            <div className="border border-white/[0.04] bg-[#12121e]/30 p-8 rounded-[1.75rem] flex flex-col sm:flex-row items-center justify-between gap-8 group hover:border-purple-500/10 transition-colors">
+                                <div className="space-y-4 max-w-md">
+                                    <span className="font-mono text-[10px] text-purple-400 font-bold uppercase tracking-wider block">Pre-tx scanner</span>
+                                    <h3 className="font-display font-bold text-xl text-white">Transaction Risk Detection</h3>
+                                    <p className="text-xs text-[#8b93a5] leading-relaxed">
+                                        Scan transactions before they are submitted to the network. Avoid drainers, slippage traps, and honeypot forks.
+                                    </p>
+                                </div>
+                                <div className="relative size-32 shrink-0 flex items-center justify-center">
+                                    
+                                    {/* Radar circles */}
+                                    <div className="absolute inset-0 border border-purple-500/10 rounded-full animate-ping" style={{ animationDuration: '4s' }} />
+                                    <div className="absolute w-[80%] h-[80%] border border-purple-500/20 rounded-full" />
+                                    <div className="absolute w-[50%] h-[50%] border border-purple-500/35 rounded-full" />
+                                    <div className="absolute size-2 bg-purple-500 rounded-full shadow-[0_0_10px_#7c3aed]" />
+                                    
+                                    {/* Sweeping bar SVG */}
+                                    <svg className="absolute inset-0 size-full text-purple-500/20 animate-spin" style={{ animationDuration: '6s' }} viewBox="0 0 100 100" fill="none">
+                                        <path d="M50 50L100 50" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                        <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            {/* Card 2: Deep Address Analysis */}
+                            <div className="border border-white/[0.04] bg-[#12121e]/30 p-8 rounded-[1.75rem] flex flex-col sm:flex-row items-center justify-between gap-8 group hover:border-purple-500/10 transition-colors">
+                                <div className="space-y-4 max-w-md">
+                                    <span className="font-mono text-[10px] text-purple-400 font-bold uppercase tracking-wider block">Entity Auditor</span>
+                                    <h3 className="font-display font-bold text-xl text-white">Deep Address Analysis</h3>
+                                    <p className="text-xs text-[#8b93a5] leading-relaxed">
+                                        Evaluate the security profile of any destination address. Detect contract deployment history, code verified state, and previous risk alerts.
+                                    </p>
+                                </div>
+                                <div className="size-32 bg-[#1b1b2f]/30 border border-white/[0.04] rounded-2xl flex items-center justify-center shrink-0">
+                                    <svg className="size-16 text-purple-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18a2.25 2.25 0 0 1-2.25 2.25h-6A2.25 2.25 0 0 1 5.25 18v-8.25A2.25 2.25 0 0 1 7.5 7.5h3m3.75 3.75 3 3m0 0-3 3m3-3h-9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Column: Smart Contract Analyzer & Portfolio Safety Score */}
+                        <div className="lg:col-span-5 flex flex-col gap-8">
+                            
+                            {/* Card 3: Smart Contract Analyzer */}
+                            <div className="flex-1 border border-white/[0.04] bg-[#12121e]/30 p-8 rounded-[1.75rem] flex flex-col justify-between gap-6 group hover:border-purple-500/10 transition-colors">
+                                <div className="space-y-4">
+                                    <span className="font-mono text-[10px] text-purple-400 font-bold uppercase tracking-wider block">Bytecode compiler</span>
+                                    <h3 className="font-display font-bold text-xl text-white">Smart Contract Analyzer</h3>
+                                    <p className="text-xs text-[#8b93a5] leading-relaxed">
+                                        Instantly check contract source code for vulnerability patterns. Detect re-entrancy vectors, uninitialized logic, and mint permission leaks.
+                                    </p>
+                                </div>
+                                <div className="h-28 bg-[#18182b]/30 border border-white/[0.04] rounded-xl flex items-center justify-center p-4 relative overflow-hidden">
+                                    <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#7c3aed]/80 to-transparent animate-bounce" style={{ animationDuration: '3s' }} />
+                                    <svg className="size-12 text-[#8b93a5]/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            {/* Card 4: Portfolio Safety Score */}
+                            <div className="flex-1 border border-white/[0.04] bg-[#12121e]/30 p-8 rounded-[1.75rem] flex flex-col justify-between gap-6 group hover:border-purple-500/10 transition-colors">
+                                <div className="space-y-4">
+                                    <span className="font-mono text-[10px] text-purple-400 font-bold uppercase tracking-wider block">Portfolio rating</span>
+                                    <h3 className="font-display font-bold text-xl text-white">Portfolio Safety Score</h3>
+                                    <p className="text-xs text-[#8b93a5] leading-relaxed">
+                                        Get an overall security rating for your entire Web3 portfolio. We compile wallet risk levels and score them based on protocol exposures.
+                                    </p>
+                                </div>
+                                <div className="h-28 bg-[#18182b]/30 border border-white/[0.04] rounded-xl flex items-center justify-center p-4">
+                                    <svg className="size-12 text-[#22c787]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            {/* ────────────────── YOUR WALLET'S SAFETY, VISUALIZED ─────────────────── */}
+            <section className="py-24 border-b border-white/[0.04] bg-[#090912]/40 relative">
+                <div className="absolute inset-0 bg-grid-bg opacity-[0.1] pointer-events-none" />
+                <div className="mx-auto max-w-7xl px-6 relative z-10">
+                    
+                    <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+                        
+                        {/* Left Column: Context Copy */}
+                        <div className="lg:col-span-5 space-y-6 text-left">
+                            <span className="font-mono text-[10px] text-purple-400 font-bold uppercase tracking-[0.25em] block">
+                                Interactive Sandbox
+                            </span>
+                            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                                Your Wallet&apos;s Safety, Visualized
+                            </h2>
+                            <p className="text-sm text-[#8b93a5] leading-relaxed">
+                                A modern dashboard designed to present your risk factors clearly and intuitively. Enter any wallet address below to simulate a real-time risk diagnostic scan.
+                            </p>
+                            
+                            <form onSubmit={handleVisualizedSearch} className="relative flex items-center bg-[#12121e]/80 border border-white/[0.06] focus-within:border-purple-500/50 rounded-full p-1.5 transition-colors">
+                                <input
+                                    type="text"
+                                    value={visualizedSearch}
+                                    onChange={(e) => setVisualizedSearch(e.target.value)}
+                                    placeholder="Enter wallet address (0x...)"
+                                    className="bg-transparent text-white placeholder:text-[#8b93a5]/40 pl-5 pr-32 py-2.5 w-full text-xs font-mono focus:outline-none rounded-full"
+                                    required
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={isScanningVisualized}
+                                    className="absolute right-1.5 top-1.5 bottom-1.5 bg-[#7c3aed] text-white hover:bg-[#8b5cf6] font-mono text-xs font-semibold px-5 rounded-full transition-all disabled:opacity-40"
+                                >
+                                    {isScanningVisualized ? 'Scanning...' : 'Scan Now'}
+                                </button>
+                            </form>
+
+                            <div className="pt-2">
+                                <Link 
+                                    href="/login" 
+                                    className="font-mono text-xs text-purple-400 hover:text-white transition-colors hover:underline underline-offset-4"
+                                >
+                                    Launch Full Dashboard →
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Right Column: Visualized Dashboard Preview */}
+                        <div className="lg:col-span-7">
+                            <div className="border border-white/[0.06] bg-[#0c0c14] shadow-2xl p-6 rounded-[2rem] space-y-6 text-left relative overflow-hidden">
+                                <div className="absolute right-0 top-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl pointer-events-none" />
+                                
+                                <div className="flex justify-between items-center pb-4 border-b border-white/[0.04]">
+                                    <div className="flex items-center gap-2">
+                                        <span className="size-2.5 rounded-full bg-red-500 animate-pulse" />
+                                        <span className="font-mono text-[9px] uppercase tracking-wider text-[#8b93a5]">Risor Scanner v1.0</span>
                                     </div>
-                                    <span className="font-mono text-[9px] text-[#22c787] font-semibold bg-[#22c787]/10 px-2 py-0.5 rounded-full">
-                                        Active
-                                    </span>
+                                    <span className="font-mono text-[9px] text-[#8b93a5]/60 uppercase">Epoch #726</span>
+                                </div>
+
+                                <div className="grid md:grid-cols-12 gap-6">
+                                    
+                                    {/* Left Sub-col: Safety Score Dial */}
+                                    <div className="md:col-span-5 flex flex-col items-center justify-center border border-white/[0.04] bg-[#12121e]/30 p-5 rounded-2xl text-center">
+                                        <span className="font-mono text-[9px] text-[#8b93a5] uppercase mb-4 block">Safety Score</span>
+                                        <div className="relative size-32 flex items-center justify-center">
+                                            
+                                            {/* Circular Dial SVG */}
+                                            <svg className="absolute inset-0 size-full -rotate-90" viewBox="0 0 100 100">
+                                                <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.03)" strokeWidth="8" fill="none" />
+                                                <circle 
+                                                    cx="50" 
+                                                    cy="50" 
+                                                    r="40" 
+                                                    stroke="#7c3aed" 
+                                                    strokeWidth="8" 
+                                                    fill="none" 
+                                                    strokeDasharray="251.2" 
+                                                    strokeDashoffset={visualizedRiskResult ? 251.2 - (251.2 * visualizedRiskResult.score) / 100 : 251.2 - (251.2 * 74) / 100}
+                                                    className="transition-all duration-1000 ease-out"
+                                                />
+                                            </svg>
+                                            
+                                            <div className="flex flex-col items-center justify-center font-mono">
+                                                <span className="text-3xl font-bold text-white tabular-nums">
+                                                    {visualizedRiskResult ? visualizedRiskResult.score : 74}%
+                                                </span>
+                                                <span className="text-[8px] text-purple-400 font-bold uppercase mt-0.5">Secure</span>
+                                            </div>
+                                        </div>
+                                        <p className="font-mono text-[8px] text-[#8b93a5] mt-4 leading-relaxed max-w-[150px]">
+                                            {visualizedRiskResult ? 'Target scan metrics resolved.' : 'Your wallet is moderately secure. Fix outstanding alerts.'}
+                                        </p>
+                                    </div>
+
+                                    {/* Right Sub-col: Risk Factors List */}
+                                    <div className="md:col-span-7 space-y-4">
+                                        <div>
+                                            <span className="font-mono text-[9px] text-[#8b93a5] uppercase block mb-1">Detected Risk Factors</span>
+                                            <span className="font-display text-sm font-bold text-white">Active Threat Vectors</span>
+                                        </div>
+
+                                        <div className="space-y-2.5 font-mono text-[10px] text-[#8b93a5]">
+                                            {isScanningVisualized ? (
+                                                <div className="py-12 flex flex-col items-center justify-center gap-3 text-center">
+                                                    <div className="size-5 animate-spin border-b border-purple-500 rounded-full" />
+                                                    <span className="text-[10px] text-purple-400">Compiling bytecode patterns...</span>
+                                                </div>
+                                            ) : visualizedRiskResult ? (
+                                                visualizedRiskResult.riskFactors.map((fact: string, idx: number) => (
+                                                    <div key={idx} className="flex gap-2 p-2.5 border border-white/[0.04] bg-white/[0.01] rounded-lg">
+                                                        <span className="text-red-400 font-bold">⚠️</span>
+                                                        <span>{fact}</span>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <>
+                                                    <div className="flex gap-2 p-2.5 border border-white/[0.04] bg-white/[0.01] rounded-lg">
+                                                        <span className="text-amber-400 font-bold">⚠️</span>
+                                                        <span>Contract containing approval validation anomalies.</span>
+                                                    </div>
+                                                    <div className="flex gap-2 p-2.5 border border-white/[0.04] bg-white/[0.01] rounded-lg">
+                                                        <span className="text-red-400 font-bold">⚠️</span>
+                                                        <span>Large wallet balance centralized in a single asset pool.</span>
+                                                    </div>
+                                                    <div className="flex gap-2 p-2.5 border border-white/[0.04] bg-white/[0.01] rounded-lg">
+                                                        <span className="text-purple-400 font-bold">ℹ️</span>
+                                                        <span>Last wallet state scan executed 2 minutes ago.</span>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            {/* ────────────────── STATISTICS BAR: SCANNING WALLETS 24/7 ─────────────────── */}
+            <section className="py-24 border-b border-white/[0.04]">
+                <div className="mx-auto max-w-7xl px-6">
+                    <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+                        <span className="font-mono text-[10px] text-purple-400 font-bold uppercase tracking-[0.25em] block">
+                            Global Coverage Stats
+                        </span>
+                        <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                            Scanning Wallets Worldwide — 24/7
+                        </h2>
+                        <p className="text-sm text-[#8b93a5] leading-relaxed">
+                            Join thousands of users who trust Risor to secure their assets.
+                        </p>
+                    </div>
+
+                    <div className="max-w-4xl mx-auto border border-white/[0.04] bg-[#12121e]/30 shadow-2xl p-10 rounded-[2rem] text-center mb-16 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-transparent pointer-events-none" />
+                        <div className="absolute size-40 bg-[#7c3aed]/5 rounded-full blur-3xl pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                        
+                        <div className="font-display text-5xl sm:text-6xl font-black text-white tracking-wider tabular-nums">
+                            {liveStats.scans.toLocaleString()}
+                        </div>
+                        <p className="font-mono text-[10px] text-purple-400 uppercase tracking-widest mt-3 font-semibold">
+                            total active scans today
+                        </p>
+                    </div>
+
+                    {/* Three Sub-Metrics Below */}
+                    <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto font-mono text-xs">
+                        {[
+                            {
+                                icon: (
+                                    <svg className="size-4.5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A11.952 11.952 0 0 1 12 16.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 3 12c0-.778.099-1.533.284-2.253" />
+                                    </svg>
+                                ),
+                                title: '5+ Chains',
+                                desc: 'Ethereum, Arbitrum, BSC, Polygon & Solana'
+                            },
+                            {
+                                icon: (
+                                    <svg className="size-4.5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                                    </svg>
+                                ),
+                                title: '25k+ Threat Indicators',
+                                desc: 'Detected malwares, drainers, phishing & honeypots'
+                            },
+                            {
+                                icon: (
+                                    <svg className="size-4.5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                                    </svg>
+                                ),
+                                title: '99.9% Uptime',
+                                desc: 'Guaranteed real-time threat intelligence feeds'
+                            }
+                        ].map((stat, i) => (
+                            <div key={i} className="flex gap-4 p-5 border border-white/[0.04] bg-[#12121e]/20 rounded-2xl items-start">
+                                <div className="p-3 bg-[#1b1b2f] border border-white/[0.04] rounded-xl shrink-0">
+                                    {stat.icon}
+                                </div>
+                                <div className="space-y-1.5 text-left">
+                                    <h4 className="font-display text-sm font-bold text-white">{stat.title}</h4>
+                                    <p className="text-[10px] text-[#8b93a5] leading-relaxed">{stat.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* ────────────────── WHO IT'S FOR ─────────────────── */}
+            <section className="py-24 border-b border-white/[0.04] bg-[#090912]/40 relative">
+                <div className="absolute inset-0 bg-grid-bg opacity-[0.1] pointer-events-none" />
+                <div className="mx-auto max-w-7xl px-6 relative z-10">
+                    
+                    <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+                        <span className="font-mono text-[10px] text-purple-400 font-bold uppercase tracking-[0.25em] block">
+                            Target Audience
+                        </span>
+                        <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                            Who It&apos;s For
+                        </h2>
+                        <p className="text-sm text-[#8b93a5] leading-relaxed">
+                            Risor is built for everyone from retail crypto users to large organizations.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                        {[
+                            {
+                                title: 'Cryptoinvestors',
+                                desc: 'Monitor your personal wallets, staking positions, and DeFi interactions.',
+                                icon: (
+                                    <svg className="size-7 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                    </svg>
+                                )
+                            },
+                            {
+                                title: 'Alpha/Web3 Teams',
+                                desc: 'Secure treasury multisigs, project wallets, and employee credentials.',
+                                icon: (
+                                    <svg className="size-7 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m0 0a5.941 5.941 0 0 1-.54-2.228 3 3 0 0 0-4.682-2.72m.94 3.198.002.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 6 21c2.17 0 4.207-.576 5.963-1.584A6.062 6.062 0 0 1 12 18.719m0 0a5.941 5.941 0 0 1-.54-2.228M12 18.72a9.094 9.094 0 0 0 3.741-.479M12 18.72c-2.17 0-4.207-.576-5.963-1.584A9.062 9.062 0 0 1 12 16.5m0-12a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm7.72 2.25a2.25 2.25 0 1 0-4.5 0 2.25 2.25 0 0 0 4.5 0ZM4.5 6.75a2.25 2.25 0 1 0 4.5 0 2.25 2.25 0 0 0-4.5 0Z" />
+                                    </svg>
+                                )
+                            },
+                            {
+                                title: 'Security Analysts',
+                                desc: 'Run ad-hoc scans on contracts and protocol deployments.',
+                                icon: (
+                                    <svg className="size-7 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.746 3.746 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+                                    </svg>
+                                )
+                            }
+                        ].map((t, idx) => (
+                            <div 
+                                key={idx}
+                                className="border border-white/[0.04] bg-[#12121e]/30 hover:border-purple-500/10 p-8 rounded-[1.75rem] flex flex-col justify-between h-56 transition-colors"
+                            >
+                                <div className="p-3 bg-[#1b1b2f] border border-white/[0.04] rounded-xl self-start">
+                                    {t.icon}
                                 </div>
                                 <div>
-                                    <h4 className="font-display text-sm font-bold text-ink">{chain.name}</h4>
-                                    <span className="font-mono text-[10px] text-muted">{chain.ticker}</span>
+                                    <h3 className="font-display font-bold text-base text-white mb-2">{t.title}</h3>
+                                    <p className="text-xs text-[#8b93a5] leading-relaxed">{t.desc}</p>
                                 </div>
-                                <div className="border-t border-white/5 pt-3 grid grid-cols-2 gap-2 font-mono text-[9px] text-muted">
-                                    <div>
-                                        <span className="block text-[8px] uppercase text-muted/50 mb-0.5">Est. Gas</span>
-                                        <span className="font-semibold text-ink">{chain.gas}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-[8px] uppercase text-muted/50 mb-0.5">Speed</span>
-                                        <span className="font-semibold text-ink">{chain.speed}</span>
-                                    </div>
-                                </div>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
-                </motion.div>
+                </div>
             </section>
 
-            {/* ────────────── LIVE HACKATHON STATS ──────────── */}
-            <section className="border-y border-hairline bg-[#0d1119] py-12 sm:py-16">
-                <div className="mx-auto max-w-6xl px-5 sm:px-8">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7 }}
-                        className="text-center mb-10"
-                    >
-                        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent mb-2">
-                            live · since hackathon start
-                        </p>
-                        <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink">
-                            The Agent Economy Is Already Running
+            {/* ────────────────── CALL TO ACTION ─────────────────── */}
+            <section className="py-24 border-b border-white/[0.04] relative">
+                <div className="absolute w-[40%] h-[40%] rounded-full bg-gradient-to-tr from-[#7c3aed]/5 to-transparent blur-[120px] pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                <div className="mx-auto max-w-7xl px-6 relative z-10 text-center">
+                    
+                    <div className="max-w-3xl mx-auto space-y-8">
+                        <h2 className="font-display text-4xl sm:text-5xl font-black text-white leading-tight">
+                            Protect Your Wallet — Before It&apos;s Too Late.
                         </h2>
-                    </motion.div>
+                        
+                        <p className="text-sm sm:text-base text-[#8b93a5] leading-relaxed max-w-xl mx-auto">
+                            Start monitoring your wallets and assets with Risor&apos;s premium security suite today. Take advantage of low gas micro-settlements on the Arc L1 Network.
+                        </p>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        {[
-                            { label: 'Signals Generated', value: liveStats.signals.toString(), suffix: '', accent: false },
-                            { label: 'USDC Transacted', value: liveStats.usdc.toFixed(4), suffix: ' USDC', accent: true },
-                            { label: 'Active Agents', value: liveStats.agents.toString(), suffix: '', accent: false },
-                            { label: 'Arc L1 Txns', value: liveStats.txns.toString(), suffix: '', accent: false },
-                        ].map((stat, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: i * 0.08 }}
-                                className="border border-white/10 bg-[#182030] rounded-[1.5rem] p-5 text-center"
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+                            <Link 
+                                href="/signup" 
+                                className="w-full sm:w-auto font-mono text-xs font-semibold bg-white text-black hover:bg-[#7c3aed] hover:text-white px-8 py-4 rounded-full transition-all hover:scale-102 active:scale-98"
                             >
-                                <p className={`font-mono text-2xl sm:text-3xl font-bold tabular-nums ${
-                                    stat.accent ? 'text-accent' : 'text-ink'
-                                }`}>
-                                    {stat.value}{stat.suffix}
-                                </p>
-                                <p className="font-mono text-[10px] text-muted uppercase tracking-wider mt-2">
-                                    {stat.label}
-                                </p>
-                                <div className="mt-3 h-0.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                    <motion.div
-                                        className={`h-full rounded-full ${stat.accent ? 'bg-accent' : 'bg-white/20'}`}
-                                        animate={{ width: ['30%', '100%', '45%', '80%'] }}
-                                        transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-                                    />
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    {/* Arc L1 live indicator */}
-                    <div className="mt-6 flex items-center justify-center gap-3">
-                        <span className="size-2 rounded-full bg-approve animate-pulse" />
-                        <span className="font-mono text-[11px] text-muted">
-                            Connected to <span className="text-ink font-semibold">Arc L1 Testnet</span> · Last block: <span className="text-approve font-mono">#{(8429100 + Math.floor((Date.now() - SESSION_START) / 12000)).toLocaleString()}</span>
-                        </span>
+                                Get started
+                            </Link>
+                            
+                            <button 
+                                onClick={() => setDemoOpen(true)}
+                                className="w-full sm:w-auto font-mono text-xs font-semibold border border-white/[0.08] bg-[#12121e]/30 hover:bg-[#18182b]/60 text-white px-8 py-4 rounded-full transition-all active:scale-0.98"
+                            >
+                                Simulate Agent
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            {/* ────────────────── FOOTER ───────────────── */}
-            <footer>
-                {/* Upper Footer Links */}
-                <div className="mx-auto max-w-6xl px-5 pt-20 pb-12 sm:px-8 border-b border-hairline grid gap-10 sm:grid-cols-2 lg:grid-cols-4 font-mono text-xs text-left">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 text-ink">
-                            <LogoMark width={18} height={18} />
-                            <span className="font-display text-base font-black uppercase tracking-tight">Metis</span>
+            {/* ────────────────── FOOTER ─────────────────── */}
+            <footer className="bg-[#040408]">
+                <div className="mx-auto max-w-7xl px-6 py-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 border-b border-white/[0.04] text-left">
+                    
+                    {/* Brand column */}
+                    <div className="space-y-4 font-mono text-xs text-[#8b93a5]">
+                        <div className="flex items-center gap-2.5 text-white">
+                            <div className="size-6 rounded-lg bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] flex items-center justify-center">
+                                <svg className="size-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                                </svg>
+                            </div>
+                            <span className="font-display text-sm font-bold uppercase tracking-tight text-white">Risor</span>
                         </div>
-                        <p className="text-[11px] text-muted leading-relaxed max-w-xs">
-                            On-demand AI-powered quantitative trading signals. Underpinned by Google Gemini 1.5 Pro and settled via USDC on Arc L1.
+                        <p className="text-[10px] leading-relaxed max-w-xs">
+                            A premium dynamic platform to analyze and monitor risk instantly for Web3 users and companies. Underpinned by Google Gemini 1.5 Pro and settled via USDC on Arc L1.
                         </p>
                     </div>
 
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-ink uppercase tracking-wider text-[11px]">Company</h4>
-                        <ul className="space-y-2 text-muted">
-                            <li><Link href="#" className="hover:text-accent transition-colors">About Us</Link></li>
-                            <li><Link href="#" className="hover:text-accent transition-colors">Features</Link></li>
-                            <li><Link href="#" className="hover:text-accent transition-colors">Tech Stack</Link></li>
-                            <li><Link href="#" className="hover:text-accent transition-colors">Hackathon Details</Link></li>
-                        </ul>
-                    </div>
-
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-ink uppercase tracking-wider text-[11px]">Resources</h4>
-                        <ul className="space-y-2 text-muted">
-                            <li><Link href="/api-docs" className="hover:text-accent transition-colors">API Docs</Link></li>
-                            <li><Link href="#" className="hover:text-accent transition-colors">USDC Micropayments</Link></li>
-                            <li><Link href="#" className="hover:text-accent transition-colors">Backtesting Logic</Link></li>
-                            <li><Link href="#" className="hover:text-accent transition-colors">Guides & Tutorials</Link></li>
-                        </ul>
-                    </div>
-
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-ink uppercase tracking-wider text-[11px]">Community</h4>
-                        <ul className="space-y-2 text-muted">
-                            <li><a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors">GitHub Repository</a></li>
-                            <li><a href="https://discord.com" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors">Discord Server</a></li>
-                            <li><a href="https://twitter.com" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors">Twitter Feed</a></li>
-                            <li><Link href="#" className="hover:text-accent transition-colors">Vercel Console</Link></li>
-                        </ul>
-                    </div>
+                    {/* Columns */}
+                    {[
+                        {
+                            title: 'Product',
+                            links: [
+                                { label: 'Features', url: '#features' },
+                                { label: 'Capabilities', url: '#capabilities' },
+                                { label: 'API Docs', url: '/api-docs' },
+                                { label: 'Demo Sandbox', url: '/demo' }
+                            ]
+                        },
+                        {
+                            title: 'Legal',
+                            links: [
+                                { label: 'Privacy Policy', url: '#' },
+                                { label: 'Terms of Use', url: '#' },
+                                { label: 'Disclaimer', url: '#' },
+                                { label: 'Audit Report', url: '#' }
+                            ]
+                        },
+                        {
+                            title: 'Developers',
+                            links: [
+                                { label: 'GitHub Repos', url: 'https://github.com' },
+                                { label: 'Arc Network Scan', url: 'https://testnet.arcscan.app' },
+                                { label: 'Circle Faucet', url: 'https://faucet.circle.com' },
+                                { label: 'Vercel Console', url: '#' }
+                            ]
+                        }
+                    ].map((col, idx) => (
+                        <div key={idx} className="space-y-4 font-mono text-xs">
+                            <h4 className="font-bold text-white uppercase tracking-wider text-[10px]">{col.title}</h4>
+                            <ul className="space-y-2.5 text-[#8b93a5]">
+                                {col.links.map((lnk, lIdx) => (
+                                    <li key={lIdx}>
+                                        <Link href={lnk.url} className="hover:text-purple-400 transition-colors">
+                                            {lnk.label}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
                 </div>
 
-                {/* Lower Footer Bottom Bar */}
-                <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-mono text-muted">
-                    <div className="flex items-center gap-2">
-                        <span className="inline-block size-1.5 rounded-full bg-accent animate-pulse" />
-                        <span>Built for the Lepton Agents Hackathon.</span>
+                {/* Bottom credits */}
+                <div className="mx-auto max-w-7xl px-6 py-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] font-mono text-[#8b93a5]">
+                    <div>
+                        <span>© 2026 Risor. All Rights Reserved. Built for Lepton Agents Hackathon.</span>
                     </div>
-                    <div className="flex items-center gap-6">
-                        <span>© 2026 Metis. All Rights Reserved.</span>
-                        <div className="flex gap-3">
-                            <Link href="#" className="hover:text-accent">Privacy Policy</Link>
-                            <span className="text-hairline">|</span>
-                            <Link href="#" className="hover:text-accent">Terms of Use</Link>
-                        </div>
+                    <div className="flex gap-4">
+                        <Link href="#" className="hover:text-purple-400">Privacy</Link>
+                        <span className="text-white/5">|</span>
+                        <Link href="#" className="hover:text-purple-400">Terms</Link>
                     </div>
                 </div>
             </footer>
+
+            {/* Simulated flow drawer overlay */}
+            <DemoSimulator open={demoOpen} onClose={() => setDemoOpen(false)} />
         </div>
     );
 }

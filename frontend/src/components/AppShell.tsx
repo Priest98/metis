@@ -32,7 +32,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className={
                 isLandingPage ? '' :
                 isAuthPage    ? '' :
-                                'pt-20 min-h-screen'
+                                'pt-16 pb-24 md:pt-20 md:pb-0 min-h-screen'
             }>
                 <AnimatePresence mode="wait" initial={false}>
                     <motion.div

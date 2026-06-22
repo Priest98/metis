@@ -104,7 +104,7 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
             variants={shakeVariants}
             animate={paymentStatus === 'failed' ? 'failed' : ''}
             whileHover={shouldReduceMotion ? {} : { y: -4, borderColor: 'rgba(255,255,255,0.08)', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}
-            className="group relative bg-[#182030] rounded-[1.75rem] p-6 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] transition-all duration-300 overflow-hidden"
+            className="group relative bg-[#182030] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] transition-all duration-300 overflow-hidden"
         >
             
             {/* Visual gradient overlay matching BUY/SELL direction */}
@@ -116,7 +116,7 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                 {/* Header */}
                 <div className="flex items-start justify-between mb-5">
                     <div>
-                        <h3 className="text-2xl font-bold tracking-tight text-white">{signal.symbol}</h3>
+                        <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{signal.symbol}</h3>
                         <div className="flex items-center gap-2 mt-1.5">
                             <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-3 py-0.5 rounded-full ${
                                 isBuy 
@@ -380,7 +380,7 @@ function PriceElement({ label, value, color, gated }: { label: string; value: nu
     return (
         <div className="text-center">
             <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">{label}</span>
-            <span className={`text-xs font-bold leading-none ${color}`}>
+            <span className={`text-[10px] sm:text-xs font-bold leading-none ${color}`}>
                 {gated ? '• • • • •' : value.toFixed(5)}
             </span>
         </div>
