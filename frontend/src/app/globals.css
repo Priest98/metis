@@ -32,10 +32,10 @@
   --scrollbar-hover:      rgba(215, 255, 62, 0.5);
 }
 
-/* Light theme — warm linen */
+/* Light theme — premium cream */
 .light {
-  --color-background:     #F4EFE6;
-  --color-background-rgb: 244 239 230;
+  --color-background:     #FAF5EB;
+  --color-background-rgb: 250 245 235;
   --color-surface:        rgba(255, 255, 255, 0.80);
   --color-surface-rgb:    255 255 255;
   --color-ink:            #111111;
@@ -52,9 +52,9 @@
   --color-block-rgb:      220 53 53;
   --color-hairline:       rgba(0, 0, 0, 0.10);
   --color-hairline-rgb:   0 0 0;
-  --nav-bg:               rgba(244, 239, 230, 0.92);
+  --nav-bg:               rgba(250, 245, 235, 0.92);
   --nav-shadow:           rgba(0, 0, 0, 0.10);
-  --scrollbar-track:      #F4EFE6;
+  --scrollbar-track:      #FAF5EB;
   --scrollbar-thumb:      rgba(0, 0, 0, 0.15);
   --scrollbar-hover:      rgba(200, 155, 60, 0.55);
 }
