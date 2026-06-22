@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { LogoMark } from '@/components/LogoMark';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { 
     LayoutDashboard, Cpu, Play, History, Wallet, 
     BookOpen, Menu, X, LogOut, ShieldAlert 
