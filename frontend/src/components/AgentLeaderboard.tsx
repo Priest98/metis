@@ -110,6 +110,36 @@ function MiniSparkline({ data }: { data: number[] }) {
     );
 }
 
+// ── Seed Evolution Logs ────────────────────────────────────────────────────────
+
+const EVOLUTION_LOGS: Record<string, string[]> = {
+    '1': [
+        'Optimized Bollinger Band width from 2.0 to 1.94 (increased win rate projection +1.8%)',
+        'Shifted Trend Strength (ADX) filter threshold from 25.0 to 28.0 to screen false breakouts',
+        'Tuned RSI breakout period from 14 to 12 based on high volatility regime feedback'
+    ],
+    '2': [
+        'Shifted RSI entry trigger limit from 30 to 32 to capture early trending momentum',
+        'Accrued DeFI yield from loop: re-allocated 15% profits to signal security stake',
+        'Adjusted MACD fast period parameter from 12 to 10 to reduce execution latency'
+    ],
+    '3': [
+        'Updated VaR portfolio exposure limits: restricted exposure max to 15.0%',
+        'Adjusted reward-to-risk limit from 2.0x to 2.2x to buffer high slippage events',
+        'Recalibrated volatility drag parameters: auto-widened stops by 0.5% during trending regimes'
+    ],
+    '4': [
+        'Re-trained local sentiment embedding projection weights on updated macro dataset',
+        'Boosted Twitter sentiment source reliability factor by +4.5% based on alpha scores',
+        'Filtered out spam news headers using secondary perplexity threshold criteria'
+    ],
+    '5': [
+        'Recalibrated cross-pool gas fee sensitivity parameters to prioritize low-slippage routes',
+        'Tuned slippage tolerance limits from 0.5% to 0.7% to capture flash arbitrage opportunities',
+        'Accrued DeFi yield: auto-harvested interest and reinvested to liquidity stake pool'
+    ]
+};
+
 // ── Expanded Row Detail ───────────────────────────────────────────────────────
 
 function AgentDetail({ agent }: { agent: AgentRecord }) {
@@ -138,6 +168,25 @@ function AgentDetail({ agent }: { agent: AgentRecord }) {
                 <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05] col-span-2 sm:col-span-1">
                     <p className="font-mono text-[9px] text-muted uppercase tracking-wider mb-1">About</p>
                     <p className="font-mono text-[10px] text-muted leading-relaxed">{agent.desc}</p>
+                </div>
+
+                {/* Evolution Log */}
+                <div className="bg-black/30 rounded-xl p-3.5 border border-white/[0.05] col-span-full">
+                    <p className="font-mono text-[9px] text-accent uppercase tracking-wider mb-2 flex items-center gap-1.5 font-bold">
+                        <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+                        Autonomous Evolution Log (Reinforcement learning)
+                    </p>
+                    <div className="space-y-1.5 font-mono text-[10px] text-muted">
+                        {(EVOLUTION_LOGS[agent.id] || [
+                            'Agent self-optimized: adjusted strategy parameters to optimize Win Rate.',
+                            'Accrued DeFi yield: auto-harvested interest and reinvested to liquidity pool.'
+                        ]).map((log, index) => (
+                            <div key={index} className="flex items-start gap-2">
+                                <span className="text-accent/60">⚡</span>
+                                <span>{log}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </motion.div>

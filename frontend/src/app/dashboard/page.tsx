@@ -12,6 +12,7 @@ import DemoSimulator from '@/components/DemoSimulator';
 import AgentLeaderboard from '@/components/AgentLeaderboard';
 import LivePaymentFeed from '@/components/LivePaymentFeed';
 import AgentNetworkGraph from '@/components/AgentNetworkGraph';
+import QuantCopilot from '@/components/QuantCopilot';
 import api from '@/lib/api';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -1357,6 +1358,7 @@ export default function Dashboard() {
                     </div>
                 )}
             </AnimatePresence>
+            <QuantCopilot />
         </main>
     );
 }

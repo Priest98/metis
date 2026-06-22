@@ -81,6 +81,16 @@ export default function FaucetPage() {
     const [agents, setAgents]               = useState<any[]>([]);
     const [copiedAgentId, setCopiedAgentId] = useState<string | null>(null);
 
+    // Tab state
+    const [activeTab, setActiveTab] = useState<'faucet' | 'bridge'>('faucet');
+
+    // Bridge Simulator State
+    const [sourceChain, setSourceChain] = useState('Base Sepolia');
+    const [bridgeAmount, setBridgeAmount] = useState('50.0');
+    const [bridgeStep, setBridgeStep] = useState<number | null>(null);
+    const [bridgeTxHash, setBridgeTxHash] = useState('');
+    const [relayerTxHash, setRelayerTxHash] = useState('');
+
     useEffect(() => {
         if (!authLoading && !user) router.push('/login');
     }, [user, authLoading, router]);
@@ -156,6 +166,61 @@ export default function FaucetPage() {
         else setActiveStep('confirm');
     };
 
+    const handleBridge = async () => {
+        if (!bridgeAmount || isNaN(parseFloat(bridgeAmount)) || parseFloat(bridgeAmount) <= 0) {
+            alert('Please enter a valid amount.');
+            return;
+        }
+        
+        setBridgeStep(0);
+        const txHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+        setBridgeTxHash(txHash);
+
+        // Step 0 -> Step 1 after 1.5s
+        setTimeout(() => {
+            setBridgeStep(1);
+
+            // Step 1 -> Step 2 after 1.5s
+            setTimeout(() => {
+                setBridgeStep(2);
+                const relTxHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+                setRelayerTxHash(relTxHash);
+
+                // Step 2 -> Step 3 after 1.5s
+                setTimeout(() => {
+                    setBridgeStep(3);
+
+                    // Step 3 -> Completed after 1.5s
+                    setTimeout(async () => {
+                        setBridgeStep(4);
+                        
+                        // Sync with mock faucet backend endpoint
+                        try {
+                            const res = await api.post('/wallet/faucet', {
+                                amount: parseFloat(bridgeAmount),
+                                mock: true
+                            });
+                            if (res.data && res.data.wallet_balance !== undefined) {
+                                setBalance(res.data.wallet_balance);
+                                setBalanceJumped(true);
+                                setTimeout(() => setBalanceJumped(false), 2500);
+                            }
+                        } catch (err) {
+                            console.error("Failed to update wallet balance on bridge simulation completion:", err);
+                        }
+
+                    }, 1500);
+                }, 1500);
+            }, 1500);
+        }, 1500);
+    };
+
+    const handleResetBridge = () => {
+        setBridgeStep(null);
+        setBridgeTxHash('');
+        setRelayerTxHash('');
+    };
+
     const ease: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
     if (authLoading) {
@@ -174,205 +239,457 @@ export default function FaucetPage() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease }}
-                className="mb-12"
+                className="mb-8"
             >
                 <p className="eyebrow mb-3">testnet setup</p>
                 <h1 className="font-display text-3xl font-semibold text-ink">
                     Get Testnet Funds & Try the Platform
                 </h1>
                 <p className="font-mono text-xs text-muted mt-2 max-w-xl">
-                    Claim free USDC from the Arc testnet faucet, then use it to pay{' '}
-                    <span className="text-accent">$0.001 USDC</span> per signal — exactly like production, but with free money.
+                    Claim free USDC from the Arc testnet faucet or use the cross-chain bridge simulator to deposit mock USDC. Pay <span className="text-accent">$0.001 USDC</span> per signal.
                 </p>
             </motion.div>
 
+            {/* Tab Selector */}
+            <div className="flex border-b border-hairline mb-8 gap-6 font-mono text-xs">
+                <button
+                    onClick={() => setActiveTab('faucet')}
+                    className={`pb-3 font-semibold transition-colors relative ${
+                        activeTab === 'faucet' ? 'text-accent' : 'text-muted hover:text-ink'
+                    }`}
+                >
+                    {activeTab === 'faucet' && (
+                        <motion.div
+                            layoutId="activeTabUnderline"
+                            className="absolute bottom-0 inset-x-0 h-0.5 bg-accent"
+                        />
+                    )}
+                    Circle Faucet Guide
+                </button>
+                <button
+                    onClick={() => setActiveTab('bridge')}
+                    className={`pb-3 font-semibold transition-colors relative ${
+                        activeTab === 'bridge' ? 'text-accent' : 'text-muted hover:text-ink'
+                    }`}
+                >
+                    {activeTab === 'bridge' && (
+                        <motion.div
+                            layoutId="activeTabUnderline"
+                            className="absolute bottom-0 inset-x-0 h-0.5 bg-accent"
+                        />
+                    )}
+                    Cross-Chain Bridge Simulator
+                </button>
+            </div>
+
             <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
 
-                {/* ── Left: Step-by-step ──────────────────────────────── */}
-                <div className="space-y-3">
-
-                    {/* Step 1 — Copy address */}
-                    <StepCard
-                        step={STEPS[0]}
-                        active={activeStep === 'copy'}
-                        done={activeStep !== 'copy'}
-                    >
-                        <div className="mt-4 space-y-3">
-                            <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Your Arc testnet wallet</p>
-                            <div className="flex items-center gap-2 border border-hairline bg-background p-3">
-                                <span className="font-mono text-xs text-ink flex-1 truncate select-all">
-                                    {walletAddress || 'Loading…'}
-                                </span>
-                                <button
-                                    onClick={handleCopy}
-                                    disabled={!walletAddress}
-                                    className="flex items-center gap-1.5 font-mono text-[10px] font-semibold px-3 py-1.5 bg-accent text-background hover:bg-white transition-colors disabled:opacity-40 shrink-0"
-                                >
-                                    {copied ? <Check size={11} /> : <Copy size={11} />}
-                                    {copied ? 'Copied!' : 'Copy'}
-                                </button>
-                            </div>
-                            <p className="font-mono text-[10px] text-muted">
-                                This is the wallet the platform uses to pay for signals on-chain.
-                            </p>
-                            {agents.length > 0 && (
-                                <div className="mt-4 pt-4 border-t border-hairline space-y-3">
-                                    <p className="font-mono text-[10px] uppercase tracking-widest text-muted">AI Agent Wallets (Optional)</p>
-                                    <p className="font-mono text-[10px] text-muted leading-relaxed">
-                                        You can also copy your AI Agent&apos;s wallet address to claim faucet funds directly to it:
+                {/* ── Left Content ──────────────────────────────── */}
+                <div>
+                    {activeTab === 'faucet' ? (
+                        <div className="space-y-3">
+                            {/* Step 1 — Copy address */}
+                            <StepCard
+                                step={STEPS[0]}
+                                active={activeStep === 'copy'}
+                                done={activeStep !== 'copy'}
+                            >
+                                <div className="mt-4 space-y-3">
+                                    <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Your Arc testnet wallet</p>
+                                    <div className="flex items-center gap-2 border border-hairline bg-background p-3">
+                                        <span className="font-mono text-xs text-ink flex-1 truncate select-all">
+                                            {walletAddress || 'Loading…'}
+                                        </span>
+                                        <button
+                                            onClick={handleCopy}
+                                            disabled={!walletAddress}
+                                            className="flex items-center gap-1.5 font-mono text-[10px] font-semibold px-3 py-1.5 bg-accent text-background hover:bg-white transition-colors disabled:opacity-40 shrink-0"
+                                        >
+                                            {copied ? <Check size={11} /> : <Copy size={11} />}
+                                            {copied ? 'Copied!' : 'Copy'}
+                                        </button>
+                                    </div>
+                                    <p className="font-mono text-[10px] text-muted">
+                                        This is the wallet the platform uses to pay for signals on-chain.
                                     </p>
-                                    <div className="space-y-2">
-                                        {agents.map(a => (
-                                            <div key={a.id} className="flex items-center gap-2 border border-hairline bg-surface p-2.5">
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="font-mono text-[10px] font-bold text-ink truncate">{a.name}</p>
-                                                    <p className="font-mono text-[9px] text-muted truncate">{a.wallet_address}</p>
-                                                </div>
-                                                <button
-                                                    onClick={() => handleCopyAgent(a.id, a.wallet_address)}
-                                                    className="flex items-center gap-1 font-mono text-[9px] px-2.5 py-1 bg-background border border-hairline text-ink hover:text-accent hover:border-accent transition-colors shrink-0"
+                                    {agents.length > 0 && (
+                                        <div className="mt-4 pt-4 border-t border-hairline space-y-3">
+                                            <p className="font-mono text-[10px] uppercase tracking-widest text-muted">AI Agent Wallets (Optional)</p>
+                                            <p className="font-mono text-[10px] text-muted leading-relaxed">
+                                                You can also copy your AI Agent&apos;s wallet address to claim faucet funds directly to it:
+                                            </p>
+                                            <div className="space-y-2">
+                                                {agents.map(a => (
+                                                    <div key={a.id} className="flex items-center gap-2 border border-hairline bg-surface p-2.5">
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="font-mono text-[10px] font-bold text-ink truncate">{a.name}</p>
+                                                            <p className="font-mono text-[9px] text-muted truncate">{a.wallet_address}</p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleCopyAgent(a.id, a.wallet_address)}
+                                                            className="flex items-center gap-1 font-mono text-[9px] px-2.5 py-1 bg-background border border-hairline text-ink hover:text-accent hover:border-accent transition-colors shrink-0"
+                                                        >
+                                                            {copiedAgentId === a.id ? <Check size={10} /> : <Copy size={10} />}
+                                                            {copiedAgentId === a.id ? 'Copied!' : 'Copy'}
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </StepCard>
+
+                            {/* Step 2 — Faucet */}
+                            <StepCard
+                                step={STEPS[1]}
+                                active={activeStep === 'faucet'}
+                                done={activeStep === 'confirm' || activeStep === 'signal'}
+                            >
+                                <div className="mt-4 space-y-3">
+                                    {FAUCETS.map(f => (
+                                        <a
+                                            key={f.name}
+                                            href={f.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={() => setActiveStep('confirm')}
+                                            className={`flex items-center justify-between gap-4 border p-4 transition-colors group ${
+                                                f.primary
+                                                    ? 'border-accent/40 bg-[rgba(215,255,62,0.04)] hover:border-accent/70'
+                                                    : 'border-hairline bg-surface hover:border-white/20'
+                                            }`}
+                                        >
+                                            <div>
+                                                <p className={`font-mono text-xs font-semibold ${f.primary ? 'text-accent' : 'text-ink'}`}>
+                                                    {f.name}
+                                                </p>
+                                                <p className="font-mono text-[10px] text-muted mt-0.5">{f.note}</p>
+                                            </div>
+                                            <ExternalLink size={13} className="text-muted group-hover:text-ink transition-colors shrink-0" />
+                                        </a>
+                                    ))}
+                                    <div className="border border-dashed border-hairline p-3">
+                                        <p className="font-mono text-[10px] text-muted leading-relaxed">
+                                            💡 <strong className="text-ink">Tip:</strong> After pasting your address and clicking &quot;Send&quot;, wait ~10–30 seconds for the transaction to confirm. Then come back and hit &quot;Refresh Balance&quot; below.
+                                        </p>
+                                    </div>
+                                </div>
+                            </StepCard>
+
+                            {/* Step 3 — Confirm balance */}
+                            <StepCard
+                                step={STEPS[2]}
+                                active={activeStep === 'confirm'}
+                                done={activeStep === 'signal'}
+                            >
+                                <div className="mt-4 space-y-3">
+                                    {/* Live balance display */}
+                                    <div className={`border p-4 transition-all duration-500 ${
+                                        balanceJumped
+                                            ? 'border-approve/60 bg-[rgba(34,199,135,0.08)]'
+                                            : 'border-hairline bg-background'
+                                    }`}>
+                                        <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-1">On-chain USDC balance</p>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className={`font-display text-4xl font-bold tabular-nums transition-colors ${
+                                                balanceJumped ? 'text-approve' : 'text-ink'
+                                            }`}>
+                                                {balance !== null ? balance.toFixed(4) : '—'}
+                                            </span>
+                                            <span className="font-mono text-sm text-accent font-semibold">USDC</span>
+                                            {balanceJumped && (
+                                                <motion.span
+                                                    initial={{ opacity: 0, y: 4 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="font-mono text-[10px] text-approve"
                                                 >
-                                                    {copiedAgentId === a.id ? <Check size={10} /> : <Copy size={10} />}
-                                                    {copiedAgentId === a.id ? 'Copied!' : 'Copy'}
-                                                </button>
+                                                    ✓ Funds received!
+                                                </motion.span>
+                                            )}
+                                        </div>
+                                        {pollingActive && !balanceJumped && (
+                                            <p className="font-mono text-[9px] text-muted mt-1 flex items-center gap-1">
+                                                <span className="inline-block size-1 rounded-full bg-accent animate-pulse" />
+                                                Auto-refreshing every 15s…
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <button
+                                        onClick={handleRefresh}
+                                        disabled={refreshing}
+                                        className="flex items-center gap-2 font-mono text-xs border border-hairline px-4 py-2.5 text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40"
+                                    >
+                                        <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
+                                        {refreshing ? 'Refreshing…' : 'Refresh Balance'}
+                                    </button>
+
+                                    {balance !== null && balance > 0 && (
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="flex items-center gap-2 font-mono text-[10px] text-approve"
+                                        >
+                                            <CheckCircle2 size={12} />
+                                            Balance confirmed on Arc testnet — you&apos;re ready to test!
+                                        </motion.div>
+                                    )}
+                                </div>
+                            </StepCard>
+
+                            {/* Step 4 — Use signal */}
+                            <StepCard
+                                step={STEPS[3]}
+                                active={activeStep === 'signal'}
+                                done={false}
+                            >
+                                <div className="mt-4 space-y-3">
+                                    <p className="font-mono text-xs text-muted leading-relaxed">
+                                        Your wallet now has real testnet USDC. Every signal unlock costs exactly{' '}
+                                        <span className="text-accent font-semibold">$0.001 USDC</span> — verified on Arc L1 via HTTP 402.
+                                    </p>
+                                    <div className="grid grid-cols-3 gap-px bg-hairline border border-hairline">
+                                        {[
+                                            { label: 'Signal cost', value: '$0.001 USDC' },
+                                            { label: 'Your balance', value: balance !== null ? `$${balance.toFixed(3)}` : '—' },
+                                            { label: 'Signals available', value: balance !== null ? Math.floor(balance / 0.001).toLocaleString() : '—' },
+                                        ].map(m => (
+                                            <div key={m.label} className="bg-surface p-3">
+                                                <p className="font-mono text-[9px] uppercase text-muted">{m.label}</p>
+                                                <p className="font-display text-base font-semibold text-ink">{m.value}</p>
                                             </div>
                                         ))}
                                     </div>
+                                    <button
+                                        onClick={() => router.push('/dashboard')}
+                                        className="flex items-center gap-2 font-mono bg-ink text-background px-5 py-3 text-xs font-semibold hover:bg-accent transition-colors"
+                                    >
+                                        <Play size={12} />
+                                        Go to Dashboard → Unlock Signals
+                                    </button>
                                 </div>
-                            )}
+                            </StepCard>
                         </div>
-                    </StepCard>
-
-                    {/* Step 2 — Faucet */}
-                    <StepCard
-                        step={STEPS[1]}
-                        active={activeStep === 'faucet'}
-                        done={activeStep === 'confirm' || activeStep === 'signal'}
-                    >
-                        <div className="mt-4 space-y-3">
-                            {FAUCETS.map(f => (
-                                <a
-                                    key={f.name}
-                                    href={f.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={() => setActiveStep('confirm')}
-                                    className={`flex items-center justify-between gap-4 border p-4 transition-colors group ${
-                                        f.primary
-                                            ? 'border-accent/40 bg-[rgba(215,255,62,0.04)] hover:border-accent/70'
-                                            : 'border-hairline bg-surface hover:border-white/20'
-                                    }`}
-                                >
-                                    <div>
-                                        <p className={`font-mono text-xs font-semibold ${f.primary ? 'text-accent' : 'text-ink'}`}>
-                                            {f.name}
-                                        </p>
-                                        <p className="font-mono text-[10px] text-muted mt-0.5">{f.note}</p>
-                                    </div>
-                                    <ExternalLink size={13} className="text-muted group-hover:text-ink transition-colors shrink-0" />
-                                </a>
-                            ))}
-                            <div className="border border-dashed border-hairline p-3">
-                                <p className="font-mono text-[10px] text-muted leading-relaxed">
-                                    💡 <strong className="text-ink">Tip:</strong> After pasting your address and clicking &quot;Send&quot;, wait ~10–30 seconds for the transaction to confirm. Then come back and hit &quot;Refresh Balance&quot; below.
-                                </p>
+                    ) : (
+                        <div className="border border-hairline bg-surface p-6 space-y-6">
+                            <div className="flex items-center gap-2.5">
+                                <Zap className="text-accent" size={18} />
+                                <h2 className="font-display text-lg font-semibold text-ink">
+                                    Cross-Chain USDC Bridge
+                                </h2>
                             </div>
-                        </div>
-                    </StepCard>
+                            <p className="font-mono text-xs text-muted leading-relaxed">
+                                Deposit sandbox USDC onto Arc L1 directly from other networks. The simulator will demonstrate a multi-stage lock-and-mint bridge protocol.
+                            </p>
 
-                    {/* Step 3 — Confirm balance */}
-                    <StepCard
-                        step={STEPS[2]}
-                        active={activeStep === 'confirm'}
-                        done={activeStep === 'signal'}
-                    >
-                        <div className="mt-4 space-y-3">
-                            {/* Live balance display */}
-                            <div className={`border p-4 transition-all duration-500 ${
-                                balanceJumped
-                                    ? 'border-approve/60 bg-[rgba(34,199,135,0.08)]'
-                                    : 'border-hairline bg-background'
-                            }`}>
-                                <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-1">On-chain USDC balance</p>
-                                <div className="flex items-baseline gap-2">
-                                    <span className={`font-display text-4xl font-bold tabular-nums transition-colors ${
-                                        balanceJumped ? 'text-approve' : 'text-ink'
-                                    }`}>
-                                        {balance !== null ? balance.toFixed(4) : '—'}
-                                    </span>
-                                    <span className="font-mono text-sm text-accent font-semibold">USDC</span>
-                                    {balanceJumped && (
-                                        <motion.span
-                                            initial={{ opacity: 0, y: 4 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="font-mono text-[10px] text-approve"
+                            {bridgeStep === null ? (
+                                <div className="space-y-4">
+                                    {/* Source Chain Selector */}
+                                    <div className="space-y-2">
+                                        <label className="font-mono text-[10px] uppercase tracking-widest text-muted block">
+                                            Source Network
+                                        </label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {['Base Sepolia', 'Arbitrum Sepolia', 'Optimism Sepolia'].map(chain => (
+                                                <button
+                                                    key={chain}
+                                                    type="button"
+                                                    onClick={() => setSourceChain(chain)}
+                                                    className={`border px-3 py-2 font-mono text-[11px] text-center transition-colors ${
+                                                        sourceChain === chain
+                                                            ? 'border-accent bg-[rgba(215,255,62,0.04)] text-accent'
+                                                            : 'border-hairline bg-background text-muted hover:text-ink'
+                                                    }`}
+                                                >
+                                                    {chain}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Amount Input */}
+                                    <div className="space-y-2">
+                                        <label className="font-mono text-[10px] uppercase tracking-widest text-muted block">
+                                            Bridge Amount (USDC)
+                                        </label>
+                                        <div className="flex items-center gap-2 border border-hairline bg-background p-3">
+                                            <input
+                                                type="number"
+                                                value={bridgeAmount}
+                                                onChange={(e) => setBridgeAmount(e.target.value)}
+                                                className="bg-transparent border-none outline-none font-mono text-xs text-ink flex-1 focus:ring-0"
+                                                placeholder="50.0"
+                                            />
+                                            <span className="font-mono text-xs text-accent font-semibold shrink-0 select-none">
+                                                USDC
+                                            </span>
+                                        </div>
+                                        <p className="font-mono text-[10px] text-muted">
+                                            Testnet USDC will be escrowed and minted on Arc L1 at 1:1 ratio.
+                                        </p>
+                                    </div>
+
+                                    {/* Submit */}
+                                    <button
+                                        onClick={handleBridge}
+                                        className="w-full flex items-center justify-center gap-2 font-mono bg-accent text-background px-5 py-3 text-xs font-semibold hover:bg-white transition-colors"
+                                    >
+                                        <Zap size={12} />
+                                        Initiate Bridge Transfer
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="space-y-6">
+                                    {/* Progress Stepper */}
+                                    <div className="relative border-l border-hairline pl-6 ml-3 space-y-6">
+                                        {/* Step 0: Initiate */}
+                                        <div className="relative">
+                                            <span className={`absolute -left-[31px] top-0 size-4 rounded-full flex items-center justify-center text-[8px] font-bold ${
+                                                bridgeStep > 0
+                                                    ? 'bg-approve text-background'
+                                                    : bridgeStep === 0
+                                                    ? 'bg-accent text-background animate-pulse'
+                                                    : 'bg-muted/20 text-muted'
+                                            }`}>
+                                                {bridgeStep > 0 ? '✓' : '1'}
+                                            </span>
+                                            <div>
+                                                <p className={`font-display text-xs font-semibold ${bridgeStep >= 0 ? 'text-ink' : 'text-muted/50'}`}>
+                                                    Initiate Transfer on {sourceChain}
+                                                </p>
+                                                {bridgeStep >= 0 && (
+                                                    <div className="mt-1 font-mono text-[10px] text-muted space-y-1">
+                                                        <p>Submitting deposit of {bridgeAmount} USDC to Bridge Router.</p>
+                                                        {bridgeTxHash && (
+                                                            <p className="truncate font-mono text-[9px] text-accent/80">
+                                                                Tx: {bridgeTxHash}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Step 1: Token Lock */}
+                                        <div className="relative">
+                                            <span className={`absolute -left-[31px] top-0 size-4 rounded-full flex items-center justify-center text-[8px] font-bold ${
+                                                bridgeStep > 1
+                                                    ? 'bg-approve text-background'
+                                                    : bridgeStep === 1
+                                                    ? 'bg-accent text-background animate-pulse'
+                                                    : 'bg-muted/20 text-muted'
+                                            }`}>
+                                                {bridgeStep > 1 ? '✓' : '2'}
+                                            </span>
+                                            <div>
+                                                <p className={`font-display text-xs font-semibold ${bridgeStep >= 1 ? 'text-ink' : 'text-muted/50'}`}>
+                                                    Bridge Escrow Confirmation
+                                                </p>
+                                                {bridgeStep >= 1 && (
+                                                    <p className="mt-1 font-mono text-[10px] text-muted">
+                                                        {bridgeStep === 1
+                                                            ? 'Verifying locked liquidity in L2 Escrow contract...'
+                                                            : 'Tokens safely escrowed in lockbox.'}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Step 2: Relayer Verification */}
+                                        <div className="relative">
+                                            <span className={`absolute -left-[31px] top-0 size-4 rounded-full flex items-center justify-center text-[8px] font-bold ${
+                                                bridgeStep > 2
+                                                    ? 'bg-approve text-background'
+                                                    : bridgeStep === 2
+                                                    ? 'bg-accent text-background animate-pulse'
+                                                    : 'bg-muted/20 text-muted'
+                                            }`}>
+                                                {bridgeStep > 2 ? '✓' : '3'}
+                                            </span>
+                                            <div>
+                                                <p className={`font-display text-xs font-semibold ${bridgeStep >= 2 ? 'text-ink' : 'text-muted/50'}`}>
+                                                    Relayer State Transition Verification
+                                                </p>
+                                                {bridgeStep >= 2 && (
+                                                    <div className="mt-1 font-mono text-[10px] text-muted space-y-1">
+                                                        <p>
+                                                            {bridgeStep === 2
+                                                                ? 'Propagating Merkle proof to Arc L1 consensus layer...'
+                                                                : 'State root verified. Proof valid.'}
+                                                        </p>
+                                                        {relayerTxHash && (
+                                                            <p className="truncate font-mono text-[9px] text-accent/80">
+                                                                Relayer Tx: {relayerTxHash}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Step 3: Mint/Settle */}
+                                        <div className="relative">
+                                            <span className={`absolute -left-[31px] top-0 size-4 rounded-full flex items-center justify-center text-[8px] font-bold ${
+                                                bridgeStep > 3
+                                                    ? 'bg-approve text-background'
+                                                    : bridgeStep === 3
+                                                    ? 'bg-accent text-background animate-pulse'
+                                                    : 'bg-muted/20 text-muted'
+                                            }`}>
+                                                {bridgeStep > 3 ? '✓' : '4'}
+                                            </span>
+                                            <div>
+                                                <p className={`font-display text-xs font-semibold ${bridgeStep >= 3 ? 'text-ink' : 'text-muted/50'}`}>
+                                                    Mint & Settle on Arc L1
+                                                </p>
+                                                {bridgeStep >= 3 && (
+                                                    <p className="mt-1 font-mono text-[10px] text-muted">
+                                                        {bridgeStep === 3
+                                                            ? `Minting ${bridgeAmount} USDC to your Arc wallet: ${walletAddress ? walletAddress.slice(0, 8) : ''}...`
+                                                            : 'USDC successfully minted and settled.'}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Completion Panel */}
+                                    {bridgeStep === 4 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className="border border-approve/30 bg-[rgba(34,199,135,0.04)] p-4 space-y-3"
                                         >
-                                            ✓ Funds received!
-                                        </motion.span>
+                                            <div className="flex items-center gap-2 text-approve">
+                                                <CheckCircle2 size={16} />
+                                                <p className="font-display text-xs font-semibold">
+                                                    Bridge Transfer Successful
+                                                </p>
+                                            </div>
+                                            <p className="font-mono text-[11px] text-muted leading-relaxed">
+                                                Successfully bridged <strong className="text-ink">{bridgeAmount} USDC</strong> from <span className="text-accent">{sourceChain}</span>. Your Arc L1 balance has been credited and synced.
+                                            </p>
+                                            <div className="flex items-center gap-2 pt-2">
+                                                <button
+                                                    onClick={handleResetBridge}
+                                                    className="flex-1 font-mono text-[11px] border border-hairline py-2 text-ink hover:border-accent hover:text-accent transition-colors"
+                                                >
+                                                    Bridge More
+                                                </button>
+                                                <button
+                                                    onClick={() => router.push('/dashboard')}
+                                                    className="flex-1 font-mono text-[11px] bg-ink text-background py-2 text-center font-semibold hover:bg-accent transition-colors"
+                                                >
+                                                    Start Trading
+                                                </button>
+                                            </div>
+                                        </motion.div>
                                     )}
                                 </div>
-                                {pollingActive && !balanceJumped && (
-                                    <p className="font-mono text-[9px] text-muted mt-1 flex items-center gap-1">
-                                        <span className="inline-block size-1 rounded-full bg-accent animate-pulse" />
-                                        Auto-refreshing every 15s…
-                                    </p>
-                                )}
-                            </div>
-
-                            <button
-                                onClick={handleRefresh}
-                                disabled={refreshing}
-                                className="flex items-center gap-2 font-mono text-xs border border-hairline px-4 py-2.5 text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40"
-                            >
-                                <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
-                                {refreshing ? 'Refreshing…' : 'Refresh Balance'}
-                            </button>
-
-                            {balance !== null && balance > 0 && (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    className="flex items-center gap-2 font-mono text-[10px] text-approve"
-                                >
-                                    <CheckCircle2 size={12} />
-                                    Balance confirmed on Arc testnet — you&apos;re ready to test!
-                                </motion.div>
                             )}
                         </div>
-                    </StepCard>
-
-                    {/* Step 4 — Use signal */}
-                    <StepCard
-                        step={STEPS[3]}
-                        active={activeStep === 'signal'}
-                        done={false}
-                    >
-                        <div className="mt-4 space-y-3">
-                            <p className="font-mono text-xs text-muted leading-relaxed">
-                                Your wallet now has real testnet USDC. Every signal unlock costs exactly{' '}
-                                <span className="text-accent font-semibold">$0.001 USDC</span> — verified on Arc L1 via HTTP 402.
-                            </p>
-                            <div className="grid grid-cols-3 gap-px bg-hairline border border-hairline">
-                                {[
-                                    { label: 'Signal cost', value: '$0.001 USDC' },
-                                    { label: 'Your balance', value: balance !== null ? `$${balance.toFixed(3)}` : '—' },
-                                    { label: 'Signals available', value: balance !== null ? Math.floor(balance / 0.001).toLocaleString() : '—' },
-                                ].map(m => (
-                                    <div key={m.label} className="bg-surface p-3">
-                                        <p className="font-mono text-[9px] uppercase text-muted">{m.label}</p>
-                                        <p className="font-display text-base font-semibold text-ink">{m.value}</p>
-                                    </div>
-                                ))}
-                            </div>
-                            <button
-                                onClick={() => router.push('/dashboard')}
-                                className="flex items-center gap-2 font-mono bg-ink text-background px-5 py-3 text-xs font-semibold hover:bg-accent transition-colors"
-                            >
-                                <Play size={12} />
-                                Go to Dashboard → Unlock Signals
-                            </button>
-                        </div>
-                    </StepCard>
+                    )}
                 </div>
 
                 {/* ── Right: Status sidebar ────────────────────────────── */}
@@ -385,7 +702,7 @@ export default function FaucetPage() {
                             {[
                                 { label: 'Wallet created', done: !!walletAddress },
                                 { label: 'Address copied', done: activeStep !== 'copy' },
-                                { label: 'Faucet opened', done: activeStep === 'confirm' || activeStep === 'signal' },
+                                { label: 'Faucet/Bridge used', done: (balance ?? 0) > 0 },
                                 { label: 'USDC confirmed on-chain', done: (balance ?? 0) > 0 },
                                 { label: 'Ready to pay for signals', done: (balance ?? 0) >= 0.001 },
                             ].map(item => (

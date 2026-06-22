@@ -40,6 +40,10 @@ class UpdateAgentRequest(BaseModel):
     daily_budget: Optional[float] = Field(default=None, ge=0.0)
     is_active: Optional[bool] = None
 
+class FaucetRequest(BaseModel):
+    amount: Optional[float] = None
+    mock: Optional[bool] = None
+
 # Endpoints
 def calculate_accrued_yield(agent: Agent) -> bool:
     """
@@ -157,16 +161,14 @@ async def update_external_wallet(
 
 @router.post("/faucet", response_model=Dict[str, Any])
 async def wallet_faucet(
+    req: Optional[FaucetRequest] = None,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Faucet helper endpoint.
     Queries the real Arc testnet for the actual on-chain balance and syncs it.
-
-    To get real testnet USDC:
-      → https://faucet.circle.com  (select Arc Testnet, paste wallet_address)
-      → https://faucet.testnet.arc.network  (native gas token)
+    If mock is True, directly sets the balance in the database for local demo convenience.
     """
     user_id = uuid.UUID(current_user.get("sub"))
     result = await db.execute(select(User).where(User.id == user_id))
@@ -177,6 +179,22 @@ async def wallet_faucet(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
+
+    # Check if mock mode is requested
+    if req and req.mock:
+        amount_to_add = Decimal(str(req.amount)) if req.amount is not None else Decimal("10.0")
+        user.wallet_balance = Decimal(str(user.wallet_balance or 0)) + amount_to_add
+        await db.commit()
+        return {
+            "status": "success",
+            "wallet_address": user.wallet_address,
+            "wallet_balance": float(user.wallet_balance),
+            "faucet_urls": {
+                "usdc": "https://faucet.circle.com",
+                "gas":  "https://faucet.testnet.arc.network",
+            },
+            "message": f"Successfully simulated bridge/faucet deposit of {amount_to_add} USDC.",
+        }
 
     # Sync real on-chain balance
     real_bal = await asyncio.to_thread(get_onchain_balance, user.wallet_address)

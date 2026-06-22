@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import BacktestingPlayback from '@/components/BacktestingPlayback';
 
 export default function BacktestingPage() {
     const [backtests, setBacktests] = useState<any[]>([]);
@@ -29,6 +30,10 @@ export default function BacktestingPage() {
             <h1 className="font-display text-3xl font-semibold text-ink mb-8">
                 Backtesting Results
             </h1>
+
+            <div className="mb-8">
+                <BacktestingPlayback />
+            </div>
 
             {loading ? (
                 <div className="text-center py-20">
