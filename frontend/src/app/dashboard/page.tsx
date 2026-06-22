@@ -13,7 +13,7 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import {
-    Activity, RefreshCw, Radio, Wallet, BrainCircuit, Globe2, Copy, Check, Plus, Play, Pause, ExternalLink, CircleDollarSign, LogOut
+    Activity, RefreshCw, Radio, Wallet, BrainCircuit, Globe2, Copy, Check, Plus, Play, Pause, ExternalLink, CircleDollarSign, LogOut, Cpu, Award, Shield, Zap, Lock, Terminal
 } from 'lucide-react';
 
 const generateChartData = (symbol: string) => {
@@ -45,7 +45,53 @@ export default function Dashboard() {
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Wallet Dashboard State
-    const [activeTab, setActiveTab] = useState<'terminal' | 'wallet' | 'log'>('terminal');
+    const [activeTab, setActiveTab] = useState<'terminal' | 'wallet' | 'log' | 'marketplace'>('terminal');
+
+    // Agent Marketplace State
+    const [marketplaceAgents, setMarketplaceAgents] = useState<any[]>([
+        { id: '1', name: 'BTC Alpha Agent', type: 'Signal', accuracy: 84, price: 0.001, reputation: 96, revenue: 14.50, creator: 'System', status: 'Active', address: '0x8f93a9b1c720481dad32', signals: 1240, failed: 210, desc: 'Scans high-probability BTC breakout patterns using custom Bollinger Band squeezing logic.' },
+        { id: '2', name: 'ETH Momentum Agent', type: 'Signal', accuracy: 78, price: 0.0008, reputation: 92, revenue: 8.90, creator: 'System', status: 'Active', address: '0x3c2b9a71f0921a83efd2', signals: 980, failed: 215, desc: 'Identifies strong short-term ETH trends using RSI divergence checks and volume spread analysis.' },
+        { id: '3', name: 'Risk Guardian', type: 'Risk', accuracy: 98, price: 0.0005, reputation: 98, revenue: 4.85, creator: 'System', status: 'Active', address: '0xfa72910c830e294b61ef', signals: 2220, failed: 45, desc: 'Computes multi-timeframe correlation matrices and validates risk-to-reward ratios before allowing execution.' },
+        { id: '4', name: 'Sentiment Oracle', type: 'Sentiment', accuracy: 74, price: 0.0003, reputation: 90, revenue: 2.10, creator: 'System', status: 'Active', address: '0x291a82d0194bc82d0b81', signals: 1540, failed: 400, desc: 'Processes real-time Twitter/X sentiment and macroeconomic news context via specialized LLM embeddings.' },
+        { id: '5', name: 'Arbitrage Strategy Agent', type: 'Strategy', accuracy: 88, price: 0.0015, reputation: 95, revenue: 22.40, creator: 'System', status: 'Active', address: '0x991b2c40381f9a2b8e0c', signals: 540, failed: 65, desc: 'Coordinates execution across multiple DeFi pools, balancing yield rates and gas friction.' }
+    ]);
+    const [selectedMarketplaceAgent, setSelectedMarketplaceAgent] = useState<any | null>(null);
+    const [txLedger, setTxLedger] = useState<any[]>([
+        { hash: '0xarc9f88d27a1928cf3b8f', from: 'StrategyAgent.wallet', to: 'SignalAgent.wallet', amount: '0.001000', type: 'Signal Unlock Fee', status: 'Finalized', time: '16:02:11' },
+        { hash: '0xarc18fa90c2941fa8b88e', from: 'StrategyAgent.wallet', to: 'RiskAgent.wallet', amount: '0.000500', type: 'Risk Validation Fee', status: 'Finalized', time: '16:02:12' },
+        { hash: '0xarc3c2b92d8e0e8e8f802', from: 'StrategyAgent.wallet', to: 'SentimentAgent.wallet', amount: '0.000300', type: 'Sentiment Check Fee', status: 'Finalized', time: '16:02:12' }
+    ]);
+
+    // Agent Factory Form State
+    const [newAgentName, setNewAgentName] = useState('');
+    const [newAgentType, setNewAgentType] = useState('Signal');
+    const [newAgentStrategy, setNewAgentStrategy] = useState('Momentum Squeeze');
+    const [newAgentBudget, setNewAgentBudget] = useState('0.001000');
+
+    const handleCreateNewAgent = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newAgentName) return;
+        const newId = String(marketplaceAgents.length + 1);
+        const randomAddress = '0x' + Array.from({length: 20}, () => Math.floor(Math.random()*16).toString(16)).join('');
+        const newAgent = {
+            id: newId,
+            name: newAgentName,
+            type: newAgentType,
+            accuracy: 80,
+            price: parseFloat(newAgentBudget) || 0.001,
+            reputation: 80,
+            revenue: 0.0,
+            creator: 'User',
+            status: 'Active',
+            address: randomAddress,
+            signals: 0,
+            failed: 0,
+            desc: `Custom user-instantiated agent executing ${newAgentStrategy} rules.`
+        };
+        setMarketplaceAgents(prev => [...prev, newAgent]);
+        setNewAgentName('');
+        alert(`Agent "${newAgentName}" successfully instantiated at address ${randomAddress}!`);
+    };
     const [walletInfo, setWalletInfo] = useState<any>({ wallet_address: '', wallet_balance: 0.0, external_wallet: '' });
     const [txHistory, setTxHistory] = useState<any[]>([]);
     const [agents, setAgents] = useState<any[]>([]);
@@ -490,7 +536,7 @@ export default function Dashboard() {
                 )}
 
                 {/* Tab Navigation */}
-                <div className="flex border-b border-hairline mb-8 gap-6">
+                <div className="flex border-b border-hairline mb-8 gap-6 overflow-x-auto whitespace-nowrap">
                     <button
                         onClick={() => setActiveTab('terminal')}
                         className={`font-mono text-xs uppercase tracking-wider pb-3 border-b-2 transition-all ${
@@ -498,6 +544,14 @@ export default function Dashboard() {
                         }`}
                     >
                         Quant Terminal Feed
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('marketplace')}
+                        className={`font-mono text-xs uppercase tracking-wider pb-3 border-b-2 transition-all ${
+                            activeTab === 'marketplace' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-ink'
+                        }`}
+                    >
+                        Agent Marketplace
                     </button>
                     <button
                         onClick={() => setActiveTab('wallet')}
@@ -627,6 +681,286 @@ export default function Dashboard() {
                                             </div>
                                         )}
                                     </div>
+                                </motion.div>
+                            ) : activeTab === 'marketplace' ? (
+                                <motion.div
+                                    key="marketplace"
+                                    initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
+                                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                                    className="space-y-8"
+                                >
+                                    {/* Marketplace Grid and Agent Factory */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                                        
+                                        {/* Left 2 Cols: Directory & Leaderboard */}
+                                        <div className="lg:col-span-2 space-y-8">
+                                            {/* Catalog */}
+                                            <div className="border border-hairline bg-surface p-6">
+                                                <div className="mb-6">
+                                                    <p className="eyebrow mb-1">agent marketplace</p>
+                                                    <h3 className="font-display text-lg font-semibold text-ink">Active Agent Catalog</h3>
+                                                    <p className="font-mono text-xs text-muted mt-1">Hire cooperative agents. Micropayments verified via Arc L1 Ledger.</p>
+                                                </div>
+                                                
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {marketplaceAgents.map((agent) => (
+                                                        <div 
+                                                            key={agent.id}
+                                                            onClick={() => setSelectedMarketplaceAgent(agent)}
+                                                            className="border border-hairline bg-background/50 p-5 hover:border-accent cursor-pointer transition-colors relative overflow-hidden"
+                                                        >
+                                                            <div className="flex justify-between items-start mb-3">
+                                                                <div>
+                                                                    <h4 className="font-display font-bold text-sm text-ink">{agent.name}</h4>
+                                                                    <span className="font-mono text-[9px] text-muted">ID: {agent.id}</span>
+                                                                </div>
+                                                                <span className={`font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 border ${
+                                                                    agent.type === 'Signal' ? 'border-accent/30 text-accent bg-accent/5' :
+                                                                    agent.type === 'Risk' ? 'border-approve/30 text-approve bg-approve/5' :
+                                                                    agent.type === 'Sentiment' ? 'border-indigo-500/30 text-indigo-400 bg-indigo-500/5' :
+                                                                    'border-amber-500/30 text-amber-400 bg-amber-500/5'
+                                                                }`}>
+                                                                    {agent.type}
+                                                                </span>
+                                                            </div>
+                                                            <p className="font-mono text-[10px] text-muted line-clamp-2 mb-4 leading-relaxed h-8">
+                                                                {agent.desc}
+                                                            </p>
+                                                            <div className="flex items-center justify-between font-mono text-[10px] border-t border-hairline/50 pt-3">
+                                                                <div>
+                                                                    <span className="text-muted block text-[8px] uppercase">reputation</span>
+                                                                    <span className="text-ink font-semibold">{agent.reputation}/100</span>
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <span className="text-muted block text-[8px] uppercase">price / fee</span>
+                                                                    <span className="text-accent font-bold">{agent.price.toFixed(4)} USDC</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Leaderboard */}
+                                            <div className="border border-hairline bg-surface p-6">
+                                                <div className="mb-6 flex justify-between items-center pb-2 border-b border-hairline/80">
+                                                    <div>
+                                                        <p className="eyebrow mb-1">ranking directory</p>
+                                                        <h3 className="font-display text-lg font-semibold text-ink">Agent Leaderboard</h3>
+                                                    </div>
+                                                    <Award className="w-5 h-5 text-accent" />
+                                                </div>
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full font-mono text-xs text-left">
+                                                        <thead>
+                                                            <tr className="text-muted/60 border-b border-hairline/50 pb-2">
+                                                                <th className="py-2 font-medium">Agent</th>
+                                                                <th className="py-2 font-medium">Type</th>
+                                                                <th className="py-2 font-medium text-right">Success Rate</th>
+                                                                <th className="py-2 font-medium text-right">USDC Earned</th>
+                                                                <th className="py-2 font-medium text-right">Reputation</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-hairline/30">
+                                                            {marketplaceAgents.map((agent, index) => (
+                                                                <tr key={agent.id} className="hover:bg-white/[0.01]">
+                                                                    <td className="py-3 font-semibold text-ink flex items-center gap-2">
+                                                                        <span className="text-muted text-[10px]">{index + 1}.</span>
+                                                                        {agent.name}
+                                                                    </td>
+                                                                    <td className="py-3">
+                                                                        <span className={`text-[10px] uppercase border px-2 py-0.5 ${
+                                                                            agent.type === 'Signal' ? 'border-accent/30 text-accent bg-accent/5' :
+                                                                            agent.type === 'Risk' ? 'border-approve/30 text-approve bg-approve/5' :
+                                                                            agent.type === 'Sentiment' ? 'border-indigo-500/30 text-indigo-400 bg-indigo-500/5' :
+                                                                            'border-amber-500/30 text-amber-400 bg-amber-500/5'
+                                                                        }`}>
+                                                                            {agent.type}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="py-3 text-right font-bold text-approve">{agent.accuracy}%</td>
+                                                                    <td className="py-3 text-right text-ink font-semibold">${agent.revenue.toFixed(2)}</td>
+                                                                    <td className="py-3 text-right font-bold text-accent">{agent.reputation}/100</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Right 1 Col: Agent Factory */}
+                                        <div className="space-y-8">
+                                            {/* Creator Form */}
+                                            <div className="border border-hairline bg-surface p-6">
+                                                <div className="mb-6 pb-2 border-b border-hairline/80 flex items-center justify-between">
+                                                    <div>
+                                                        <p className="eyebrow mb-1">instantiation engine</p>
+                                                        <h3 className="font-display text-lg font-semibold text-ink">Agent Factory</h3>
+                                                    </div>
+                                                    <Cpu className="w-5 h-5 text-accent animate-pulse" />
+                                                </div>
+                                                
+                                                <form onSubmit={handleCreateNewAgent} className="space-y-4">
+                                                    <div>
+                                                        <label className="font-mono text-[10px] text-muted uppercase tracking-wider mb-2 block">Agent Name</label>
+                                                        <input 
+                                                            type="text" 
+                                                            value={newAgentName}
+                                                            onChange={(e) => setNewAgentName(e.target.value)}
+                                                            placeholder="e.g. SOL Trend Hunter"
+                                                            className="w-full bg-background border border-hairline text-ink placeholder:text-muted/50 px-4 py-2.5 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                            required
+                                                        />
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="font-mono text-[10px] text-muted uppercase tracking-wider mb-2 block">Agent Type</label>
+                                                            <select
+                                                                value={newAgentType}
+                                                                onChange={(e) => setNewAgentType(e.target.value)}
+                                                                className="w-full bg-background border border-hairline text-ink px-3 py-2.5 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                            >
+                                                                <option value="Signal">Signal</option>
+                                                                <option value="Risk">Risk</option>
+                                                                <option value="Sentiment">Sentiment</option>
+                                                                <option value="Strategy">Strategy</option>
+                                                            </select>
+                                                        </div>
+                                                        <div>
+                                                            <label className="font-mono text-[10px] text-muted uppercase tracking-wider mb-2 block">Strategy Logic</label>
+                                                            <select
+                                                                value={newAgentStrategy}
+                                                                onChange={(e) => setNewAgentStrategy(e.target.value)}
+                                                                className="w-full bg-background border border-hairline text-ink px-3 py-2.5 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                            >
+                                                                <option value="Momentum Squeeze">Momentum</option>
+                                                                <option value="Mean Reversion">Mean Rev</option>
+                                                                <option value="Sentiment Analytics">Sentiment</option>
+                                                                <option value="Cross Asset Arbitrage">Arbitrage</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="font-mono text-[10px] text-muted uppercase tracking-wider mb-2 block">Operating Fee (USDC)</label>
+                                                        <input 
+                                                            type="number" 
+                                                            step="0.0001"
+                                                            value={newAgentBudget}
+                                                            onChange={(e) => setNewAgentBudget(e.target.value)}
+                                                            className="w-full bg-background border border-hairline text-ink px-4 py-2.5 text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                            required
+                                                        />
+                                                    </div>
+
+                                                    <button
+                                                        type="submit"
+                                                        className="w-full bg-accent text-background font-mono text-xs font-bold py-3 hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
+                                                    >
+                                                        <Plus className="w-3.5 h-3.5" />
+                                                        Instantiate Agent
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                            {/* Transaction Ledger */}
+                                            <div className="border border-hairline bg-surface p-6">
+                                                <div className="mb-4 flex items-center justify-between pb-2 border-b border-hairline">
+                                                    <div>
+                                                        <p className="eyebrow mb-1">verification ledger</p>
+                                                        <h3 className="font-display text-sm font-semibold text-ink">Arc L1 Sandbox</h3>
+                                                    </div>
+                                                    <Terminal className="w-4 h-4 text-accent" />
+                                                </div>
+                                                <div className="space-y-3 max-h-[220px] overflow-y-auto font-mono text-[10px] leading-relaxed text-muted pr-2">
+                                                    {txLedger.map((tx, idx) => (
+                                                        <div key={idx} className="border-b border-hairline/25 pb-3">
+                                                            <div className="flex justify-between text-[8px] text-muted mb-1">
+                                                                <span>[{tx.time}]</span>
+                                                                <span className="text-approve">{tx.status}</span>
+                                                            </div>
+                                                            <div className="text-ink font-semibold flex justify-between">
+                                                                <span>{tx.type}</span>
+                                                                <span className="text-accent">{tx.amount} USDC</span>
+                                                            </div>
+                                                            <div className="text-[8px] text-slate-500 break-all mt-0.5">
+                                                                Hash: {tx.hash}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    {/* Agent Drawer/Modal Overlay */}
+                                    {selectedMarketplaceAgent && (
+                                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+                                            <div className="border border-hairline bg-surface max-w-md w-full p-6 relative">
+                                                <button 
+                                                    onClick={() => setSelectedMarketplaceAgent(null)}
+                                                    className="absolute top-4 right-4 font-mono text-muted hover:text-ink text-xs"
+                                                >
+                                                    [esc]
+                                                </button>
+                                                <div className="mb-4">
+                                                    <span className="font-mono text-[8px] text-accent uppercase tracking-wider block mb-1">Agent Identity Profile</span>
+                                                    <h3 className="font-display text-xl font-bold text-ink">{selectedMarketplaceAgent.name}</h3>
+                                                    <span className="font-mono text-[9px] text-muted break-all bg-background px-2.5 py-1 border border-hairline mt-1 block">
+                                                        Address: {selectedMarketplaceAgent.address}
+                                                    </span>
+                                                </div>
+                                                <div className="space-y-4 font-mono text-xs mt-4">
+                                                    <p className="text-slate-300 leading-relaxed text-[11px]">
+                                                        {selectedMarketplaceAgent.desc}
+                                                    </p>
+                                                    <div className="grid grid-cols-2 gap-3 bg-background border border-hairline p-3">
+                                                        <div>
+                                                            <span className="text-muted block text-[8px] uppercase">Category</span>
+                                                            <span className="text-ink font-semibold">{selectedMarketplaceAgent.type} Agent</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-muted block text-[8px] uppercase">Creator</span>
+                                                            <span className="text-ink font-semibold">{selectedMarketplaceAgent.creator}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-muted block text-[8px] uppercase">Accuracy Rate</span>
+                                                            <span className="text-approve font-bold">{selectedMarketplaceAgent.accuracy}%</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-muted block text-[8px] uppercase">Reputation</span>
+                                                            <span className="text-accent font-bold">{selectedMarketplaceAgent.reputation}/100</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-muted block text-[8px] uppercase">Total Revenue</span>
+                                                            <span className="text-ink font-bold">${selectedMarketplaceAgent.revenue.toFixed(2)} USDC</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-muted block text-[8px] uppercase">Predictions</span>
+                                                            <span className="text-ink font-semibold">{selectedMarketplaceAgent.signals} total</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-background border border-hairline p-3">
+                                                        <span className="text-muted block text-[8px] uppercase mb-1">Agent Learning Log</span>
+                                                        <p className="text-[10px] text-accent">
+                                                            [Feedback loop active] Pattern strength reinforcement: +{(100 - selectedMarketplaceAgent.accuracy)/5}% precision scaling based on last prediction run.
+                                                        </p>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => setSelectedMarketplaceAgent(null)}
+                                                        className="w-full bg-ink text-background font-bold py-2.5 hover:bg-accent transition-colors mt-2"
+                                                    >
+                                                        Dismiss Profile
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </motion.div>
                             ) : (
                                 /* Wallet Manager Tab View */
