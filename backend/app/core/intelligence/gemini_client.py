@@ -172,7 +172,8 @@ Be precise, data-driven, and focus on statistical validity.
             result = genai.embed_content(
                 model="models/gemini-embedding-001",
                 content=text,
-                task_type="retrieval_document"
+                task_type="retrieval_document",
+                output_dimensionality=768
             )
             return result['embedding']
         except Exception as e:

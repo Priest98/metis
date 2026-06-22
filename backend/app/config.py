@@ -18,12 +18,15 @@ class Settings(BaseSettings):
     DATABASE_URL: Optional[str] = None
     DB_ECHO: bool = False
     
+    # CORS Origins
+    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000"
+    
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
     
     # Google Gemini
     GEMINI_API_KEY: str
-    GEMINI_MODEL: str = "gemini-2.0-flash-exp"
+    GEMINI_MODEL: str = "gemini-2.0-flash"
     
     # Supabase (Vector DB)
     SUPABASE_URL: Optional[str] = None

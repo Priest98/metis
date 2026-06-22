@@ -25,7 +25,7 @@ def test_gemini_api():
     try:
         import google.generativeai as genai
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        model = genai.GenerativeModel('gemini-2.0-flash')
         response = model.generate_content("Say 'API works!'")
         print(f"✅ Gemini API Response: {response.text}")
         return True
