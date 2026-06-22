@@ -34,7 +34,7 @@ export default function AgentFleetTerminal() {
     const [activeTxProof, setActiveTxProof] = useState<any | null>(null);
     const [isRunning, setIsRunning] = useState(false);
     const [voiceEnabled, setVoiceEnabled] = useState(true);
-    const logEndRef = useRef<HTMLDivElement>(null);
+    const logContainerRef = useRef<HTMLDivElement>(null);
 
     // Thought Stream state
     const [activeThoughtStream, setActiveThoughtStream] = useState<{
@@ -102,7 +102,9 @@ export default function AgentFleetTerminal() {
     }, [user?.token]);
 
     useEffect(() => {
-        logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (logContainerRef.current) {
+            logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+        }
     }, [logs, activeThoughtStream]);
 
     const speak = (text: string) => {
@@ -410,8 +412,7 @@ export default function AgentFleetTerminal() {
                 )}
             </AnimatePresence>
 
-            {/* Terminal Log */}
-            <div className="bg-black/60 border border-white/10 p-4 h-[220px] rounded-2xl overflow-y-auto font-mono text-[11px] leading-relaxed text-slate-300">
+            <div ref={logContainerRef} className="bg-black/60 border border-white/10 p-4 h-[220px] rounded-2xl overflow-y-auto font-mono text-[11px] leading-relaxed text-slate-300">
                 <div className="flex items-center gap-2 mb-3 text-slate-500 pb-2 border-b border-white/[0.04]">
                     <Activity className="w-3 h-3 text-accent animate-pulse" />
                     <span>Agent Telemetry Feed (Arc L1 Sandbox)</span>
@@ -437,7 +438,6 @@ export default function AgentFleetTerminal() {
                             <span className="text-slate-300 flex-1">{log.details}</span>
                         </div>
                     ))}
-                    <div ref={logEndRef} />
                 </div>
             </div>
 

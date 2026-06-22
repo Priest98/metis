@@ -73,7 +73,7 @@ export default function AgentLog({
     className = '',
 }: AgentLogProps) {
     const [lines, setLines] = useState<LogEntry[]>([]);
-    const bottomRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const seqRef = useRef(0);
     const lineRef = useRef(0);
 
@@ -116,7 +116,9 @@ export default function AgentLog({
 
     // Always scroll to bottom
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (containerRef.current) {
+            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        }
     }, [lines]);
 
     return (
@@ -134,7 +136,7 @@ export default function AgentLog({
             </div>
 
             {/* Log body */}
-            <div className="flex flex-col gap-0.5 overflow-y-auto p-3 font-mono text-[11px] leading-relaxed"
+            <div ref={containerRef} className="flex flex-col gap-0.5 overflow-y-auto p-3 font-mono text-[11px] leading-relaxed"
                 style={{ maxHeight: 260 }}>
                 <AnimatePresence initial={false}>
                     {lines.map(line => (
@@ -159,7 +161,6 @@ export default function AgentLog({
                         Waiting for agent activity…
                     </span>
                 )}
-                <div ref={bottomRef} />
             </div>
         </div>
     );
