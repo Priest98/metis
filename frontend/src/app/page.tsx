@@ -249,63 +249,7 @@ export default function LandingPage() {
                                 </Link>
                             </motion.div>
 
-                            {/* Identity Provider Row */}
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.8, delay: 0.4 }}
-                                className="space-y-2.5 pt-2"
-                            >
-                                <span className="font-mono text-[10px] text-muted/60 uppercase tracking-widest block">
-                                    Or Connect Instant Terminal
-                                </span>
-                                <div className="flex flex-wrap items-center gap-3">
-                                    {[
-                                        {
-                                            name: 'Google',
-                                            icon: (
-                                                <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
-                                                    <path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 6.133 1 1 6.133 1 12.24s5.133 11.24 11.24 11.24c6.378 0 10.623-4.484 10.623-10.82 0-.73-.08-1.28-.175-1.832H12.24z"/>
-                                                </svg>
-                                            )
-                                        },
-                                        {
-                                            name: 'Apple',
-                                            icon: (
-                                                <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
-                                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.57 2.95-1.39z"/>
-                                                </svg>
-                                            )
-                                        },
-                                        {
-                                            name: 'Telegram',
-                                            icon: (
-                                                <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
-                                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.37.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .24z"/>
-                                                </svg>
-                                            )
-                                        },
-                                        {
-                                            name: 'EVM Wallet',
-                                            icon: (
-                                                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 0 1 0 .656l-5.603 3.113a.375.375 0 0 1-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112Z" />
-                                                </svg>
-                                            )
-                                        }
-                                    ].map(prov => (
-                                        <Link
-                                            key={prov.name}
-                                            href="/login"
-                                            title={prov.name}
-                                            className="size-9 rounded-full border border-white/10 bg-[#182030] flex items-center justify-center text-muted hover:border-accent hover:text-accent hover:bg-[#202b3e] transition-all hover:scale-105 active:scale-95"
-                                        >
-                                            {prov.icon}
-                                        </Link>
-                                    ))}
-                                </div>
-                            </motion.div>
+
                         </div>
 
                         {/* Right Side: Stacked Metric Boxes */}
@@ -622,97 +566,7 @@ export default function LandingPage() {
                 </motion.div>
             </section>
 
-            {/* ───────────────── PRODUCT SHOWCASE (MOBILE) ─────────── */}
-            <section className="border-b border-hairline relative overflow-hidden bg-surface/10">
-                <motion.div
-                    variants={sectionRevealVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '-100px' }}
-                    className="mx-auto max-w-6xl px-5 py-24 sm:px-8 grid lg:grid-cols-2 gap-16 items-center"
-                >
-                    <div className="space-y-6">
-                        <p className="text-accent font-mono text-[10px] tracking-[0.25em] font-semibold uppercase block">
-                            trade on the go
-                        </p>
-                        <h2 className="font-display text-4xl font-black text-ink uppercase tracking-tight">
-                            Metis Mobile Terminal.<br />
-                            Trade Anytime, Anywhere.
-                        </h2>
-                        <p className="text-sm text-muted leading-relaxed max-w-lg">
-                            Trade smarter with the Metis responsive web interface. Securely audit active signals, 
-                            manage dynamic agent wallets, monitor strategy backtesting execution, and toggle 
-                            idle funds yield loops directly from your mobile device.
-                        </p>
-                        
-                        {/* QR Code Block & Badges */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pt-4">
-                            <div className="bg-[#182030] border border-white/10 p-3.5 rounded-[1.5rem] flex items-center justify-center shadow-lg shrink-0">
-                                {/* SVG mock QR Code */}
-                                <svg className="size-24 text-ink" viewBox="0 0 100 100" fill="currentColor">
-                                    <path d="M5 5h30v30H5V5zm6 6v18h18V11H11zm59-6h30v30H70V5zm6 6v18h18V11H76ZM5 70h30v30H5V70zm6 6v18h18V76H11zm34-31h10v10H45V45zm15 15h10v10H60V60zm-15 15h10v10H45V75zm15-30h10v10H60V45zm15 15h10v10H75V60zM45 5h10v10H45V5zm0 15h10v10H45V20zm15 10h10v10H60V30zm30 30h10v10H90V60zm-30 15h10v10H60V75zm30 15h10v10H90V90zm-15-15h10v10H75V75z" />
-                                    <rect x="20" y="20" width="4" height="4" />
-                                    <rect x="76" y="20" width="4" height="4" />
-                                    <rect x="20" y="76" width="4" height="4" />
-                                </svg>
-                            </div>
-                            <div className="space-y-3.5">
-                                <p className="font-mono text-xs text-muted">
-                                    Scan QR code to immediately launch the app on your iOS or Android device.
-                                </p>
-                                <div className="flex flex-wrap gap-2.5 font-mono text-[9px] uppercase tracking-wider font-bold">
-                                    {['App Store', 'Google Play', 'Android APK', 'API Docs'].map(item => (
-                                        <span key={item} className="px-3.5 py-1.5 border border-white/10 bg-white/5 text-ink rounded-full">
-                                            {item}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Right side: Chip Graphic */}
-                    <div className="flex justify-center relative">
-                        {/* Glow backdrops */}
-                        <div className="absolute size-96 bg-accent/5 rounded-full blur-[80px] pointer-events-none" />
-                        
-                        {/* Core Processor Chip SVG layout */}
-                        <div className="relative w-80 h-80 flex items-center justify-center">
-                            
-                            {/* Circuit lines SVG */}
-                            <svg className="absolute inset-0 size-full text-white/[0.03]" viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                                <circle cx="100" cy="100" r="85" strokeDasharray="3 3" />
-                                <circle cx="100" cy="100" r="65" />
-                                <path d="M100 15v50M100 135v50M15 100h50M135 100h50" />
-                                <path d="m40 40 30 30M160 160l-30-30M160 40l-30 30M40 160l30-30" />
-                            </svg>
-
-                            {/* Outer animated rotating dashed ring */}
-                            <div className="absolute border border-dashed border-accent/25 rounded-full size-64 animate-[spin_25s_linear_infinite]" />
-                            
-                            {/* Inner rotating solid ring */}
-                            <div className="absolute border border-hairline border-t-accent/40 rounded-full size-52 animate-[spin_12s_linear_infinite_reverse]" />
-
-                            {/* Chip Body */}
-                            <div className="w-36 h-36 border border-white/10 bg-[#182030] rounded-[1.75rem] shadow-2xl p-4 flex flex-col justify-between items-center relative z-10 transition-transform duration-500 hover:scale-105">
-                                <div className="w-full flex justify-between">
-                                    <span className="size-2 rounded-full bg-white/10" />
-                                    <span className="size-2 rounded-full bg-white/10" />
-                                </div>
-                                <div className="flex flex-col items-center gap-1.5 py-4">
-                                    <LogoMark width={24} height={24} />
-                                    <span className="font-display text-sm font-semibold text-ink">METIS CORE</span>
-                                    <span className="font-mono text-[8px] text-accent/80 tracking-widest uppercase">Agent L1</span>
-                                </div>
-                                <div className="w-full flex justify-between">
-                                    <span className="size-2 rounded-full bg-white/10" />
-                                    <span className="size-2 rounded-full bg-white/10" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-            </section>
 
             {/* ───────────────── FEATURE SHOWCASE 1 (YIELD) ─────────── */}
             <section id="yield-showcase" className="border-b border-hairline">
@@ -814,64 +668,7 @@ export default function LandingPage() {
                 </motion.div>
             </section>
 
-            {/* ───────────────── FEATURE SHOWCASE 2 (COINS) ─────────── */}
-            <section className="border-b border-hairline bg-[#0c0c14]/40 relative overflow-hidden">
-                <div className="absolute inset-0 bg-grid-bg opacity-30 pointer-events-none" />
-                
-                <motion.div
-                    variants={sectionRevealVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '-100px' }}
-                    className="mx-auto max-w-6xl px-5 py-24 sm:px-8 grid lg:grid-cols-12 gap-16 items-center"
-                >
-                    
-                    {/* Left: Floating glowing coin stack */}
-                    <div className="lg:col-span-6 flex items-center justify-center relative order-last lg:order-first">
-                        <div className="absolute size-96 bg-accent/5 rounded-full blur-[80px] pointer-events-none" />
-                        
-                        <div className="flex gap-4 relative">
-                            {/* Coin 1: USDC */}
-                            <div className="w-20 h-20 bg-gradient-to-tr from-accent/80 to-[#1e1e2d] border border-accent/25 rounded-2xl shadow-xl flex items-center justify-center text-background font-bold text-2xl animate-float">
-                                $
-                            </div>
-                            {/* Coin 2: ETH */}
-                            <div className="w-20 h-20 bg-[#111118]/80 border border-hairline rounded-2xl shadow-xl flex items-center justify-center text-ink font-mono text-lg mt-8" style={{ animationDelay: '1.5s' }}>
-                                Ξ
-                            </div>
-                            {/* Coin 3: BTC */}
-                            <div className="w-20 h-20 bg-[#111118]/80 border border-hairline rounded-2xl shadow-xl flex items-center justify-center text-ink font-mono text-lg mt-16" style={{ animationDelay: '3s' }}>
-                                ₿
-                            </div>
-                            {/* Coin 4: SOL */}
-                            <div className="w-20 h-20 bg-[#111118]/80 border border-hairline rounded-2xl shadow-xl flex items-center justify-center text-ink font-mono text-sm mt-4" style={{ animationDelay: '4.5s' }}>
-                                S
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Right: Text details */}
-                    <div className="lg:col-span-6 space-y-6">
-                        <p className="text-accent font-mono text-[10px] tracking-[0.25em] font-semibold uppercase block">
-                            community & guidance
-                        </p>
-                        <h2 className="font-display text-4xl font-black text-ink uppercase tracking-tight">
-                            Join Metis with a community of crypto explorers
-                        </h2>
-                        <p className="text-sm text-muted leading-relaxed">
-                            Embark on an institutional-grade algorithmic trading journey. Build custom strategy nodes, 
-                            evaluate indicators, execute micro-payment verified queries, and share optimized 
-                            rules lists with a decentralized community of quant engineers.
-                        </p>
-                        <div className="pt-2">
-                            <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-accent text-background hover:bg-accent/90 font-mono text-xs font-semibold px-6 py-3 rounded-full transition-colors shadow-lg shadow-accent/15">
-                                Start Exploring Now
-                            </Link>
-                        </div>
-                    </div>
-
-                </motion.div>
-            </section>
 
             {/* ───────────────── PARTNERS ROW ─────────── */}
             <section className="border-b border-hairline bg-surface/20 py-10">
@@ -889,68 +686,7 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* ───────────────── SUPPORTED NETWORKS ─────────── */}
-            <section className="border-b border-hairline bg-surface/40">
-                <motion.div
-                    variants={sectionRevealVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '-100px' }}
-                    className="mx-auto max-w-6xl px-5 py-24 sm:px-8"
-                >
-                    <div className="text-center max-w-xl mx-auto mb-14 space-y-3">
-                        <p className="text-accent font-mono text-[10px] tracking-[0.25em] font-semibold uppercase block">
-                            supported collection
-                        </p>
-                        <h2 className="font-display text-3xl font-black text-ink uppercase tracking-tight">
-                            Explore Our Crypto Collection
-                        </h2>
-                        <p className="text-xs text-muted leading-relaxed">
-                            Integrate signals across multiple high-throughput blockchains. Micro-settlements 
-                            execute on Arc Testnet via bridged USDC.
-                        </p>
-                    </div>
 
-                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                        {[
-                            { name: 'Bitcoin Network', ticker: 'BTC', gas: '<0.0001 USDC', speed: '10 min avg', active: '1,428 runs' },
-                            { name: 'Ethereum Network', ticker: 'ETH', gas: '$0.001 USDC', speed: '12 sec avg', active: '4,842 runs' },
-                            { name: 'Solana Network', ticker: 'SOL', gas: '<0.0001 USDC', speed: '400 ms avg', active: '3,612 runs' },
-                            { name: 'Arbitrum One', ticker: 'ARB', gas: '<0.0005 USDC', speed: '250 ms avg', active: '2,947 runs' }
-                        ].map((chain, i) => (
-                            <motion.div
-                                key={i}
-                                variants={itemRevealVariants}
-                                whileHover={shouldReduceMotion ? {} : { y: -4, borderColor: 'rgba(255,255,255,0.12)' }}
-                                className="bg-[#182030] border border-white/10 p-5 rounded-[1.75rem] shadow-[0_15px_30px_rgba(0,0,0,0.3)] transition-all duration-300 space-y-4"
-                            >
-                                <div className="flex justify-between items-center">
-                                    <div className="size-8 rounded-xl bg-background border border-white/5 flex items-center justify-center font-mono font-bold text-xs text-ink">
-                                        {chain.ticker.slice(0, 2)}
-                                    </div>
-                                    <span className="font-mono text-[9px] text-[#22c787] font-semibold bg-[#22c787]/10 px-2 py-0.5 rounded-full">
-                                        Active
-                                    </span>
-                                </div>
-                                <div>
-                                    <h4 className="font-display text-sm font-bold text-ink">{chain.name}</h4>
-                                    <span className="font-mono text-[10px] text-muted">{chain.ticker}</span>
-                                </div>
-                                <div className="border-t border-white/5 pt-3 grid grid-cols-2 gap-2 font-mono text-[9px] text-muted">
-                                    <div>
-                                        <span className="block text-[8px] uppercase text-muted/50 mb-0.5">Est. Gas</span>
-                                        <span className="font-semibold text-ink">{chain.gas}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-[8px] uppercase text-muted/50 mb-0.5">Speed</span>
-                                        <span className="font-semibold text-ink">{chain.speed}</span>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </motion.div>
-            </section>
 
             {/* ────────────── LIVE HACKATHON STATS ──────────── */}
             <section className="border-y border-hairline bg-[#0d1119] py-12 sm:py-16">
