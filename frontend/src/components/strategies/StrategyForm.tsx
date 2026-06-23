@@ -90,14 +90,14 @@ const StrategyForm: React.FC<StrategyFormProps> = ({ onSuccess }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 border border-hairline bg-surface p-6">
+        <form onSubmit={handleSubmit} className="space-y-6 border border-hairline bg-surface p-6 sm:p-8 rounded-[1.75rem] shadow-xl">
             <div className="flex items-center justify-between border-b border-hairline pb-4 mb-4">
                 <h3 className="font-display text-lg font-semibold text-ink">Create New Strategy</h3>
-                <div className="flex border border-hairline p-0.5">
+                <div className="flex border border-hairline p-0.5 rounded-full bg-black/10">
                     <button
                         type="button"
                         onClick={() => setEditorMode('visual')}
-                        className={`font-mono text-[10px] uppercase tracking-wider px-3 py-1.5 transition-all ${
+                        className={`font-mono text-[10px] uppercase tracking-wider px-4.5 py-1.5 transition-all rounded-full ${
                             editorMode === 'visual' ? 'bg-ink text-background font-semibold' : 'text-muted hover:text-ink'
                         }`}
                     >
@@ -106,7 +106,7 @@ const StrategyForm: React.FC<StrategyFormProps> = ({ onSuccess }) => {
                     <button
                         type="button"
                         onClick={() => setEditorMode('json')}
-                        className={`font-mono text-[10px] uppercase tracking-wider px-3 py-1.5 transition-all ${
+                        className={`font-mono text-[10px] uppercase tracking-wider px-4.5 py-1.5 transition-all rounded-full ${
                             editorMode === 'json' ? 'bg-ink text-background font-semibold' : 'text-muted hover:text-ink'
                         }`}
                     >
@@ -116,7 +116,7 @@ const StrategyForm: React.FC<StrategyFormProps> = ({ onSuccess }) => {
             </div>
 
             {error && (
-                <div className="border border-block/30 bg-block/5 text-block p-4 font-mono text-xs">
+                <div className="border border-block/30 bg-block/5 text-block p-4 font-mono text-xs rounded-xl">
                     {error}
                 </div>
             )}
@@ -127,7 +127,7 @@ const StrategyForm: React.FC<StrategyFormProps> = ({ onSuccess }) => {
                     <input
                         type="text"
                         required
-                        className="w-full bg-background border border-hairline text-ink placeholder:text-muted px-4 py-3 text-sm font-mono focus:border-accent focus:outline-none transition-colors"
+                        className="w-full bg-background border border-hairline text-ink placeholder:text-muted px-5 py-3 text-sm font-mono focus:border-accent focus:outline-none transition-colors rounded-full"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="e.g. RSI Momentum Scalper"
@@ -137,7 +137,7 @@ const StrategyForm: React.FC<StrategyFormProps> = ({ onSuccess }) => {
                 <div>
                     <label className="font-mono text-xs text-muted mb-2 block">Description</label>
                     <textarea
-                        className="w-full bg-background border border-hairline text-ink placeholder:text-muted px-4 py-3 text-sm font-mono focus:border-accent focus:outline-none transition-colors h-20 resize-none"
+                        className="w-full bg-background border border-hairline text-ink placeholder:text-muted px-5 py-3 text-sm font-mono focus:border-accent focus:outline-none transition-colors h-20 resize-none rounded-2xl"
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         placeholder="Describe your strategy logic..."
@@ -157,7 +157,7 @@ const StrategyForm: React.FC<StrategyFormProps> = ({ onSuccess }) => {
                         <div>
                             <label className="font-mono text-xs text-muted mb-2 block">Rules (JSON)</label>
                             <textarea
-                                className="w-full bg-background border border-hairline text-approve font-mono text-xs focus:border-accent focus:outline-none transition-colors h-40"
+                                className="w-full bg-background border border-hairline text-approve font-mono text-xs focus:border-accent focus:outline-none transition-colors h-40 rounded-2xl p-4"
                                 value={formData.rules}
                                 onChange={(e) => setFormData({ ...formData, rules: e.target.value })}
                             />
@@ -166,7 +166,7 @@ const StrategyForm: React.FC<StrategyFormProps> = ({ onSuccess }) => {
                         <div>
                             <label className="font-mono text-xs text-muted mb-2 block">Risk Management (JSON)</label>
                             <textarea
-                                className="w-full bg-background border border-hairline text-approve font-mono text-xs focus:border-accent focus:outline-none transition-colors h-40"
+                                className="w-full bg-background border border-hairline text-approve font-mono text-xs focus:border-accent focus:outline-none transition-colors h-40 rounded-2xl p-4"
                                 value={formData.risk_management}
                                 onChange={(e) => setFormData({ ...formData, risk_management: e.target.value })}
                             />
@@ -180,7 +180,7 @@ const StrategyForm: React.FC<StrategyFormProps> = ({ onSuccess }) => {
                 <button
                     type="submit"
                     disabled={submitting}
-                    className="font-mono bg-ink text-background py-3 px-6 text-sm font-semibold hover:bg-accent transition-colors disabled:opacity-40"
+                    className="font-mono bg-ink text-background py-3.5 px-8 text-xs font-bold hover:bg-accent transition-all rounded-full active:scale-[0.98] disabled:opacity-40 shadow-md"
                 >
                     {submitting ? 'Creating...' : 'Create Strategy'}
                 </button>

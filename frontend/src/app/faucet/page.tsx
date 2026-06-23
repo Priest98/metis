@@ -296,14 +296,14 @@ export default function FaucetPage() {
                             >
                                 <div className="mt-4 space-y-3">
                                     <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Your Arc testnet wallet</p>
-                                    <div className="flex items-center gap-2 border border-hairline bg-background p-3">
-                                        <span className="font-mono text-xs text-ink flex-1 truncate select-all">
+                                    <div className="flex items-center gap-2 border border-hairline bg-background p-3 rounded-xl">
+                                        <span className="font-mono text-xs text-ink flex-1 truncate select-all font-semibold">
                                             {walletAddress || 'Loading…'}
                                         </span>
                                         <button
                                             onClick={handleCopy}
                                             disabled={!walletAddress}
-                                            className="flex items-center gap-1.5 font-mono text-[10px] font-semibold px-3 py-1.5 bg-accent text-background hover:bg-white transition-colors disabled:opacity-40 shrink-0"
+                                            className="flex items-center gap-1.5 font-mono text-[10px] font-semibold px-4 py-2 bg-accent text-background hover:bg-white transition-all disabled:opacity-40 shrink-0 rounded-full"
                                         >
                                             {copied ? <Check size={11} /> : <Copy size={11} />}
                                             {copied ? 'Copied!' : 'Copy'}
@@ -320,14 +320,14 @@ export default function FaucetPage() {
                                             </p>
                                             <div className="space-y-2">
                                                 {agents.map(a => (
-                                                    <div key={a.id} className="flex items-center gap-2 border border-hairline bg-surface p-2.5">
+                                                    <div key={a.id} className="flex items-center gap-2 border border-hairline bg-surface p-2.5 rounded-xl">
                                                         <div className="flex-1 min-w-0">
                                                             <p className="font-mono text-[10px] font-bold text-ink truncate">{a.name}</p>
                                                             <p className="font-mono text-[9px] text-muted truncate">{a.wallet_address}</p>
                                                         </div>
                                                         <button
                                                             onClick={() => handleCopyAgent(a.id, a.wallet_address)}
-                                                            className="flex items-center gap-1 font-mono text-[9px] px-2.5 py-1 bg-background border border-hairline text-ink hover:text-accent hover:border-accent transition-colors shrink-0"
+                                                            className="flex items-center gap-1 font-mono text-[9px] px-3 py-1 bg-background border border-hairline text-ink hover:text-accent hover:border-accent transition-all shrink-0 rounded-full"
                                                         >
                                                             {copiedAgentId === a.id ? <Check size={10} /> : <Copy size={10} />}
                                                             {copiedAgentId === a.id ? 'Copied!' : 'Copy'}
@@ -354,7 +354,7 @@ export default function FaucetPage() {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             onClick={() => setActiveStep('confirm')}
-                                            className={`flex items-center justify-between gap-4 border p-4 transition-colors group ${
+                                            className={`flex items-center justify-between gap-4 border p-4 transition-all duration-300 group rounded-[1.25rem] shadow-sm ${
                                                 f.primary
                                                     ? 'border-accent/40 bg-[rgba(215,255,62,0.04)] hover:border-accent/70'
                                                     : 'border-hairline bg-surface hover:border-white/20'
@@ -369,7 +369,7 @@ export default function FaucetPage() {
                                             <ExternalLink size={13} className="text-muted group-hover:text-ink transition-colors shrink-0" />
                                         </a>
                                     ))}
-                                    <div className="border border-dashed border-hairline p-3">
+                                    <div className="border border-dashed border-hairline p-3 rounded-xl">
                                         <p className="font-mono text-[10px] text-muted leading-relaxed">
                                             💡 <strong className="text-ink">Tip:</strong> After pasting your address and clicking &quot;Send&quot;, wait ~10–30 seconds for the transaction to confirm. Then come back and hit &quot;Refresh Balance&quot; below.
                                         </p>
@@ -385,10 +385,10 @@ export default function FaucetPage() {
                             >
                                 <div className="mt-4 space-y-3">
                                     {/* Live balance display */}
-                                    <div className={`border p-4 transition-all duration-500 ${
+                                    <div className={`border p-4 transition-all duration-500 rounded-2xl ${
                                         balanceJumped
-                                            ? 'border-approve/60 bg-[rgba(34,199,135,0.08)]'
-                                            : 'border-hairline bg-background'
+                                            ? 'border-approve/60 bg-[rgba(34,199,135,0.08)] shadow-[0_8px_20px_rgba(22,163,74,0.05)]'
+                                            : 'border-hairline bg-background shadow-inner'
                                     }`}>
                                         <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-1">On-chain USDC balance</p>
                                         <div className="flex items-baseline gap-2">
@@ -419,7 +419,7 @@ export default function FaucetPage() {
                                     <button
                                         onClick={handleRefresh}
                                         disabled={refreshing}
-                                        className="flex items-center gap-2 font-mono text-xs border border-hairline px-4 py-2.5 text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40"
+                                        className="flex items-center gap-2 font-mono text-xs border border-hairline px-5 py-2.5 text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40 rounded-full"
                                     >
                                         <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
                                         {refreshing ? 'Refreshing…' : 'Refresh Balance'}
@@ -449,21 +449,21 @@ export default function FaucetPage() {
                                         Your wallet now has real testnet USDC. Every signal unlock costs exactly{' '}
                                         <span className="text-accent font-semibold">$0.001 USDC</span> — verified on Arc L1 via HTTP 402.
                                     </p>
-                                    <div className="grid grid-cols-3 gap-px bg-hairline border border-hairline">
+                                    <div className="grid grid-cols-3 gap-px bg-hairline border border-hairline rounded-xl overflow-hidden shadow-inner">
                                         {[
                                             { label: 'Signal cost', value: '$0.001 USDC' },
                                             { label: 'Your balance', value: balance !== null ? `$${balance.toFixed(3)}` : '—' },
                                             { label: 'Signals available', value: balance !== null ? Math.floor(balance / 0.001).toLocaleString() : '—' },
                                         ].map(m => (
-                                            <div key={m.label} className="bg-surface p-3">
+                                            <div key={m.label} className="bg-surface p-3 text-center">
                                                 <p className="font-mono text-[9px] uppercase text-muted">{m.label}</p>
-                                                <p className="font-display text-base font-semibold text-ink">{m.value}</p>
+                                                <p className="font-display text-sm sm:text-base font-semibold text-ink mt-0.5">{m.value}</p>
                                             </div>
                                         ))}
                                     </div>
                                     <button
                                         onClick={() => router.push('/dashboard')}
-                                        className="w-full sm:w-auto flex items-center justify-center gap-2 font-mono bg-ink text-background px-5 py-3 text-xs font-semibold hover:bg-accent transition-colors"
+                                        className="w-full sm:w-auto flex items-center justify-center gap-2 font-mono bg-ink text-background px-6 py-3.5 text-xs font-bold hover:bg-accent transition-all rounded-full active:scale-[0.98] shadow-md"
                                     >
                                         <Play size={12} />
                                         Go to Dashboard → Unlock Signals
@@ -659,7 +659,7 @@ export default function FaucetPage() {
                                         <motion.div
                                             initial={{ opacity: 0, scale: 0.95 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className="border border-approve/30 bg-[rgba(34,199,135,0.04)] p-4 space-y-3"
+                                            className="border border-approve/30 bg-[rgba(34,199,135,0.04)] p-5 space-y-3 rounded-2xl shadow-md"
                                         >
                                             <div className="flex items-center gap-2 text-approve">
                                                 <CheckCircle2 size={16} />
@@ -673,13 +673,13 @@ export default function FaucetPage() {
                                             <div className="flex items-center gap-2 pt-2">
                                                 <button
                                                     onClick={handleResetBridge}
-                                                    className="flex-1 font-mono text-[11px] border border-hairline py-2 text-ink hover:border-accent hover:text-accent transition-colors"
+                                                    className="flex-1 font-mono text-[11px] border border-hairline py-2.5 text-ink hover:border-accent hover:text-accent transition-colors rounded-full font-semibold"
                                                 >
                                                     Bridge More
                                                 </button>
                                                 <button
                                                     onClick={() => router.push('/dashboard')}
-                                                    className="flex-1 font-mono text-[11px] bg-ink text-background py-2 text-center font-semibold hover:bg-accent transition-colors"
+                                                    className="flex-1 font-mono text-[11px] bg-ink text-background py-2.5 text-center font-bold hover:bg-accent transition-colors rounded-full shadow-md"
                                                 >
                                                     Start Trading
                                                 </button>
@@ -755,7 +755,7 @@ export default function FaucetPage() {
                         <motion.div
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="border border-accent/30 bg-[rgba(215,255,62,0.04)] p-5"
+                            className="border border-accent/30 bg-[rgba(215,255,62,0.04)] p-5 rounded-2xl shadow-sm"
                         >
                             <p className="font-mono text-[9px] uppercase tracking-widest text-accent mb-3">Signal capacity</p>
                             <p className="font-display text-3xl font-bold text-ink">
@@ -790,7 +790,7 @@ function StepCard({
                     : 'var(--color-hairline)',
             }}
             transition={{ duration: 0.3 }}
-            className="border bg-surface p-5 transition-colors"
+            className="border bg-surface p-5 transition-colors rounded-2xl shadow-sm"
         >
             <div className="flex items-start gap-4">
                 <span className={`font-mono text-xl font-bold shrink-0 leading-none mt-px ${

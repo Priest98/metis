@@ -15,7 +15,7 @@ type HistoryTab = 'signals' | 'backtests';
 function DirectionBadge({ direction }: { direction: string }) {
     const isBuy = direction?.toUpperCase() === 'BUY' || direction?.toUpperCase() === 'LONG';
     return (
-        <span className={`font-mono text-[10px] font-semibold px-2 py-px border ${
+        <span className={`font-mono text-[10px] font-semibold px-2.5 py-0.5 border rounded-full ${
             isBuy
                 ? 'text-approve border-approve/30 bg-[rgba(34,199,135,0.08)]'
                 : 'text-block border-block/30 bg-[rgba(248,113,113,0.08)]'
@@ -33,7 +33,7 @@ function StatusBadge({ status }: { status: string }) {
         failed:    'text-block border-block/30 bg-[rgba(248,113,113,0.08)]',
     };
     return (
-        <span className={`font-mono text-[10px] px-2 py-px border ${map[status] ?? 'text-muted border-hairline'}`}>
+        <span className={`font-mono text-[10px] px-2.5 py-0.5 border rounded-full ${map[status] ?? 'text-muted border-hairline'}`}>
             {status ?? '—'}
         </span>
     );
@@ -117,13 +117,13 @@ export default function HistoryPage() {
                         className="space-y-3"
                     >
                         {signals.length === 0 ? (
-                            <div className="py-20 text-center border border-dashed border-hairline font-mono text-xs text-muted">
+                            <div className="py-20 text-center border border-dashed border-hairline font-mono text-xs text-muted rounded-2xl bg-surface/20">
                                 No signals yet. Generate one from the dashboard.
                             </div>
                         ) : signals.map(sig => (
                             <div
                                 key={sig.id}
-                                className="border border-hairline bg-surface hover:border-white/15 transition-colors"
+                                className="border border-hairline bg-surface hover:border-white/15 transition-colors rounded-2xl overflow-hidden shadow-sm"
                             >
                                 {/* Row */}
                                 <button
@@ -171,7 +171,7 @@ export default function HistoryPage() {
                                                 <div className="bg-surface p-5">
                                                     <p className="font-mono text-[9px] uppercase tracking-widest text-muted mb-3">signal parameters</p>
                                                     {sig.gated ? (
-                                                        <p className="font-mono text-xs text-muted/60 py-4 text-center border border-dashed border-hairline">
+                                                        <p className="font-mono text-xs text-muted/60 py-4 text-center border border-dashed border-hairline rounded-xl bg-black/10">
                                                             🔒 Pay $0.001 USDC to unlock entry / SL / TP
                                                         </p>
                                                     ) : (
@@ -216,14 +216,14 @@ export default function HistoryPage() {
                         className="space-y-3"
                     >
                         {backtests.length === 0 ? (
-                            <div className="py-20 text-center border border-dashed border-hairline font-mono text-xs text-muted">
+                            <div className="py-20 text-center border border-dashed border-hairline font-mono text-xs text-muted rounded-2xl bg-surface/20">
                                 No backtests yet. Create a strategy and run a backtest.
                             </div>
                         ) : backtests.map(bt => {
                             const totalReturn = bt.metrics?.total_return ?? bt.total_return ?? 0;
                             const isPos = totalReturn >= 0;
                             return (
-                                <div key={bt.id} className="border border-hairline bg-surface">
+                                <div key={bt.id} className="border border-hairline bg-surface rounded-2xl overflow-hidden shadow-md">
                                     <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
                                         <BarChart2 size={14} className="text-muted shrink-0" />
                                         <div className="flex-1 min-w-0">
@@ -244,7 +244,7 @@ export default function HistoryPage() {
                                                     { label: 'drawdown',    value: bt.metrics?.max_drawdown != null ? `${Number(bt.metrics.max_drawdown).toFixed(1)}%` : '—', negative: true },
                                                     { label: 'prof. factor', value: bt.metrics?.profit_factor != null ? Number(bt.metrics.profit_factor).toFixed(2) : '—' },
                                                 ].map(m => (
-                                                    <div key={m.label} className="bg-background p-2.5">
+                                                    <div key={m.label} className="bg-background p-2.5 rounded-xl border border-hairline/20">
                                                         <p className="font-mono text-[9px] uppercase text-muted">{m.label}</p>
                                                         <p className={`font-display text-base font-semibold ${m.negative ? 'text-block' : 'text-ink'}`}>
                                                             {String(m.value)}

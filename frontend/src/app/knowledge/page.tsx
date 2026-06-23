@@ -44,7 +44,7 @@ export default function KnowledgePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
                     {/* Search */}
-                    <div className="border border-hairline bg-surface p-6">
+                    <div className="border border-hairline bg-surface p-6 rounded-[1.75rem] shadow-xl">
                         <p className="eyebrow mb-3">semantic search</p>
                         <h2 className="font-display text-xl font-semibold text-ink mb-5">Search Knowledge</h2>
 
@@ -54,12 +54,12 @@ export default function KnowledgePage() {
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="Ask about strategies, market behavior..."
-                                className="flex-1 bg-background border border-hairline text-ink placeholder:text-muted px-4 py-2.5 text-sm font-mono focus:border-accent focus:outline-none transition-colors"
+                                className="flex-1 bg-background border border-hairline text-ink placeholder:text-muted px-4 py-2.5 text-sm font-mono focus:border-accent focus:outline-none transition-colors rounded-full"
                             />
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="font-mono bg-ink text-background px-5 py-2.5 text-xs font-semibold transition-colors hover:bg-accent disabled:opacity-40"
+                                className="font-mono bg-ink text-background px-5 py-2.5 text-xs font-semibold transition-colors hover:bg-accent disabled:opacity-40 rounded-full"
                             >
                                 {loading ? 'Searching...' : 'Search →'}
                             </button>
@@ -67,10 +67,10 @@ export default function KnowledgePage() {
 
                         <div className="space-y-3">
                             {results.map((result: any, i) => (
-                                <div key={i} className="p-4 border border-hairline bg-background">
+                                <div key={i} className="p-4 border border-hairline bg-background rounded-2xl">
                                     <p className="text-sm text-muted leading-relaxed">{result.content}</p>
                                     <div className="mt-3 pt-3 border-t border-hairline flex gap-2">
-                                        <span className="font-mono text-[0.65rem] uppercase tracking-[0.12em] border border-hairline px-2 py-0.5 text-accent">
+                                        <span className="font-mono text-[0.65rem] uppercase tracking-[0.12em] border border-hairline px-2 py-0.5 text-accent rounded-full">
                                             Match: {(result.similarity * 100).toFixed(1)}%
                                         </span>
                                     </div>
@@ -88,7 +88,7 @@ export default function KnowledgePage() {
                     </div>
 
                     {/* Ingest */}
-                    <div className="border border-hairline bg-surface p-6">
+                    <div className="border border-hairline bg-surface p-6 rounded-[1.75rem] shadow-xl">
                         <p className="eyebrow mb-3">ingest knowledge</p>
                         <h2 className="font-display text-xl font-semibold text-ink mb-3">Add Research</h2>
                         <p className="font-mono text-xs text-muted mb-5 leading-relaxed">
@@ -98,12 +98,12 @@ export default function KnowledgePage() {
                             value={ingestContent}
                             onChange={(e) => setIngestContent(e.target.value)}
                             placeholder="Paste text content here..."
-                            className="w-full h-56 bg-background border border-hairline text-ink placeholder:text-muted px-4 py-3 font-mono text-sm focus:border-accent focus:outline-none transition-colors mb-4 resize-none"
+                            className="w-full h-56 bg-background border border-hairline text-ink placeholder:text-muted px-4 py-3 font-mono text-sm focus:border-accent focus:outline-none transition-colors mb-4 resize-none rounded-2xl"
                         />
                         <button
                             onClick={handleIngest}
                             disabled={!ingestContent}
-                            className="w-full font-mono bg-ink text-background py-3 text-sm font-semibold transition-colors hover:bg-accent disabled:opacity-40"
+                            className="w-full font-mono bg-ink text-background py-3 text-sm font-semibold transition-colors hover:bg-accent disabled:opacity-40 rounded-full shadow-md"
                         >
                             Ingest Content →
                         </button>

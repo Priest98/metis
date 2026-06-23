@@ -33,10 +33,10 @@ const StrategyList = () => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {strategies.map((strategy) => (
-                <div key={strategy.id} className="border border-hairline bg-surface p-6 hover:border-white/20 transition-colors">
+                <div key={strategy.id} className="border border-hairline bg-surface p-6 hover:border-white/20 transition-colors rounded-[1.75rem] shadow-xl">
                     <div className="flex justify-between items-start mb-4">
                         <h3 className="font-display text-lg font-semibold text-ink">{strategy.name}</h3>
-                        <span className="font-mono text-[10px] border border-accent/30 text-accent px-2 py-0.5 bg-accent/5">
+                        <span className="font-mono text-[10px] border border-accent/30 text-accent px-2.5 py-0.5 bg-accent/5 rounded-full">
                             {strategy.type}
                         </span>
                     </div>
@@ -62,7 +62,7 @@ const StrategyList = () => {
                             ID: {strategy.id.substring(0, 8)}...
                         </span>
                         <div className="flex gap-2">
-                            <button className="font-mono text-[10px] border border-approve/30 text-approve px-3 py-1 bg-approve/5 hover:bg-approve/10 transition-colors">
+                            <button className="font-mono text-[10px] border border-approve/30 text-approve px-3.5 py-1 bg-approve/5 hover:bg-approve/10 transition-colors rounded-full font-semibold">
                                 Active
                             </button>
                         </div>
@@ -71,7 +71,7 @@ const StrategyList = () => {
             ))}
 
             {strategies.length === 0 && (
-                <div className="col-span-full py-20 text-center border border-dashed border-hairline font-mono text-xs text-muted">
+                <div className="col-span-full py-20 text-center border border-dashed border-hairline font-mono text-xs text-muted rounded-2xl bg-surface/20">
                     No strategies found. Create one to get started.
                 </div>
             )}

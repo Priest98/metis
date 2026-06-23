@@ -6,7 +6,7 @@ import { Mail, MapPin, Phone, Send } from 'lucide-react';
 function ContactItem({ icon, title, content }: { icon: React.ReactNode; title: string; content: string }) {
     return (
         <div className="flex items-start gap-4">
-            <div className="border border-hairline bg-surface p-3 shrink-0 text-accent">
+            <div className="border border-hairline bg-surface p-3 shrink-0 text-accent rounded-xl">
                 {icon}
             </div>
             <div>
@@ -25,7 +25,7 @@ export default function ContactPage() {
         setSubmitted(true);
     };
 
-    const inputClass = "w-full bg-background border border-hairline text-ink placeholder:text-muted px-4 py-3 text-sm font-mono focus:border-accent focus:outline-none transition-colors";
+    const inputClass = "w-full bg-background border border-hairline text-ink placeholder:text-muted px-4 py-3 text-sm font-mono focus:border-accent focus:outline-none transition-colors rounded-xl";
     const labelClass = "font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted mb-2 block";
 
     return (
@@ -55,10 +55,10 @@ export default function ContactPage() {
                     </div>
 
                     {/* Form */}
-                    <div className="border border-hairline bg-surface p-8">
+                    <div className="border border-hairline bg-surface p-8 rounded-[1.75rem] shadow-xl">
                         {submitted ? (
                             <div className="h-full flex flex-col items-center justify-center text-center py-16">
-                                <div className="border border-approve/30 bg-approve/5 p-5 mb-6 text-approve">
+                                <div className="border border-approve/30 bg-approve/5 p-5 mb-6 text-approve rounded-2xl">
                                     <Send className="w-8 h-8" />
                                 </div>
                                 <h3 className="font-display text-2xl font-semibold text-ink mb-2">Message Sent.</h3>
@@ -100,12 +100,12 @@ export default function ContactPage() {
 
                                 <div>
                                     <label className={labelClass}>Message</label>
-                                    <textarea rows={4} className={`${inputClass} resize-none`} placeholder="How can we help?" required />
+                                    <textarea rows={4} className={`${inputClass} resize-none rounded-2xl`} placeholder="How can we help?" required />
                                 </div>
 
                                 <button
                                     type="submit"
-                                    className="w-full font-mono bg-ink text-background py-3.5 text-sm font-semibold transition-colors hover:bg-accent"
+                                    className="w-full font-mono bg-ink text-background py-3.5 text-sm font-semibold transition-colors hover:bg-accent rounded-full shadow-md"
                                 >
                                     Send Message →
                                 </button>
