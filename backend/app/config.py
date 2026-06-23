@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     # Supabase (Vector DB)
     SUPABASE_URL: Optional[str] = None
     SUPABASE_KEY: Optional[str] = None
+    SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
     
     # Exchange APIs
     BINANCE_API_KEY: Optional[str] = None

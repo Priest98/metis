@@ -20,11 +20,20 @@ class VectorKnowledgeBase:
     def __init__(self):
         """Initialize vector database client"""
         self.url = os.getenv('SUPABASE_URL')
-        self.key = os.getenv('SUPABASE_KEY')
+        # Use service role key if available for administrative write access, fallback to anon key
+        self.key = os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_KEY')
         self.client: Optional[Client] = None
         self.connected = False
         
-        if self.url and self.key:
+        # Check if credentials exist and are not placeholders
+        has_credentials = (
+            self.url and self.key and
+            "your-project" not in self.url and
+            "your-anon-key-here" not in self.key and
+            "your-service-role-key-here" not in self.key
+        )
+        
+        if has_credentials:
             try:
                 self.client = create_client(self.url, self.key)
                 self.connected = True

@@ -23,7 +23,8 @@ class SupabaseClient:
     def __init__(self):
         """Initialize Supabase client"""
         self.url = os.getenv('SUPABASE_URL')
-        self.key = os.getenv('SUPABASE_KEY')
+        # Use service role key if available for administrative write access, fallback to anon key
+        self.key = os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_KEY')
         self.client: Optional[Client] = None
         self.connected = False
         
@@ -31,7 +32,8 @@ class SupabaseClient:
         is_placeholder = (
             not self.url or not self.key or 
             "your-project" in self.url or 
-            "your-anon-key-here" in self.key
+            "your-anon-key-here" in self.key or
+            "your-service-role-key-here" in self.key
         )
         
         if not is_placeholder:
@@ -439,7 +441,22 @@ class SupabaseClient:
                 query = query.eq('user_id', user_id)
             result = query.execute()
             
-            return result.data if result.data else []
+            if not result.data:
+                return []
+            return [
+                {
+                    "id": str(s['id']),
+                    "user_id": str(s['user_id']) if s.get('user_id') else None,
+                    "name": s['name'],
+                    "description": s.get('description'),
+                    "type": s.get('strategy_type', 'json'),
+                    "rules": s.get('config', {}),
+                    "risk_management": s.get('config', {}).get('risk_management', {}) if s.get('config') else {},
+                    "is_active": s.get('is_active', True),
+                    "created_at": s.get('created_at')
+                }
+                for s in result.data
+            ]
         except Exception as e:
             logger.error(f"Error fetching strategies: {e}")
             return []
@@ -478,7 +495,22 @@ class SupabaseClient:
                 .eq('is_active', True)\
                 .execute()
             
-            return result.data if result.data else []
+            if not result.data:
+                return []
+            return [
+                {
+                    "id": str(s['id']),
+                    "user_id": str(s['user_id']) if s.get('user_id') else None,
+                    "name": s['name'],
+                    "description": s.get('description'),
+                    "type": s.get('strategy_type', 'json'),
+                    "rules": s.get('config', {}),
+                    "risk_management": s.get('config', {}).get('risk_management', {}) if s.get('config') else {},
+                    "is_active": s.get('is_active', True),
+                    "created_at": s.get('created_at')
+                }
+                for s in result.data
+            ]
         except Exception as e:
             logger.error(f"Error fetching active strategies: {e}")
             return []
