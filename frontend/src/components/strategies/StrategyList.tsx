@@ -33,7 +33,10 @@ const StrategyList = () => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {strategies.map((strategy) => (
-                <div key={strategy.id} className="border border-hairline bg-surface p-6 hover:border-white/20 transition-colors rounded-[1.75rem] shadow-xl">
+                <div 
+                    key={strategy.id} 
+                    className="border-t-2 border-t-accent border-x border-b border-hairline bg-surface/50 p-6 hover:bg-surface/90 hover:border-accent/35 transition-all duration-300 rounded-[1.75rem] shadow-xl hover:shadow-2xl"
+                >
                     <div className="flex justify-between items-start mb-4">
                         <h3 className="font-display text-lg font-semibold text-ink">{strategy.name}</h3>
                         <span className="font-mono text-[10px] border border-accent/30 text-accent px-2.5 py-0.5 bg-accent/5 rounded-full">

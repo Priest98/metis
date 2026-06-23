@@ -472,7 +472,7 @@ export default function FaucetPage() {
                             </StepCard>
                         </div>
                     ) : (
-                        <div className="border border-hairline bg-surface p-6 space-y-6">
+                        <div className="border border-white/10 bg-surface/80 backdrop-blur-md p-6 space-y-6 rounded-[1.75rem] shadow-xl">
                             <div className="flex items-center gap-2.5">
                                 <Zap className="text-accent" size={18} />
                                 <h2 className="font-display text-lg font-semibold text-ink">
@@ -696,7 +696,7 @@ export default function FaucetPage() {
                 <div className="space-y-4 lg:sticky lg:top-24 self-start">
 
                     {/* Checklist */}
-                    <div className="border border-hairline bg-surface p-5">
+                    <div className="border border-hairline bg-surface/30 backdrop-blur-sm p-5 rounded-2xl hover:border-accent/20 transition-all duration-300">
                         <p className="font-mono text-[9px] uppercase tracking-widest text-muted mb-4">Setup checklist</p>
                         <div className="space-y-3">
                             {[
@@ -719,7 +719,7 @@ export default function FaucetPage() {
                     </div>
 
                     {/* Current wallet card */}
-                    <div className="border border-hairline bg-surface p-5">
+                    <div className="border border-hairline bg-surface/30 backdrop-blur-sm p-5 rounded-2xl hover:border-accent/20 transition-all duration-300">
                         <p className="font-mono text-[9px] uppercase tracking-widest text-muted mb-3">Your testnet wallet</p>
                         <div className="space-y-2">
                             <div>
@@ -755,7 +755,7 @@ export default function FaucetPage() {
                         <motion.div
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="border border-accent/30 bg-[rgba(215,255,62,0.04)] p-5 rounded-2xl shadow-sm"
+                            className="border border-accent/35 bg-[rgba(215,255,62,0.05)] backdrop-blur-sm p-5 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300"
                         >
                             <p className="font-mono text-[9px] uppercase tracking-widest text-accent mb-3">Signal capacity</p>
                             <p className="font-display text-3xl font-bold text-ink">
@@ -780,17 +780,23 @@ function StepCard({
     done: boolean;
     children: React.ReactNode;
 }) {
+    const bgClass = active 
+        ? "bg-surface/85 backdrop-blur-md shadow-lg"
+        : done 
+        ? "bg-surface/45 backdrop-blur-sm shadow-sm"
+        : "bg-surface/10 opacity-70";
+
     return (
         <motion.div
             animate={{
                 borderColor: active
-                    ? 'rgba(215,255,62,0.35)'
+                    ? 'rgba(215,255,62,0.45)'
                     : done
-                    ? 'rgba(34,199,135,0.25)'
-                    : 'var(--color-hairline)',
+                    ? 'rgba(34,199,135,0.35)'
+                    : 'rgba(255,255,255,0.06)',
             }}
             transition={{ duration: 0.3 }}
-            className="border bg-surface p-5 transition-colors rounded-2xl shadow-sm"
+            className={`border p-5 rounded-2xl transition-all duration-300 ${bgClass}`}
         >
             <div className="flex items-start gap-4">
                 <span className={`font-mono text-xl font-bold shrink-0 leading-none mt-px ${

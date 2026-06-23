@@ -103,8 +103,12 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
         <motion.div
             variants={shakeVariants}
             animate={paymentStatus === 'failed' ? 'failed' : ''}
-            whileHover={shouldReduceMotion ? {} : { y: -4, borderColor: 'rgba(255,255,255,0.08)', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}
-            className="group relative bg-[#182030] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] transition-all duration-300 overflow-hidden"
+            whileHover={shouldReduceMotion ? {} : { 
+                y: -4, 
+                borderColor: isBuy ? 'rgba(34,199,135,0.3)' : 'rgba(255,93,93,0.3)', 
+                boxShadow: isBuy ? '0 12px 35px rgba(34,199,135,0.12)' : '0 12px 35px rgba(255,93,93,0.12)' 
+            }}
+            className="group relative bg-[#182030]/85 backdrop-blur-md rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 border border-white/10 shadow-xl transition-all duration-300 overflow-hidden"
         >
             
             {/* Visual gradient overlay matching BUY/SELL direction */}

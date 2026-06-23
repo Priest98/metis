@@ -572,8 +572,8 @@ export default function Dashboard() {
                         <div className="block lg:hidden mb-6">
                             <div
                                 onClick={() => setActiveTab('wallet')}
-                                className={`border bg-[#182030] shadow-xl p-5 cursor-pointer transition-all rounded-[1.5rem] hover:scale-[1.01] ${
-                                    activeTab === 'wallet' ? 'border-accent' : 'border-white/10 hover:border-accent/40'
+                                className={`border shadow-xl p-5 cursor-pointer transition-all rounded-[1.5rem] hover:scale-[1.01] bg-surface/85 backdrop-blur-md transition-all duration-300 ${
+                                    activeTab === 'wallet' ? 'border-accent' : 'border-white/10 hover:border-accent/45'
                                 }`}
                             >
                                 <div className="flex items-center justify-between mb-4">
@@ -722,7 +722,7 @@ export default function Dashboard() {
                                                         <div 
                                                             key={agent.id}
                                                             onClick={() => setSelectedMarketplaceAgent(agent)}
-                                                            className="border border-white/10 bg-black/20 p-5 hover:border-accent cursor-pointer transition-all hover:scale-[1.01] relative overflow-hidden rounded-[1.25rem] shadow-md"
+                                                            className="border border-hairline/60 bg-surface/30 p-5 hover:bg-surface/60 hover:border-accent/45 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 relative overflow-hidden rounded-[1.25rem] shadow-md hover:shadow-lg"
                                                         >
                                                             <div className="flex justify-between items-start mb-3">
                                                                 <div>
@@ -942,7 +942,7 @@ export default function Dashboard() {
                                     className="space-y-8"
                                 >
                                     {/* Detailed Embedded Wallet Card */}
-                                    <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
+                                    <div className="border border-white/10 bg-surface/85 backdrop-blur-md shadow-2xl p-6 rounded-[1.75rem]">
                                         <p className="eyebrow mb-2">Embedded USDC Wallet</p>
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                             <div>
@@ -1035,13 +1035,20 @@ export default function Dashboard() {
                                     </div>
 
                                     {/* AI Agent Wallets & Budgets */}
-                                    <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
+                                    <div className="border border-white/10 bg-surface/40 backdrop-blur-sm p-6 rounded-[1.75rem] shadow-xl">
                                         <p className="eyebrow mb-4">Programmable AI Agent Wallets</p>
 
                                         {/* List Agents */}
                                         <div className="space-y-4 mb-8">
                                             {agents.map((agent) => (
-                                                <div key={agent.id} className="border border-white/10 p-5 bg-black/20 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+                                                <div 
+                                                    key={agent.id} 
+                                                    className={`border p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-md transition-all duration-300 ${
+                                                        agent.yield_loop_active 
+                                                            ? 'border-t-2 border-t-accent border-x border-b border-hairline bg-surface/50 hover:bg-surface/80 hover:shadow-lg' 
+                                                            : 'border border-hairline/60 bg-surface/20 hover:bg-surface/40 hover:border-white/20'
+                                                    }`}
+                                                >
                                                     <div>
                                                         <div className="flex items-center gap-2 mb-1.5">
                                                             <span className="font-display text-sm font-semibold text-ink">{agent.name}</span>
@@ -1163,7 +1170,7 @@ export default function Dashboard() {
                                     </div>
 
                                     {/* Ledger / Microtransaction history */}
-                                    <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
+                                    <div className="border border-white/10 bg-surface/40 backdrop-blur-sm p-6 rounded-[1.75rem] shadow-xl">
                                         <p className="eyebrow mb-4">Arc L1 Transaction History (Ledger)</p>
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left font-mono text-xs text-muted border-collapse">
@@ -1238,8 +1245,8 @@ export default function Dashboard() {
                         {/* Wallet Quick Card */}
                         <div
                             onClick={() => setActiveTab('wallet')}
-                            className={`hidden lg:block border bg-[#182030] shadow-xl p-5 cursor-pointer transition-all rounded-[1.5rem] hover:scale-[1.01] ${
-                                activeTab === 'wallet' ? 'border-accent' : 'border-white/10 hover:border-accent/40'
+                            className={`hidden lg:block border shadow-xl p-5 cursor-pointer transition-all rounded-[1.5rem] hover:scale-[1.01] bg-surface/85 backdrop-blur-md transition-all duration-300 ${
+                                activeTab === 'wallet' ? 'border-accent' : 'border-white/10 hover:border-accent/45'
                             }`}
                         >
                             <div className="flex items-center justify-between mb-4">
@@ -1257,7 +1264,7 @@ export default function Dashboard() {
                         </div>
 
                         {/* AI Copilot */}
-                        <div className="border border-white/10 bg-[#182030] shadow-xl p-5 rounded-[1.5rem]">
+                        <div className="border border-hairline/60 bg-surface/30 p-5 rounded-[1.5rem] shadow-md hover:border-white/20 transition-all duration-300">
                             <div className="flex items-center gap-2 pb-3 mb-4 border-b border-white/5">
                                 <BrainCircuit className="w-4 h-4 text-accent" />
                                 <p className="eyebrow">ai copilot analysis</p>
@@ -1285,7 +1292,7 @@ export default function Dashboard() {
                         </div>
 
                         {/* Exchange Connectors */}
-                        <div className="border border-white/10 bg-[#182030] shadow-xl p-5 rounded-[1.5rem]">
+                        <div className="border border-hairline/60 bg-surface/30 p-5 rounded-[1.5rem] shadow-md hover:border-white/20 transition-all duration-300">
                             <div className="flex items-center gap-2 pb-3 mb-4 border-b border-white/5">
                                 <Globe2 className="w-4 h-4 text-accent" />
                                 <p className="eyebrow">exchange connectors</p>
