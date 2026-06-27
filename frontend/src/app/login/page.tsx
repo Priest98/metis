@@ -52,10 +52,10 @@ export default function LoginPage() {
     };
 
     return (
-        <main className="min-h-screen bg-[#0b0f17] flex items-center justify-center p-6 relative overflow-hidden">
+        <main className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
             {/* Background Watermark & Diagonal Streaks */}
             <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none z-0 overflow-hidden">
-                <h1 className="font-display font-black text-[22vw] tracking-widest text-[#ffffff]/[0.015] select-none uppercase">
+                <h1 className="font-display font-black text-[22vw] tracking-widest text-ink/[0.015] select-none uppercase">
                     METIS
                 </h1>
             </div>
@@ -94,15 +94,15 @@ export default function LoginPage() {
                 </div>
 
                 {/* Form Card */}
-                <div className="border border-white/10 bg-[#182030]/90 backdrop-blur-xl p-8 rounded-[1.75rem] shadow-2xl text-left">
+                <div className="border border-hairline bg-surface/90 backdrop-blur-xl p-8 rounded-[1.75rem] shadow-2xl text-left">
                     {/* Tabs */}
-                    <div className="flex border border-white/10 p-1 rounded-full bg-black/20 max-w-[280px] mx-auto mb-8">
+                    <div className="flex border border-hairline p-1 rounded-full bg-background/20 max-w-[280px] mx-auto mb-8">
                         <button
                             type="button"
                             onClick={() => setAuthMethod('email')}
                             className={`flex-1 py-2 px-5 rounded-full font-mono text-xs font-semibold transition-all duration-300 ${
                                 authMethod === 'email'
-                                    ? 'bg-[#0b0f17] border border-accent/20 text-accent shadow-md'
+                                    ? 'bg-background border border-accent/20 text-accent shadow-md'
                                     : 'text-muted hover:text-ink'
                             }`}
                         >
@@ -113,7 +113,7 @@ export default function LoginPage() {
                             onClick={() => setAuthMethod('wallet')}
                             className={`flex-1 py-2 px-5 rounded-full font-mono text-xs font-semibold transition-all duration-300 ${
                                 authMethod === 'wallet'
-                                    ? 'bg-[#0b0f17] border border-accent/20 text-accent shadow-md'
+                                    ? 'bg-background border border-accent/20 text-accent shadow-md'
                                     : 'text-muted hover:text-ink'
                             }`}
                         >
@@ -206,7 +206,7 @@ export default function LoginPage() {
                                     type="button"
                                     onClick={handleWalletLogin}
                                     disabled={isConnecting}
-                                    className="w-full flex items-center justify-center gap-2 bg-[#0b0f17] border border-white/10 py-3.5 px-6 rounded-full font-mono text-sm text-ink hover:border-accent hover:text-accent transition-all duration-300 active:scale-[0.98]"
+                                    className="w-full flex items-center justify-center gap-2 bg-background border border-hairline py-3.5 px-6 rounded-full font-mono text-sm text-ink hover:border-accent hover:text-accent transition-all duration-300 active:scale-[0.98]"
                                 >
                                     {isConnecting ? (
                                         <>

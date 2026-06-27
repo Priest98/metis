@@ -72,7 +72,7 @@ export default function AgentThoughtStream({
             <div className="flex items-center justify-between px-4 py-2 bg-black/30 border-b border-hairline">
                 <div className="flex items-center gap-2">
                     <span className="size-2 rounded-full animate-pulse" style={{ backgroundColor: agentColor }} />
-                    <span className="font-semibold tracking-wide text-ink text-[11px] uppercase">
+                    <span className="font-semibold tracking-wide text-slate-200 text-[11px] uppercase">
                         {agent} Stream
                     </span>
                 </div>
@@ -113,7 +113,7 @@ export default function AgentThoughtStream({
                                     >
                                         {meta.label}
                                     </span>
-                                    <span className="text-ink/90 font-mono leading-relaxed">{thought}</span>
+                                    <span className="text-slate-200/95 font-mono leading-relaxed">{thought}</span>
                                 </div>
                             </motion.div>
                         );
@@ -137,7 +137,7 @@ export default function AgentThoughtStream({
                                 <span className="text-[9px] uppercase tracking-wider text-muted font-bold block">
                                     Final Decision
                                 </span>
-                                <span className="font-mono text-sm font-semibold text-ink leading-tight">
+                                <span className="font-mono text-sm font-semibold text-slate-200 leading-tight">
                                     {decision}
                                 </span>
                             </div>

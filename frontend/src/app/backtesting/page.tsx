@@ -45,7 +45,7 @@ export default function BacktestingPage() {
                     {backtests.map((bt: any) => (
                         <div
                             key={bt.id}
-                            className="border border-white/10 bg-[#182030] p-6 rounded-[1.75rem] shadow-2xl hover:border-white/20 transition-colors"
+                            className="border border-hairline bg-surface p-6 rounded-[1.75rem] shadow-2xl hover:border-accent/30 transition-colors"
                         >
                             <div className="flex justify-between items-start mb-4">
                                 <div>
@@ -68,19 +68,19 @@ export default function BacktestingPage() {
                             </div>
 
                             <div className="grid grid-cols-3 gap-3 mb-4">
-                                <div className="bg-[#0b0f17]/60 p-3 rounded-xl">
+                                <div className="bg-background/60 p-3 rounded-xl">
                                     <p className="font-mono text-[0.65rem] uppercase text-muted mb-1">Sharpe</p>
                                     <p className="font-display text-xl font-semibold text-ink">
                                         {bt.metrics?.sharpe_ratio?.toFixed(2)}
                                     </p>
                                 </div>
-                                <div className="bg-[#0b0f17]/60 p-3 rounded-xl">
+                                <div className="bg-background/60 p-3 rounded-xl">
                                     <p className="font-mono text-[0.65rem] uppercase text-muted mb-1">Win Rate</p>
                                     <p className="font-display text-xl font-semibold text-ink">
                                         {bt.metrics?.win_rate?.toFixed(1)}%
                                     </p>
                                 </div>
-                                <div className="bg-[#0b0f17]/60 p-3 rounded-xl">
+                                <div className="bg-background/60 p-3 rounded-xl">
                                     <p className="font-mono text-[0.65rem] uppercase text-muted mb-1">Drawdown</p>
                                     <p className="font-display text-xl font-semibold text-block">
                                         {bt.metrics?.max_drawdown?.toFixed(2)}%
@@ -88,14 +88,14 @@ export default function BacktestingPage() {
                                 </div>
                             </div>
 
-                            <p className="font-mono text-[0.65rem] text-muted/50 mt-3 pt-3 border-t border-white/10">
+                            <p className="font-mono text-[0.65rem] text-muted/50 mt-3 pt-3 border-t border-hairline">
                                 ID: {bt.id}
                             </p>
                         </div>
                     ))}
 
                     {backtests.length === 0 && (
-                        <div className="col-span-full py-20 text-center border border-dashed border-white/10 bg-[#182030]/40 rounded-[1.75rem] font-mono text-xs text-muted">
+                        <div className="col-span-full py-20 text-center border border-dashed border-hairline bg-surface/40 rounded-[1.75rem] font-mono text-xs text-muted">
                             No backtests run yet. Go to Strategies to run one.
                         </div>
                     )}

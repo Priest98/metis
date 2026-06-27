@@ -54,10 +54,10 @@ export default function SignupPage() {
     };
 
     return (
-        <main className="min-h-screen bg-[#0b0f17] flex items-center justify-center p-6 relative overflow-hidden">
+        <main className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
             {/* Background Watermark & Diagonal Streaks */}
             <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none z-0 overflow-hidden">
-                <h1 className="font-display font-black text-[22vw] tracking-widest text-[#ffffff]/[0.015] select-none uppercase">
+                <h1 className="font-display font-black text-[22vw] tracking-widest text-ink/[0.015] select-none uppercase">
                     METIS
                 </h1>
             </div>
@@ -96,7 +96,7 @@ export default function SignupPage() {
                 </div>
 
                 {/* Form Card */}
-                <div className="border border-white/10 bg-[#182030]/90 backdrop-blur-xl p-8 rounded-[1.75rem] shadow-2xl text-left">
+                <div className="border border-hairline bg-surface/90 backdrop-blur-xl p-8 rounded-[1.75rem] shadow-2xl text-left">
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {/* Name Grid */}
                         <div className="grid grid-cols-2 gap-4">
@@ -216,8 +216,8 @@ export default function SignupPage() {
                                 )}
                             </div>
 
-                            {walletAddress ? (
-                                <div className="flex items-center justify-between bg-[#0b0f17]/60 border border-approve/25 px-4 py-2.5 rounded-full">
+                             {walletAddress ? (
+                                <div className="flex items-center justify-between bg-background/60 border border-approve/25 px-4 py-2.5 rounded-full">
                                     <div className="flex items-center gap-2">
                                         <span className="size-2 rounded-full bg-approve animate-pulse" />
                                         <span className="font-mono text-xs text-approve tracking-tight">
@@ -231,7 +231,7 @@ export default function SignupPage() {
                                     type="button"
                                     onClick={connectWallet}
                                     disabled={isConnecting}
-                                    className="w-full flex items-center justify-center gap-2 border border-white/10 bg-[#0b0f17] py-2.5 px-4 rounded-full font-mono text-xs text-ink hover:border-accent hover:text-accent transition-all duration-300 active:scale-[0.98]"
+                                    className="w-full flex items-center justify-center gap-2 border border-hairline bg-background py-2.5 px-4 rounded-full font-mono text-xs text-ink hover:border-accent hover:text-accent transition-all duration-300 active:scale-[0.98]"
                                 >
                                     {isConnecting ? (
                                         <>

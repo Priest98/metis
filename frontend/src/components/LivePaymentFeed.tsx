@@ -122,16 +122,16 @@ export default function LivePaymentFeed() {
     }, []);
 
     return (
-        <div className="border border-white/10 bg-[#182030] rounded-[1.75rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
+        <div className="border border-hairline bg-surface rounded-[1.75rem] overflow-hidden shadow-2xl">
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-hairline">
                 <div className="flex items-center gap-2.5">
-                    <div className={`size-2 rounded-full bg-[#D7FF3E] transition-all duration-300 ${pulse ? 'animate-ping' : 'animate-pulse'}`} />
+                    <div className={`size-2 rounded-full bg-accent transition-all duration-300 ${pulse ? 'animate-ping' : 'animate-pulse'}`} />
                     <span className="font-display text-sm font-semibold text-ink">ARC L1 · Agent Transaction Feed</span>
                 </div>
                 <div className="flex items-center gap-3">
                     <span className="font-mono text-[10px] text-muted">
-                        Total: <span className="text-[#D7FF3E] font-bold">{totalUsdc.toFixed(6)} USDC</span>
+                        Total: <span className="text-accent font-bold">{totalUsdc.toFixed(6)} USDC</span>
                     </span>
                     <span className="flex items-center gap-1 bg-approve/10 border border-approve/20 px-2 py-0.5 rounded-full">
                         <Activity className="w-2.5 h-2.5 text-approve" />
@@ -141,12 +141,12 @@ export default function LivePaymentFeed() {
             </div>
 
             {/* TX List */}
-            <div className="divide-y divide-white/[0.04]">
+            <div className="divide-y divide-hairline">
                 <AnimatePresence initial={false}>
                     {txs.map((tx) => (
                         <motion.div
                             key={tx.id}
-                            initial={{ opacity: 0, y: -8, backgroundColor: 'rgba(215,255,62,0.04)' }}
+                            initial={{ opacity: 0, y: -8, backgroundColor: 'rgba(var(--color-accent-rgb), 0.04)' }}
                             animate={{ opacity: 1, y: 0,  backgroundColor: 'rgba(0,0,0,0)' }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.35, ease: 'easeOut' }}
@@ -166,7 +166,7 @@ export default function LivePaymentFeed() {
                             <div className="flex items-center gap-2 flex-wrap">
                                 <span className="font-mono text-[10px] text-muted">{tx.label}</span>
                                 {tx.asset && (
-                                    <span className="font-mono text-[10px] font-semibold text-ink/60 bg-white/5 px-1.5 rounded">
+                                    <span className="font-mono text-[10px] font-semibold text-ink/60 bg-background/10 px-1.5 py-0.5 rounded">
                                         {tx.asset.replace('USDT','')}
                                         {tx.direction && (
                                             <span className={tx.direction === 'BUY' ? ' text-approve' : ' text-block'}>

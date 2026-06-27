@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
+import ExplorerLink from '@/components/ExplorerLink';
+import InviteButton from '@/components/InviteButton';
 import {
     Copy, Check, ExternalLink, RefreshCw, Zap, CircleDollarSign,
     Wallet, ArrowRight, CheckCircle2, Clock, AlertTriangle, Play
@@ -739,16 +741,24 @@ export default function FaucetPage() {
                         </div>
 
                         {walletAddress && (
-                            <a
-                                href={`https://testnet.arcscan.app/address/${walletAddress}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-4 flex items-center gap-1.5 font-mono text-[9px] text-muted hover:text-accent transition-colors"
-                            >
-                                View on ArcScan <ExternalLink size={9} />
-                            </a>
+                            <div className="mt-4 font-mono text-[9px]">
+                                <ExplorerLink hash={walletAddress} type="address" className="text-muted hover:text-accent" label="View on ArcScan" />
+                            </div>
                         )}
                     </div>
+
+                    {/* Invite Program Card */}
+                    {walletAddress && (
+                        <div className="border border-hairline bg-surface/30 backdrop-blur-sm p-5 rounded-2xl hover:border-accent/20 transition-all duration-300 space-y-3">
+                            <p className="font-mono text-[9px] uppercase tracking-widest text-muted">Referral Program</p>
+                            <p className="font-mono text-[10px] text-muted leading-relaxed">
+                                Invite other builders to Metis and show real viral growth.
+                            </p>
+                            <div className="pt-1">
+                                <InviteButton walletAddress={walletAddress} />
+                            </div>
+                        </div>
+                    )}
 
                     {/* Signal math */}
                     {(balance ?? 0) > 0 && (

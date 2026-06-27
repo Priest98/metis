@@ -59,11 +59,11 @@ const SEED_AGENTS: AgentRecord[] = [
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG: Record<AgentRecord['type'], { color: string; bg: string; Icon: IconComponent }> = {
-    Signal:   { color: '#D7FF3E', bg: 'rgba(215,255,62,0.10)',  Icon: Zap      },
-    Risk:     { color: '#22c787', bg: 'rgba(34,199,135,0.10)', Icon: Shield   },
-    Sentiment:{ color: '#6ba3ff', bg: 'rgba(75,139,255,0.10)', Icon: Brain    },
-    Strategy: { color: '#f5a623', bg: 'rgba(245,166,35,0.10)', Icon: TrendingUp },
-    Scanner:  { color: '#c084fc', bg: 'rgba(192,132,252,0.10)',Icon: BarChart2 },
+    Signal:   { color: 'var(--color-accent)', bg: 'rgba(var(--color-accent-rgb), 0.10)',  Icon: Zap      },
+    Risk:     { color: 'var(--color-approve)', bg: 'rgba(var(--color-approve-rgb), 0.10)', Icon: Shield   },
+    Sentiment:{ color: '#4f46e5', bg: 'rgba(79, 70, 229, 0.10)', Icon: Brain    },
+    Strategy: { color: 'var(--color-review)', bg: 'rgba(var(--color-review-rgb), 0.10)', Icon: TrendingUp },
+    Scanner:  { color: '#c084fc', bg: 'rgba(192, 132, 252, 0.10)',Icon: BarChart2 },
 };
 
 const MEDALS = ['🥇', '🥈', '🥉'];
@@ -76,7 +76,7 @@ function RepDots({ score }: { score: number }) {
                 <div
                     key={i}
                     className={`size-1.5 rounded-full transition-all duration-700 ${
-                        i <= filled ? 'bg-[#D7FF3E]' : 'bg-white/10'
+                        i <= filled ? 'bg-accent' : 'bg-ink/10'
                     }`}
                 />
             ))}
@@ -282,7 +282,7 @@ export default function AgentLeaderboard() {
     const toggle = (id: string) => setExpanded(prev => prev === id ? null : id);
 
     return (
-        <div className="border border-white/10 bg-[#182030] rounded-[1.75rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.4)] relative">
+        <div className="border border-hairline bg-surface rounded-[1.75rem] overflow-hidden shadow-2xl relative">
             {/* Slash Alert Toast */}
             <AnimatePresence>
                 {slashedToast && (
@@ -299,7 +299,7 @@ export default function AgentLeaderboard() {
             </AnimatePresence>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-hairline">
                 <div>
                     <p className="eyebrow mb-1">agent economy</p>
                     <h3 className="font-display text-base font-semibold text-ink">Agent P&amp;L Leaderboard</h3>
@@ -311,7 +311,7 @@ export default function AgentLeaderboard() {
             </div>
 
             {/* Column headers */}
-            <div className="grid grid-cols-[32px_1fr_80px_20px] sm:grid-cols-[32px_1fr_80px_60px_70px_48px_20px] gap-x-1 sm:gap-x-3 px-3 sm:px-5 py-2 border-b border-white/[0.04]">
+            <div className="grid grid-cols-[32px_1fr_80px_20px] sm:grid-cols-[32px_1fr_80px_60px_70px_48px_20px] gap-x-1 sm:gap-x-3 px-3 sm:px-5 py-2 border-b border-hairline">
                 <span className="font-mono text-[9px] text-muted/50 uppercase tracking-wider">#</span>
                 <span className="font-mono text-[9px] text-muted/50 uppercase tracking-wider">Agent</span>
                 <span className="font-mono text-[9px] text-muted/50 uppercase tracking-wider text-right">Earned</span>
@@ -322,7 +322,7 @@ export default function AgentLeaderboard() {
             </div>
 
             {/* Rows */}
-            <div className="divide-y divide-white/[0.03]">
+            <div className="divide-y divide-hairline">
                 {agents.map((agent, idx) => {
                     const cfg        = TYPE_CONFIG[agent.type];
                     const Icon       = cfg.Icon;
@@ -334,9 +334,9 @@ export default function AgentLeaderboard() {
                         <div key={agent.id}>
                             <motion.button
                                 onClick={() => toggle(agent.id)}
-                                animate={isFlashing ? { backgroundColor: ['rgba(215,255,62,0.04)', 'rgba(0,0,0,0)'] } : {}}
+                                animate={isFlashing ? { backgroundColor: ['rgba(var(--color-accent-rgb), 0.04)', 'rgba(0,0,0,0)'] } : {}}
                                 transition={{ duration: 0.8 }}
-                                className="w-full grid grid-cols-[32px_1fr_80px_20px] sm:grid-cols-[32px_1fr_80px_60px_70px_48px_20px] gap-x-1 sm:gap-x-3 items-center px-3 sm:px-5 py-3 hover:bg-white/[0.02] transition-colors text-left"
+                                className="w-full grid grid-cols-[32px_1fr_80px_20px] sm:grid-cols-[32px_1fr_80px_60px_70px_48px_20px] gap-x-1 sm:gap-x-3 items-center px-3 sm:px-5 py-3 hover:bg-surface/30 transition-colors text-left"
                             >
                                 {/* Rank */}
                                 <span className="font-mono text-sm">
@@ -358,7 +358,7 @@ export default function AgentLeaderboard() {
 
                                 {/* Earned */}
                                 <div className="text-right">
-                                    <p className="font-mono text-xs font-bold text-[#D7FF3E]">
+                                    <p className="font-mono text-xs font-bold text-accent">
                                         +{agent.earned.toFixed(2)}
                                     </p>
                                     <p className="font-mono text-[9px] text-muted">USDC</p>
@@ -398,11 +398,11 @@ export default function AgentLeaderboard() {
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-3 border-t border-white/[0.04] flex items-center justify-between">
+            <div className="px-5 py-3 border-t border-hairline flex items-center justify-between">
                 <p className="font-mono text-[9px] text-muted/40">
                     Ranked by cumulative USDC earned · Reputation updated every 4s
                 </p>
-                <p className="font-mono text-[9px] text-[#D7FF3E]/60">
+                <p className="font-mono text-[9px] text-accent/60">
                     Total economy: {agents.reduce((s, a) => s + a.earned, 0).toFixed(2)} USDC
                 </p>
             </div>

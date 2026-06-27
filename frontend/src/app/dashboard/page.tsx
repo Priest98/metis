@@ -14,6 +14,7 @@ import LivePaymentFeed from '@/components/LivePaymentFeed';
 import AgentNetworkGraph from '@/components/AgentNetworkGraph';
 import QuantCopilot from '@/components/QuantCopilot';
 import api from '@/lib/api';
+import ExplorerLink from '@/components/ExplorerLink';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
@@ -36,6 +37,22 @@ const generateChartData = (symbol: string) => {
         });
     }
     return data;
+};
+
+const SHADOW_FLOAT_INTENT = {
+  "intent": {
+    "agent": "0x4bDC17682C62E15Cb3296a5aA1D61d456597EBdc",
+    "provider": "0x8ddf06fE8985988d3e0883F945E891BD57084937",
+    "endpointHash": "0x54f180bcd31ab4c3401b23bc78cb3eeb89f85d42a3b43e3d06a692b91d941160",
+    "amountUSDC": "10000",
+    "nonce": "1782221873696",
+    "expiry": "1782222473",
+    "reason": "My agent uses Shadow Float to buy a paid market/data snapshot over x402 before deciding whether to act.",
+    "float": "0xf305647ba0ff7f1e2d4be5f37f2ef9f930531057",
+    "chainId": 5042002
+  },
+  "signature": "0x62ae6e0e66f651446de2d86b86a50a526d0eb151454a9a4a46da624ce9d834f256d28131d13a6d96fd5d4fc53fae83fba694f77584619f7aab8a91afbfa68ad81b",
+  "digest": "0x3890be54e32ae109ff83548396e876654a33901cfce16f5d7d584cfce2cbaaa3"
 };
 
 export default function Dashboard() {
@@ -124,6 +141,7 @@ export default function Dashboard() {
     const [fundingLoading, setFundingLoading] = useState(false);
     const [fundingError, setFundingError] = useState<string | null>(null);
     const [fundingSuccess, setFundingSuccess] = useState<string | null>(null);
+    const [shadowFloatModalOpen, setShadowFloatModalOpen] = useState(false);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -508,14 +526,14 @@ export default function Dashboard() {
                         <button
                             onClick={fetchSignals}
                             disabled={isRefreshing}
-                            className="font-mono flex items-center gap-1.5 border border-white/10 bg-[#182030] px-4 py-2 rounded-full text-xs text-ink transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
+                            className="font-mono flex items-center gap-1.5 border border-hairline bg-surface px-4 py-2 rounded-full text-xs text-ink transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
                         >
                             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                             Refresh
                         </button>
                         <button
                             onClick={logout}
-                            className="font-mono flex items-center gap-1.5 border border-white/10 bg-[#182030] px-4 py-2 rounded-full text-xs text-ink transition-colors hover:border-block hover:text-block hover:bg-block/10 duration-300"
+                            className="font-mono flex items-center gap-1.5 border border-hairline bg-surface px-4 py-2 rounded-full text-xs text-ink transition-colors hover:border-block hover:text-block hover:bg-block/10 duration-300"
                         >
                             <LogOut className="w-3.5 h-3.5" />
                             Log Out
@@ -542,7 +560,7 @@ export default function Dashboard() {
                 )}
 
                 {/* Tab Navigation */}
-                <div className="inline-flex border border-white/10 p-1.5 rounded-full bg-[#182030] gap-2 mb-8 overflow-x-auto max-w-full no-scrollbar">
+                <div className="inline-flex border border-hairline p-1.5 rounded-full bg-surface gap-2 mb-8 overflow-x-auto max-w-full no-scrollbar">
                     {[
                         { id: 'terminal', label: 'Quant Terminal Feed' },
                         { id: 'marketplace', label: 'Agent Marketplace' },
@@ -614,7 +632,7 @@ export default function Dashboard() {
                                     className="space-y-4"
                                 >
                                     {/* Price Chart */}
-                                    <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
+                                    <div className="border border-hairline bg-surface shadow-2xl p-6 rounded-[1.75rem]">
                                         <div className="flex items-center justify-between mb-6">
                                             <div>
                                                 <p className="eyebrow mb-1">active workspace</p>
@@ -710,7 +728,7 @@ export default function Dashboard() {
                                         {/* Left 2 Cols: Directory & Leaderboard */}
                                         <div className="lg:col-span-2 space-y-8">
                                             {/* Catalog */}
-                                            <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
+                                            <div className="border border-hairline bg-surface shadow-2xl p-6 rounded-[1.75rem]">
                                                 <div className="mb-6">
                                                     <p className="eyebrow mb-1">agent marketplace</p>
                                                     <h3 className="font-display text-lg font-semibold text-ink">Active Agent Catalog</h3>
@@ -741,7 +759,7 @@ export default function Dashboard() {
                                                             <p className="font-mono text-[10px] text-muted line-clamp-2 mb-4 leading-relaxed h-8">
                                                                 {agent.desc}
                                                             </p>
-                                                            <div className="flex items-center justify-between font-mono text-[10px] border-t border-white/5 pt-3">
+                                                            <div className="flex items-center justify-between font-mono text-[10px] border-t border-hairline pt-3">
                                                                 <div>
                                                                     <span className="text-muted block text-[8px] uppercase">reputation</span>
                                                                     <span className="text-ink font-semibold">{agent.reputation}/100</span>
@@ -763,8 +781,8 @@ export default function Dashboard() {
                                         {/* Right 1 Col: Agent Factory */}
                                         <div className="space-y-8">
                                             {/* Creator Form */}
-                                            <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
-                                                <div className="mb-6 pb-2 border-b border-white/5 flex items-center justify-between">
+                                            <div className="border border-hairline bg-surface shadow-2xl p-6 rounded-[1.75rem]">
+                                                <div className="mb-6 pb-2 border-b border-hairline flex items-center justify-between">
                                                     <div>
                                                         <p className="eyebrow mb-1">instantiation engine</p>
                                                         <h3 className="font-display text-lg font-semibold text-ink">Agent Factory</h3>
@@ -780,7 +798,7 @@ export default function Dashboard() {
                                                             value={newAgentName}
                                                             onChange={(e) => setNewAgentName(e.target.value)}
                                                             placeholder="e.g. SOL Trend Hunter"
-                                                            className="w-full bg-background border border-white/10 text-ink placeholder:text-muted/50 px-4.5 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                            className="w-full bg-background border border-hairline text-ink placeholder:text-muted/50 px-4.5 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                             required
                                                         />
                                                     </div>
@@ -791,7 +809,7 @@ export default function Dashboard() {
                                                             <select
                                                                 value={newAgentType}
                                                                 onChange={(e) => setNewAgentType(e.target.value)}
-                                                                className="w-full bg-background border border-white/10 text-ink pl-4 pr-10 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                                className="w-full bg-background border border-hairline text-ink pl-4 pr-10 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                             >
                                                                 <option value="Signal">Signal</option>
                                                                 <option value="Risk">Risk</option>
@@ -804,7 +822,7 @@ export default function Dashboard() {
                                                             <select
                                                                 value={newAgentStrategy}
                                                                 onChange={(e) => setNewAgentStrategy(e.target.value)}
-                                                                className="w-full bg-background border border-white/10 text-ink pl-4 pr-10 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                                className="w-full bg-background border border-hairline text-ink pl-4 pr-10 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                             >
                                                                 <option value="Momentum Squeeze">Momentum</option>
                                                                 <option value="Mean Reversion">Mean Rev</option>
@@ -821,14 +839,14 @@ export default function Dashboard() {
                                                             step="0.0001"
                                                             value={newAgentBudget}
                                                             onChange={(e) => setNewAgentBudget(e.target.value)}
-                                                            className="w-full bg-background border border-white/10 text-ink px-4.5 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                            className="w-full bg-background border border-hairline text-ink px-4.5 py-3 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                             required
                                                         />
                                                     </div>
 
                                                     <button
                                                         type="submit"
-                                                        className="w-full bg-white text-background hover:bg-accent font-mono text-xs font-bold py-3.5 rounded-full transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-lg shadow-white/5"
+                                                        className="w-full bg-ink text-background hover:bg-accent font-mono text-xs font-bold py-3.5 rounded-full transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-lg shadow-accent/5"
                                                     >
                                                         <Plus className="w-3.5 h-3.5" />
                                                         Instantiate Agent
@@ -837,8 +855,8 @@ export default function Dashboard() {
                                             </div>
 
                                             {/* Transaction Ledger */}
-                                            <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]">
-                                                <div className="mb-4 flex items-center justify-between pb-2 border-b border-white/5">
+                                            <div className="border border-hairline bg-surface shadow-2xl p-6 rounded-[1.75rem]">
+                                                <div className="mb-4 flex items-center justify-between pb-2 border-b border-hairline">
                                                     <div>
                                                         <p className="eyebrow mb-1">verification ledger</p>
                                                         <h3 className="font-display text-sm font-semibold text-ink">Arc L1 Sandbox</h3>
@@ -847,7 +865,7 @@ export default function Dashboard() {
                                                 </div>
                                                 <div className="space-y-3 max-h-[220px] overflow-y-auto font-mono text-[10px] leading-relaxed text-muted pr-2">
                                                     {txLedger.map((tx, idx) => (
-                                                        <div key={idx} className="border-b border-white/5 pb-3">
+                                                        <div key={idx} className="border-b border-hairline pb-3">
                                                             <div className="flex justify-between text-[8px] text-muted mb-1">
                                                                 <span>[{tx.time}]</span>
                                                                 <span className="text-approve">{tx.status}</span>
@@ -869,8 +887,8 @@ export default function Dashboard() {
 
                                     {/* Agent Drawer/Modal Overlay */}
                                     {selectedMarketplaceAgent && (
-                                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-                                            <div className="border border-white/10 bg-[#182030] shadow-2xl max-w-md w-full p-6 sm:p-8 rounded-2xl sm:rounded-[1.75rem] relative max-h-[90vh] overflow-y-auto">
+                                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/85 backdrop-blur-sm">
+                                            <div className="border border-hairline bg-surface shadow-2xl max-w-md w-full p-6 sm:p-8 rounded-2xl sm:rounded-[1.75rem] relative max-h-[90vh] overflow-y-auto">
                                                 <button 
                                                     onClick={() => setSelectedMarketplaceAgent(null)}
                                                     className="absolute top-4 right-4 font-mono text-muted hover:text-ink text-xs"
@@ -880,15 +898,15 @@ export default function Dashboard() {
                                                 <div className="mb-4">
                                                     <span className="font-mono text-[8px] text-accent uppercase tracking-wider block mb-1">Agent Identity Profile</span>
                                                     <h3 className="font-display text-xl font-bold text-ink">{selectedMarketplaceAgent.name}</h3>
-                                                    <span className="font-mono text-[9px] text-muted break-all bg-black/20 px-3.5 py-1.5 border border-white/5 mt-1.5 block rounded-full">
+                                                    <span className="font-mono text-[9px] text-muted break-all bg-background/20 px-3.5 py-1.5 border border-hairline mt-1.5 block rounded-full">
                                                         Address: {selectedMarketplaceAgent.address}
                                                     </span>
                                                 </div>
                                                 <div className="space-y-4 font-mono text-xs mt-4">
-                                                    <p className="text-slate-300 leading-relaxed text-[11px]">
+                                                    <p className="text-ink/80 leading-relaxed text-[11px]">
                                                         {selectedMarketplaceAgent.desc}
                                                     </p>
-                                                    <div className="grid grid-cols-2 gap-3 bg-black/20 border border-white/5 p-4 rounded-2xl">
+                                                    <div className="grid grid-cols-2 gap-3 bg-background/20 border border-hairline p-4 rounded-2xl">
                                                         <div>
                                                             <span className="text-muted block text-[8px] uppercase">Category</span>
                                                             <span className="text-ink font-semibold">{selectedMarketplaceAgent.type} Agent</span>
@@ -914,7 +932,7 @@ export default function Dashboard() {
                                                             <span className="text-ink font-semibold">{selectedMarketplaceAgent.signals} total</span>
                                                         </div>
                                                     </div>
-                                                    <div className="bg-black/20 border border-white/5 p-4 rounded-2xl">
+                                                    <div className="bg-background/20 border border-hairline p-4 rounded-2xl">
                                                         <span className="text-muted block text-[8px] uppercase mb-1">Agent Learning Log</span>
                                                         <p className="text-[10px] text-accent">
                                                             [Feedback loop active] Pattern strength reinforcement: +{(100 - selectedMarketplaceAgent.accuracy)/5}% precision scaling based on last prediction run.
@@ -922,7 +940,7 @@ export default function Dashboard() {
                                                     </div>
                                                     <button 
                                                         onClick={() => setSelectedMarketplaceAgent(null)}
-                                                        className="w-full bg-white text-background font-semibold py-3 hover:bg-accent transition-colors rounded-full mt-2"
+                                                        className="w-full bg-ink text-background font-semibold py-3 hover:bg-accent transition-colors rounded-full mt-2"
                                                     >
                                                         Dismiss Profile
                                                     </button>
@@ -942,18 +960,18 @@ export default function Dashboard() {
                                     className="space-y-8"
                                 >
                                     {/* Detailed Embedded Wallet Card */}
-                                    <div className="border border-white/10 bg-surface/85 backdrop-blur-md shadow-2xl p-6 rounded-[1.75rem]">
+                                    <div className="border border-hairline bg-surface/85 backdrop-blur-md shadow-2xl p-6 rounded-[1.75rem]">
                                         <p className="eyebrow mb-2">Embedded USDC Wallet</p>
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                             <div>
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <span className="font-mono text-xs text-muted">Address:</span>
-                                                    <span className="font-mono text-xs text-ink font-semibold break-all bg-black/20 px-3.5 py-1.5 border border-white/5 rounded-full select-all">
+                                                    <span className="font-mono text-xs text-ink font-semibold break-all bg-background/20 px-3.5 py-1.5 border border-hairline rounded-full select-all">
                                                         {walletInfo?.wallet_address || '0x000...'}
                                                     </span>
                                                     <button
                                                         onClick={() => copyToClipboard(walletInfo?.wallet_address || '')}
-                                                        className="p-1.5 border border-white/10 bg-white/5 rounded-full hover:border-accent text-muted hover:text-accent transition-colors"
+                                                        className="p-1.5 border border-hairline bg-background/10 rounded-full hover:border-accent text-muted hover:text-accent transition-colors"
                                                         title="Copy Address"
                                                     >
                                                         {copiedAddress ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -982,14 +1000,14 @@ export default function Dashboard() {
                                             </div>
                                             <button
                                                 onClick={() => router.push('/faucet')}
-                                                className="font-mono self-start md:self-center bg-white text-background px-6 py-3.5 rounded-full text-xs font-bold transition-all active:scale-[0.98] shadow-md"
+                                                className="font-mono self-start md:self-center bg-ink text-background hover:bg-accent hover:text-background px-6 py-3.5 rounded-full text-xs font-bold transition-all active:scale-[0.98] shadow-md duration-200"
                                             >
                                                 ⛽ Go to Faucet
                                             </button>
                                         </div>
 
                                         {/* Link Secondary External Wallet */}
-                                        <div className="mt-8 pt-6 border-t border-white/5">
+                                        <div className="mt-8 pt-6 border-t border-hairline">
                                             <p className="eyebrow mb-3">Optional External Wallet Connection</p>
                                             <div className="space-y-3 max-w-lg">
                                                 <div className="flex gap-2">
@@ -997,7 +1015,7 @@ export default function Dashboard() {
                                                         type="button"
                                                         onClick={connectWallet}
                                                         disabled={isConnectingWallet}
-                                                        className="font-mono border border-white/10 bg-white/5 px-4.5 py-2.5 rounded-full text-[10px] uppercase tracking-wider text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40 shrink-0"
+                                                        className="font-mono border border-hairline bg-background/10 px-4.5 py-2.5 rounded-full text-[10px] uppercase tracking-wider text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40 shrink-0"
                                                     >
                                                         {isConnectingWallet ? 'Connecting...' : 'Connect Wallet'}
                                                     </button>
@@ -1010,12 +1028,12 @@ export default function Dashboard() {
                                                         placeholder="0x..."
                                                         value={externalWalletInput}
                                                         onChange={(e) => setExternalWalletInput(e.target.value)}
-                                                        className="flex-1 bg-background border border-white/10 text-ink placeholder:text-muted px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                        className="flex-1 bg-background border border-hairline text-ink placeholder:text-muted px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                     />
                                                     <button
                                                         type="submit"
                                                         disabled={externalWalletLoading}
-                                                        className="font-mono border border-white/10 bg-white/5 px-5 py-2.5 rounded-full text-xs text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40 shrink-0"
+                                                        className="font-mono border border-hairline bg-background/10 px-5 py-2.5 rounded-full text-xs text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-40 shrink-0"
                                                     >
                                                         {externalWalletLoading ? 'Saving...' : 'Link Wallet'}
                                                     </button>
@@ -1035,7 +1053,7 @@ export default function Dashboard() {
                                     </div>
 
                                     {/* AI Agent Wallets & Budgets */}
-                                    <div className="border border-white/10 bg-surface/40 backdrop-blur-sm p-6 rounded-[1.75rem] shadow-xl">
+                                    <div className="border border-hairline bg-surface/40 backdrop-blur-sm p-6 rounded-[1.75rem] shadow-xl">
                                         <p className="eyebrow mb-4">Programmable AI Agent Wallets</p>
 
                                         {/* List Agents */}
@@ -1046,11 +1064,11 @@ export default function Dashboard() {
                                                     className={`border p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-md transition-all duration-300 ${
                                                         agent.yield_loop_active 
                                                             ? 'border-t-2 border-t-accent border-x border-b border-hairline bg-surface/50 hover:bg-surface/80 hover:shadow-lg' 
-                                                            : 'border border-hairline/60 bg-surface/20 hover:bg-surface/40 hover:border-white/20'
+                                                            : 'border border-hairline bg-surface/20 hover:bg-surface/40 hover:border-hairline'
                                                     }`}
                                                 >
                                                     <div>
-                                                        <div className="flex items-center gap-2 mb-1.5">
+                                                                                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                                                             <span className="font-display text-sm font-semibold text-ink">{agent.name}</span>
                                                             <span className={`font-mono text-[9px] px-2.5 py-0.5 border rounded-full ${
                                                                 agent.is_active ? 'text-approve border-approve/30 bg-approve/5' : 'text-block border-block/30 bg-block/5'
@@ -1062,12 +1080,22 @@ export default function Dashboard() {
                                                                     YIELD ACTIVE (5.5% APY)
                                                                 </span>
                                                             )}
+                                                            {agent.wallet_address?.toLowerCase() === '0x4bdc17682c62e15cb3296a5aa1d61d456597ebdc' && (
+                                                                <button
+                                                                    onClick={() => setShadowFloatModalOpen(true)}
+                                                                    className="font-mono text-[9px] px-2.5 py-0.5 border rounded-full text-accent border-accent/35 bg-accent/10 hover:bg-accent/20 transition-all flex items-center gap-1 group cursor-pointer"
+                                                                >
+                                                                    <Zap className="w-2.5 h-2.5 text-accent animate-pulse" />
+                                                                    <span>SHADOW FLOAT: 0.05 USDC ELIGIBLE</span>
+                                                                    <span className="text-[8px] text-muted opacity-60 group-hover:opacity-100 transition-opacity">(Proof)</span>
+                                                                </button>
+                                                            )}
                                                         </div>
                                                         <div className="flex items-center gap-2 mb-2.5">
                                                             <span className="font-mono text-[10px] text-muted truncate max-w-xs">{agent.wallet_address}</span>
                                                             <button
                                                                 onClick={() => copyToClipboard(agent.wallet_address, true, agent.id)}
-                                                                className="p-1 border border-white/10 bg-white/5 rounded-full text-muted hover:text-ink transition-colors"
+                                                                className="p-1 border border-hairline bg-background/10 rounded-full text-muted hover:text-ink transition-colors"
                                                             >
                                                                 {copiedAgentAddress === agent.id ? <Check className="w-3 h-3 text-approve" /> : <Copy className="w-3 h-3" />}
                                                             </button>
@@ -1083,6 +1111,20 @@ export default function Dashboard() {
                                                             <span className="font-mono text-[10px] text-ink font-semibold"><AnimatedNumber value={agent.yield_loop_balance || 0.0} precision={6} /> USDC</span>
                                                             <span className="font-mono text-[10px] text-muted">Interest Accrued:</span>
                                                             <span className="font-mono text-[10px] text-approve font-semibold"><AnimatedNumber value={agent.yield_loop_interest_earned || 0.0} precision={8} /> USDC</span>
+                                                            {agent.wallet_address?.toLowerCase() === '0x4bdc17682c62e15cb3296a5aa1d61d456597ebdc' && (
+                                                                <>
+                                                                    <span className="font-mono text-[10px] text-muted">Shadow Float Credit Line:</span>
+                                                                    <span className="font-mono text-[10px] text-accent font-semibold flex items-center gap-1.5">
+                                                                        0.05 USDC Limit
+                                                                        <button
+                                                                            onClick={() => setShadowFloatModalOpen(true)}
+                                                                            className="underline text-muted hover:text-accent font-mono text-[9px] cursor-pointer"
+                                                                        >
+                                                                            [Proof]
+                                                                        </button>
+                                                                    </span>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     </div>
                                                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto mt-4 sm:mt-0">
@@ -1110,7 +1152,7 @@ export default function Dashboard() {
                                                             className={`font-mono border px-4 py-2.5 rounded-full text-xs flex items-center justify-center gap-1.5 transition-colors w-full sm:w-auto ${
                                                                 agent.yield_loop_active
                                                                     ? 'border-accent text-accent hover:bg-accent/5'
-                                                                    : 'border-white/10 text-muted hover:text-ink hover:border-white/20'
+                                                                    : 'border-hairline text-muted hover:text-ink hover:border-hairline'
                                                             }`}
                                                         >
                                                             <RefreshCw className={`w-3.5 h-3.5 ${togglingYield === agent.id ? 'animate-spin' : ''}`} />
@@ -1122,7 +1164,7 @@ export default function Dashboard() {
                                         </div>
 
                                         {/* Create Agent Form */}
-                                        <div className="pt-6 border-t border-white/5">
+                                        <div className="pt-6 border-t border-hairline">
                                             <h4 className="font-display text-sm font-semibold text-ink mb-4">Provision New AI Agent</h4>
                                             <form onSubmit={handleCreateAgent} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                                                 <div className="md:col-span-2">
@@ -1133,7 +1175,7 @@ export default function Dashboard() {
                                                         placeholder="e.g. Risk Audit Agent"
                                                         value={agentNameInput}
                                                         onChange={(e) => setAgentNameInput(e.target.value)}
-                                                        className="w-full bg-background border border-white/10 text-ink placeholder:text-muted px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                        className="w-full bg-background border border-hairline text-ink placeholder:text-muted px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                     />
                                                 </div>
                                                 <div>
@@ -1144,7 +1186,7 @@ export default function Dashboard() {
                                                         min="0.0"
                                                         value={agentBudgetInput}
                                                         onChange={(e) => setAgentBudgetInput(parseFloat(e.target.value))}
-                                                        className="w-full bg-background border border-white/10 text-ink px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                        className="w-full bg-background border border-hairline text-ink px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                     />
                                                 </div>
                                                 <div>
@@ -1155,13 +1197,13 @@ export default function Dashboard() {
                                                         min="0.0"
                                                         value={agentBalanceInput}
                                                         onChange={(e) => setAgentBalanceInput(parseFloat(e.target.value))}
-                                                        className="w-full bg-background border border-white/10 text-ink px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                                        className="w-full bg-background border border-hairline text-ink px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                                     />
                                                 </div>
                                                 <button
                                                     type="submit"
                                                     disabled={createAgentLoading || !agentNameInput}
-                                                    className="md:col-span-4 font-mono bg-white text-background py-3.5 text-xs font-bold hover:bg-accent transition-colors rounded-full active:scale-[0.98] disabled:opacity-40"
+                                                    className="md:col-span-4 font-mono bg-ink text-background py-3.5 text-xs font-bold hover:bg-accent transition-colors rounded-full active:scale-[0.98] disabled:opacity-40"
                                                 >
                                                     {createAgentLoading ? 'Provisioning Agent...' : 'Deploy Agent Wallet'}
                                                 </button>
@@ -1170,12 +1212,12 @@ export default function Dashboard() {
                                     </div>
 
                                     {/* Ledger / Microtransaction history */}
-                                    <div className="border border-white/10 bg-surface/40 backdrop-blur-sm p-6 rounded-[1.75rem] shadow-xl">
+                                    <div className="border border-hairline bg-surface/40 backdrop-blur-sm p-6 rounded-[1.75rem] shadow-xl">
                                         <p className="eyebrow mb-4">Arc L1 Transaction History (Ledger)</p>
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left font-mono text-xs text-muted border-collapse">
                                                 <thead>
-                                                    <tr className="border-b border-white/5 text-[10px] uppercase text-muted">
+                                                    <tr className="border-b border-hairline text-[10px] uppercase text-muted">
                                                         <th className="py-2.5">Date</th>
                                                         <th>Transaction Hash</th>
                                                         <th>Purpose</th>
@@ -1190,7 +1232,7 @@ export default function Dashboard() {
                                                                 initial={{ opacity: 0 }}
                                                                 animate={{ opacity: 1 }}
                                                                 exit={{ opacity: 0 }}
-                                                                className="border-b border-white/5"
+                                                                className="border-b border-hairline"
                                                             >
                                                                 <td colSpan={4} className="py-8 text-center text-[11px] text-muted italic">
                                                                     No transactions logged. Use the faucet or unlock signals to seed the ledger.
@@ -1205,21 +1247,13 @@ export default function Dashboard() {
                                                                     animate={{ opacity: 1, y: 0 }}
                                                                     exit={{ opacity: 0 }}
                                                                     transition={{ duration: 0.3, ease: 'easeOut' }}
-                                                                    className="border-b border-white/5 hover:bg-white/[0.01]"
+                                                                    className="border-b border-hairline hover:bg-surface/30"
                                                                 >
                                                                     <td className="py-3 pr-4 text-[10px]">
                                                                         {tx.created_at ? new Date(tx.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'}
                                                                     </td>
                                                                     <td className="font-mono text-[10px] text-accent pr-4">
-                                                                        <a
-                                                                            href={`https://testnet.arcscan.app/tx/${tx.tx_hash}`}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="hover:underline flex items-center gap-1 inline-flex"
-                                                                        >
-                                                                            {tx.tx_hash.substring(0, 10)}...{tx.tx_hash.substring(tx.tx_hash.length - 8)}
-                                                                            <ExternalLink className="w-2.5 h-2.5" />
-                                                                        </a>
+                                                                        <ExplorerLink hash={tx.tx_hash} type="tx" />
                                                                     </td>
                                                                     <td className="text-ink pr-4">{tx.purpose}</td>
                                                                     <td className="text-right font-semibold text-ink">
@@ -1246,12 +1280,12 @@ export default function Dashboard() {
                         <div
                             onClick={() => setActiveTab('wallet')}
                             className={`hidden lg:block border shadow-xl p-5 cursor-pointer transition-all rounded-[1.5rem] hover:scale-[1.01] bg-surface/85 backdrop-blur-md transition-all duration-300 ${
-                                activeTab === 'wallet' ? 'border-accent' : 'border-white/10 hover:border-accent/45'
+                                activeTab === 'wallet' ? 'border-accent' : 'border-hairline hover:border-accent/45'
                             }`}
                         >
                             <div className="flex items-center justify-between mb-4">
                                 <p className="eyebrow">nanopayments wallet</p>
-                                <a href="https://faucet.arc.network" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-white transition-colors">
+                                <a href="https://faucet.arc.network" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-ink transition-colors">
                                     <Wallet className="w-4 h-4" />
                                 </a>
                             </div>
@@ -1264,8 +1298,8 @@ export default function Dashboard() {
                         </div>
 
                         {/* AI Copilot */}
-                        <div className="border border-hairline/60 bg-surface/30 p-5 rounded-[1.5rem] shadow-md hover:border-white/20 transition-all duration-300">
-                            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-white/5">
+                        <div className="border border-hairline bg-surface/30 p-5 rounded-[1.5rem] shadow-md hover:border-hairline transition-all duration-300">
+                            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-hairline">
                                 <BrainCircuit className="w-4 h-4 text-accent" />
                                 <p className="eyebrow">ai copilot analysis</p>
                             </div>
@@ -1275,7 +1309,7 @@ export default function Dashboard() {
                                         <span className="text-muted uppercase tracking-[0.1em]">Market Sentiment</span>
                                         <span className="text-approve">78% BULLISH</span>
                                     </div>
-                                    <div className="w-full bg-background h-1 border border-white/5 overflow-hidden rounded-full">
+                                    <div className="w-full bg-background h-1 border border-hairline overflow-hidden rounded-full">
                                         <div className="bg-approve h-1" style={{ width: '78%' }} />
                                     </div>
                                 </div>
@@ -1284,7 +1318,7 @@ export default function Dashboard() {
                                         <span className="text-muted uppercase tracking-[0.1em]">Vol Regime (Daily)</span>
                                         <span className="text-accent">HIGH VOLATILITY</span>
                                     </div>
-                                    <div className="w-full bg-background h-1 border border-white/5 overflow-hidden rounded-full">
+                                    <div className="w-full bg-background h-1 border border-hairline overflow-hidden rounded-full">
                                         <div className="bg-accent h-1" style={{ width: '60%' }} />
                                     </div>
                                 </div>
@@ -1292,8 +1326,8 @@ export default function Dashboard() {
                         </div>
 
                         {/* Exchange Connectors */}
-                        <div className="border border-hairline/60 bg-surface/30 p-5 rounded-[1.5rem] shadow-md hover:border-white/20 transition-all duration-300">
-                            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-white/5">
+                        <div className="border border-hairline bg-surface/30 p-5 rounded-[1.5rem] shadow-md hover:border-hairline transition-all duration-300">
+                            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-hairline">
                                 <Globe2 className="w-4 h-4 text-accent" />
                                 <p className="eyebrow">exchange connectors</p>
                             </div>
@@ -1303,7 +1337,7 @@ export default function Dashboard() {
                                     { name: 'Alpaca API',    status: 'SANDBOX',   color: 'text-review border-review/30' },
                                     { name: 'Polygon Feed',  status: 'ONLINE',    color: 'text-approve border-approve/30' },
                                 ].map(c => (
-                                    <div key={c.name} className="flex justify-between items-center p-2.5 border border-white/5 bg-black/10 rounded-xl">
+                                    <div key={c.name} className="flex justify-between items-center p-2.5 border border-hairline bg-background/20 rounded-xl">
                                         <span className="font-mono text-xs text-muted">{c.name}</span>
                                         <span className={`font-mono text-[0.6rem] uppercase tracking-[0.15em] border px-2.5 py-0.5 rounded-full ${c.color}`}>{c.status}</span>
                                     </div>
@@ -1329,7 +1363,7 @@ export default function Dashboard() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="w-full max-w-md border border-white/10 bg-[#182030] p-8 rounded-[1.75rem] relative z-10 shadow-2xl"
+                            className="w-full max-w-md border border-hairline bg-surface p-8 rounded-[1.75rem] relative z-10 shadow-2xl"
                         >
                             <h3 className="font-display text-lg font-semibold text-ink mb-2">
                                 Fund Agent: {selectedAgentForFunding.name}
@@ -1350,7 +1384,7 @@ export default function Dashboard() {
                                         required
                                         value={fundingAmountInput}
                                         onChange={(e) => setFundingAmountInput(parseFloat(e.target.value))}
-                                        className="w-full bg-background border border-white/10 text-ink placeholder:text-muted px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
+                                        className="w-full bg-background border border-hairline text-ink placeholder:text-muted px-4 py-2.5 rounded-full text-xs font-mono focus:border-accent focus:outline-none transition-colors"
                                     />
                                 </div>
 
@@ -1368,19 +1402,97 @@ export default function Dashboard() {
                                             setFundAgentModalOpen(false);
                                             setSelectedAgentForFunding(null);
                                         }}
-                                        className="font-mono border border-white/10 bg-white/5 px-5 py-2.5 rounded-full text-xs text-muted hover:text-ink transition-colors"
+                                        className="font-mono border border-hairline bg-background/10 px-5 py-2.5 rounded-full text-xs text-muted hover:text-ink transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={fundingLoading}
-                                        className="font-mono bg-white text-background px-5 py-2.5 rounded-full text-xs font-bold transition-all disabled:opacity-40 active:scale-[0.98]"
+                                        className="font-mono bg-ink text-background px-5 py-2.5 rounded-full text-xs font-bold transition-all disabled:opacity-40 active:scale-[0.98]"
                                     >
                                         {fundingLoading ? 'Sending On-Chain...' : 'Confirm Funding'}
                                     </button>
                                 </div>
                             </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Shadow Float Credit Line Modal */}
+            <AnimatePresence>
+                {shadowFloatModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/85 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="w-full max-w-2xl border border-hairline bg-surface p-8 rounded-[1.75rem] relative z-10 shadow-2xl overflow-y-auto max-h-[90vh] no-scrollbar"
+                        >
+                            <div className="flex items-center justify-between pb-4 mb-4 border-b border-hairline">
+                                <div className="flex items-center gap-2">
+                                    <Zap className="w-5 h-5 text-accent animate-pulse" />
+                                    <h3 className="font-display text-lg font-semibold text-ink">
+                                        Shadow Float: Credit Line Verification
+                                    </h3>
+                                </div>
+                                <button
+                                    onClick={() => setShadowFloatModalOpen(false)}
+                                    className="text-muted hover:text-ink transition-colors font-mono text-xs border border-hairline px-3 py-1 rounded-full"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                            
+                            <p className="font-mono text-xs text-muted mb-4 leading-relaxed">
+                                This agent wallet is registered with an active credit line on the <strong className="text-ink">Shadow Float</strong> protocol. Under EIP-712, the agent generates pre-authorized Spend Intents allowing it to draw microtransactions instantly from the credit line pool without transaction fees or gas overhead.
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div className="bg-background/40 border border-hairline p-4 rounded-xl space-y-1">
+                                    <span className="font-mono text-[9px] text-muted uppercase">Protocol Contract (Arc L1)</span>
+                                    <span className="font-mono text-xs text-ink block break-all font-semibold select-all">
+                                        {SHADOW_FLOAT_INTENT.intent.float}
+                                    </span>
+                                </div>
+                                <div className="bg-background/40 border border-hairline p-4 rounded-xl space-y-1">
+                                    <span className="font-mono text-[9px] text-muted uppercase">EIP-712 Chain ID</span>
+                                    <span className="font-mono text-xs text-ink block font-semibold">
+                                        {SHADOW_FLOAT_INTENT.intent.chainId} (Arc L1 Testnet)
+                                    </span>
+                                </div>
+                                <div className="bg-background/40 border border-hairline p-4 rounded-xl space-y-1">
+                                    <span className="font-mono text-[9px] text-muted uppercase">Agent Wallet Address</span>
+                                    <span className="font-mono text-xs text-ink block break-all font-semibold select-all">
+                                        {SHADOW_FLOAT_INTENT.intent.agent}
+                                    </span>
+                                </div>
+                                <div className="bg-background/40 border border-hairline p-4 rounded-xl space-y-1">
+                                    <span className="font-mono text-[9px] text-muted uppercase">Active Credit Limit</span>
+                                    <span className="font-mono text-xs text-accent block font-bold">
+                                        0.05 USDC Eligible (50,000 Micro-units)
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-mono text-[10px] text-muted uppercase tracking-wider">Verified Spend Intent (EIP-712 Proof)</span>
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(JSON.stringify(SHADOW_FLOAT_INTENT, null, 2));
+                                            alert("EIP-712 Spend Intent copied to clipboard!");
+                                        }}
+                                        className="font-mono text-[10px] border border-hairline px-3 py-1 rounded-full text-muted hover:text-accent hover:border-accent transition-all flex items-center gap-1.5"
+                                    >
+                                        <Copy className="w-3 h-3" /> Copy JSON
+                                    </button>
+                                </div>
+                                <pre className="bg-background border border-hairline p-5 rounded-xl text-[10px] font-mono text-accent overflow-x-auto select-all max-h-[250px] custom-scrollbar">
+                                    {JSON.stringify(SHADOW_FLOAT_INTENT, null, 2)}
+                                </pre>
+                            </div>
                         </motion.div>
                     </div>
                 )}

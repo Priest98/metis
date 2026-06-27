@@ -6,6 +6,8 @@ import { motion, useReducedMotion } from 'framer-motion';
 import HeroCanvas from '@/components/HeroCanvas';
 import { LogoMark } from '@/components/LogoMark';
 import DemoSimulator from '@/components/DemoSimulator';
+import TractionTimeline from '@/components/TractionTimeline';
+import TractionLeaderboard from '@/components/TractionLeaderboard';
 
 interface PlatformStats {
     total_signals: number;
@@ -155,7 +157,7 @@ export default function LandingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-ink font-sans">
+        <div className="min-h-screen bg-background text-ink font-sans">
 
             {/* ────────────────── HERO ─────────────────── */}
             <section className="relative overflow-hidden border-b border-hairline">
@@ -188,7 +190,7 @@ export default function LandingPage() {
                                 transition={{ duration: 0.8, delay: 0.1, ease: easeCurve }}
                                 className="font-display text-5xl sm:text-6xl font-black leading-[1.05] tracking-tight text-ink uppercase"
                             >
-                                On-Demand AI <span className="text-accent">Quant Intelligence</span> Platform
+                                The AI Agent That <span className="text-accent">Trades For You</span>
                             </motion.h1>
 
                             <motion.p
@@ -197,9 +199,9 @@ export default function LandingPage() {
                                 transition={{ duration: 0.8, delay: 0.2, ease: easeCurve }}
                                 className="max-w-xl text-sm sm:text-base text-muted leading-relaxed"
                             >
-                                Retail traders shouldn&apos;t pay $100/month for signals they use 3 times.
-                                Metis runs AI-powered regime detection, vectorized backtesting, and
-                                precise entry coordination — unlocked for <span className="font-mono text-accent">$0.001 USDC</span> per request.
+                                Stop paying $100/month for signals you use 3 times.
+                                Metis deploys autonomous AI agents that run regime detection, vectorized backtesting,
+                                and precise entry coordination — unlocked on demand for <span className="font-mono text-accent">$0.001 USDC</span> per signal.
                             </motion.p>
 
                             {/* Pill inline Input Field */}
@@ -225,6 +227,21 @@ export default function LandingPage() {
                                 </button>
                             </motion.form>
 
+                            {/* Social Proof Micro-line */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.28 }}
+                                className="flex items-center gap-2 font-mono text-[10px] text-muted"
+                            >
+                                <span className="size-1.5 rounded-full bg-approve animate-pulse" />
+                                <span>{liveStats.txns} txns on Arc L1</span>
+                                <span className="text-hairline">·</span>
+                                <span>{liveStats.agents} agents active</span>
+                                <span className="text-hairline">·</span>
+                                <span className="text-accent font-semibold">{liveStats.usdc.toFixed(4)} USDC settled</span>
+                            </motion.div>
+
                             {/* Demo + Quick Links */}
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
@@ -232,20 +249,20 @@ export default function LandingPage() {
                                 transition={{ duration: 0.7, delay: 0.4 }}
                                 className="flex items-center gap-4 flex-wrap pt-1"
                             >
+                                <Link
+                                    href="/demo"
+                                    className="flex items-center gap-2 font-mono text-xs font-semibold bg-accent text-background px-5 py-2.5 rounded-full hover:bg-accent/80 transition-colors shadow-lg"
+                                >
+                                    <span className="size-1.5 rounded-full bg-background animate-pulse" />
+                                    Try Free — No Account Needed
+                                </Link>
                                 <DemoSimulator
                                     open={demoOpen}
                                     onClose={() => setDemoOpen(false)}
                                     triggerClassName="flex items-center gap-2 font-mono text-xs font-semibold border border-white/15 text-ink px-4 py-2.5 rounded-full hover:border-accent hover:text-accent transition-colors"
                                 />
-                                <button
-                                    onClick={() => setDemoOpen(true)}
-                                    className="flex items-center gap-2 font-mono text-xs font-semibold bg-accent/10 border border-accent/30 text-accent px-4 py-2.5 rounded-full hover:bg-accent hover:text-background transition-colors"
-                                >
-                                    <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-                                    Watch Agent Demo
-                                </button>
                                 <Link href="/demo" className="font-mono text-xs text-muted hover:text-ink transition-colors underline underline-offset-2">
-                                    Judge Mode →
+                                    Judge Mode 🏆
                                 </Link>
                             </motion.div>
 
@@ -260,7 +277,7 @@ export default function LandingPage() {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.7, delay: 0.2, ease: easeCurve }}
-                                className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem] relative overflow-hidden"
+                                className="border border-hairline bg-surface shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-6 rounded-[1.75rem] relative overflow-hidden"
                             >
                                 <div className="absolute right-0 top-0 w-24 h-24 bg-accent/5 rounded-full blur-xl pointer-events-none" />
                                 
@@ -301,7 +318,7 @@ export default function LandingPage() {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.7, delay: 0.3, ease: easeCurve }}
-                                className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem]"
+                                className="border border-hairline bg-surface shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-6 rounded-[1.75rem]"
                             >
                                 <span className="font-mono text-[10px] uppercase tracking-wider text-muted block mb-1.5">
                                     24h Trading Volume
@@ -325,7 +342,7 @@ export default function LandingPage() {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.7, delay: 0.4, ease: easeCurve }}
-                                className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-5 rounded-[1.75rem]"
+                                className="border border-hairline bg-surface shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-5 rounded-[1.75rem]"
                             >
                                 <span className="font-mono text-[10px] uppercase tracking-wider text-muted block mb-3.5">
                                     Popular Signals
@@ -424,8 +441,8 @@ export default function LandingPage() {
                             <motion.div
                                 key={m.type}
                                 variants={itemRevealVariants}
-                                whileHover={shouldReduceMotion ? {} : { y: -6, borderColor: 'rgba(255,255,255,0.18)' }}
-                                className="flex flex-col border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-8 rounded-[1.75rem] transition-all duration-300 relative overflow-hidden group"
+                                whileHover={shouldReduceMotion ? {} : { y: -6, borderColor: 'var(--color-accent)' }}
+                                className="flex flex-col border border-hairline bg-surface shadow-[0_20px_50px_rgba(0,0,0,0.1)] p-8 rounded-[1.75rem] transition-all duration-300 relative overflow-hidden group"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                                 <div className={`font-mono text-3xl font-black tracking-tight ${m.color}`}>{m.type}</div>
@@ -448,6 +465,76 @@ export default function LandingPage() {
                 </motion.div>
             </section>
 
+            {/* ───────────────── HOW IT WORKS ─────────── */}
+            <section className="border-b border-hairline bg-background">
+                <motion.div
+                    variants={sectionRevealVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: '-100px' }}
+                    className="mx-auto max-w-6xl px-5 py-20 sm:px-8"
+                >
+                    <div className="mb-12 text-center">
+                        <p className="text-accent font-mono text-[10px] tracking-[0.25em] font-semibold uppercase block mb-3">
+                            getting started
+                        </p>
+                        <h2 className="font-display text-3xl font-black text-ink uppercase tracking-tight">
+                            Up and Running in 60 Seconds
+                        </h2>
+                    </div>
+
+                    <div className="grid gap-0 sm:grid-cols-3 relative">
+                        {/* Connecting line */}
+                        <div className="hidden sm:block absolute top-[2.75rem] left-[16.5%] right-[16.5%] h-[2px] bg-gradient-to-r from-accent/40 via-approve/40 to-accent/40" />
+
+                        {[
+                            {
+                                step: '01',
+                                title: 'Connect',
+                                desc: 'Link your Arc wallet or create a Circle Programmable Wallet in one click. No private key custody. No gas needed.',
+                                color: 'text-accent',
+                                bg: 'bg-accent/10',
+                                border: 'border-accent/20',
+                            },
+                            {
+                                step: '02',
+                                title: 'Subscribe',
+                                desc: 'Choose a signal type — BTC regime, ETH momentum, SOL breakout. Pay $0.001 USDC via x402 per unlock. No subscription.',
+                                color: 'text-approve',
+                                bg: 'bg-approve/10',
+                                border: 'border-approve/20',
+                            },
+                            {
+                                step: '03',
+                                title: 'Execute',
+                                desc: 'Receive AI-generated entry price, take-profit, and stop-loss coordinates ready for immediate execution — in under 400ms.',
+                                color: 'text-ink',
+                                bg: 'bg-surface',
+                                border: 'border-hairline',
+                            },
+                        ].map((s, i) => (
+                            <motion.div
+                                key={s.step}
+                                variants={itemRevealVariants}
+                                className="flex flex-col items-center text-center px-6 py-8 relative z-10"
+                            >
+                                <div className={`size-14 rounded-2xl ${s.bg} border ${s.border} flex items-center justify-center font-mono text-xl font-black ${s.color} mb-5 shadow-lg`}>
+                                    {s.step}
+                                </div>
+                                <h3 className={`font-display text-lg font-black uppercase tracking-tight ${s.color} mb-3`}>{s.title}</h3>
+                                <p className="text-xs text-muted leading-relaxed max-w-[220px]">{s.desc}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    <div className="mt-10 text-center">
+                        <Link href="/demo" className="inline-flex items-center gap-2 font-mono text-xs font-semibold bg-accent text-background px-7 py-3.5 rounded-full hover:bg-accent/80 transition-colors shadow-lg">
+                            See It Live → Judge Demo
+                        </Link>
+                    </div>
+                </motion.div>
+            </section>
+
             {/* ───────────────── QUANT SIGNALS FEED ─────────── */}
             <section className="border-b border-hairline">
                 <motion.div
@@ -460,7 +547,7 @@ export default function LandingPage() {
                     <div className="grid lg:grid-cols-2 gap-8">
                         
                         {/* Table 1: Active Signals */}
-                        <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem] space-y-4">
+                        <div className="border border-hairline bg-surface shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-6 rounded-[1.75rem] space-y-4">
                             <div className="flex justify-between items-center pb-2 border-b border-white/5">
                                 <span className="font-display text-lg font-bold text-ink uppercase tracking-tight">
                                     Active Quant Signals
@@ -520,7 +607,7 @@ export default function LandingPage() {
                         </div>
 
                         {/* Table 2: Top Strategies */}
-                        <div className="border border-white/10 bg-[#182030] shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-6 rounded-[1.75rem] space-y-4">
+                        <div className="border border-hairline bg-surface shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-6 rounded-[1.75rem] space-y-4">
                             <div className="flex justify-between items-center pb-2 border-b border-white/5">
                                 <span className="font-display text-lg font-bold text-ink uppercase tracking-tight">
                                     Top Performing Strategies
@@ -583,7 +670,7 @@ export default function LandingPage() {
                         <div className="absolute size-96 bg-accent/5 rounded-full blur-[85px] pointer-events-none" />
                         
                         {/* Mockup layout */}
-                        <div className="relative w-full max-w-md bg-[#182030] border border-white/10 rounded-[1.75rem] shadow-2xl p-5 overflow-hidden group">
+                        <div className="relative w-full max-w-md bg-surface border border-hairline rounded-[1.75rem] shadow-2xl p-5 overflow-hidden group">
                             
                             {/* Card Glow Header */}
                             <div className="absolute right-0 top-0 w-32 h-32 bg-accent/5 rounded-full blur-xl pointer-events-none" />
@@ -610,12 +697,12 @@ export default function LandingPage() {
                             </div>
 
                             {/* Grid metrics inside mockup */}
-                            <div className="grid grid-cols-2 gap-3.5 border-t border-white/5 pt-4 font-mono text-xs">
-                                <div className="bg-black/10 p-3.5 border border-white/5 rounded-2xl">
+                            <div className="grid grid-cols-2 gap-3.5 border-t border-hairline pt-4 font-mono text-xs">
+                                <div className="bg-background/20 p-3.5 border border-hairline rounded-2xl">
                                     <span className="text-muted/60 block text-[9px] uppercase tracking-wider mb-1">State</span>
                                     <span className="font-bold text-approve uppercase">Lending Pool</span>
                                 </div>
-                                <div className="bg-black/10 p-3.5 border border-white/5 rounded-2xl">
+                                <div className="bg-background/20 p-3.5 border border-hairline rounded-2xl">
                                     <span className="text-muted/60 block text-[9px] uppercase tracking-wider mb-1">Network APY</span>
                                     <span className="font-bold text-ink">5.50%</span>
                                 </div>
@@ -676,10 +763,18 @@ export default function LandingPage() {
                     <p className="text-center font-mono text-[9px] text-muted/40 uppercase tracking-widest mb-6">
                         Supported Data & Integration Partners
                     </p>
-                    <div className="flex flex-wrap justify-center items-center gap-10 sm:gap-16 opacity-35 hover:opacity-50 transition-opacity duration-300">
-                        {['CoinMarketCap', 'TradingView', 'Lepton AI', 'Google Gemini', 'Arc L1'].map(partner => (
-                            <span key={partner} className="font-display text-xs sm:text-sm font-semibold tracking-wider text-muted uppercase">
-                                {partner}
+                    <div className="flex flex-wrap justify-center items-center gap-10 sm:gap-16">
+                        {[
+                            { name: 'Circle', accent: true },
+                            { name: 'x402 Protocol', accent: false },
+                            { name: 'Google Gemini', accent: false },
+                            { name: 'Arc L1', accent: false },
+                            { name: 'TradingView', accent: false },
+                        ].map(partner => (
+                            <span key={partner.name} className={`font-display text-xs sm:text-sm font-semibold tracking-wider uppercase transition-opacity duration-300 ${
+                                partner.accent ? 'text-accent opacity-70 hover:opacity-100' : 'text-muted opacity-30 hover:opacity-60'
+                            }`}>
+                                {partner.name}
                             </span>
                         ))}
                     </div>
@@ -688,8 +783,8 @@ export default function LandingPage() {
 
 
 
-            {/* ────────────── LIVE HACKATHON STATS ──────────── */}
-            <section className="border-y border-hairline bg-[#0d1119] py-12 sm:py-16">
+            {/* ────────────────── TRACTION EVIDENCE BANNER ──────────── */}
+            <section className="border-y border-hairline bg-[#070b12] py-14 sm:py-20">
                 <div className="mx-auto max-w-6xl px-5 sm:px-8">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -704,9 +799,13 @@ export default function LandingPage() {
                         <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink">
                             The Agent Economy Is Already Running
                         </h2>
+                        <p className="font-mono text-xs text-muted mt-2">
+                            Real test USDC micropayments · Real wallets · Real Arc L1 transactions
+                        </p>
                     </motion.div>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
                         {[
                             { label: 'Signals Generated', value: liveStats.signals.toString(), suffix: '', accent: false },
                             { label: 'USDC Transacted', value: liveStats.usdc.toFixed(4), suffix: ' USDC', accent: true },
@@ -719,7 +818,7 @@ export default function LandingPage() {
                                 whileInView={{ opacity: 1, scale: 1 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: i * 0.08 }}
-                                className="border border-white/10 bg-[#182030] rounded-[1.5rem] p-5 text-center"
+                                className="border border-hairline bg-surface/60 rounded-[1.5rem] p-5 text-center"
                             >
                                 <p className={`font-mono text-2xl sm:text-3xl font-bold tabular-nums ${
                                     stat.accent ? 'text-accent' : 'text-ink'
@@ -739,6 +838,29 @@ export default function LandingPage() {
                             </motion.div>
                         ))}
                     </div>
+
+                    {/* Live Payment Stream + Leaderboard side by side */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                        className="grid lg:grid-cols-2 gap-4"
+                    >
+                        {/* Payment feed */}
+                        <div className="border border-accent/20 bg-surface/40 rounded-[1.75rem] p-6">
+                            <TractionTimeline compact />
+                            <div className="mt-4 pt-3 border-t border-hairline text-center">
+                                <Link href="/demo" className="font-mono text-xs text-accent hover:underline">
+                                    See full on-chain evidence in Judge Mode 🏆 →
+                                </Link>
+                            </div>
+                        </div>
+                        {/* Leaderboard */}
+                        <div className="border border-hairline bg-surface/40 rounded-[1.75rem] p-6">
+                            <TractionLeaderboard />
+                        </div>
+                    </motion.div>
 
                     {/* Arc L1 live indicator */}
                     <div className="mt-6 flex items-center justify-center gap-3">

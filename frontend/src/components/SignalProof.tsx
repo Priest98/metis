@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Circle, XCircle, AlertTriangle, Zap } from 'lucide-react';
+import ExplorerLink from './ExplorerLink';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -152,17 +153,10 @@ export default function SignalProof({
                 ))}
             </div>
 
-            {/* Payment TX link */}
             {paymentTx && (
-                <a
-                    href={`https://testnet.arcscan.app/tx/${paymentTx}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 flex items-center gap-1.5 font-mono text-[9px] text-muted/50 hover:text-accent transition-colors border-t border-hairline pt-3"
-                >
-                    <span className="truncate">{paymentTx}</span>
-                    <span className="shrink-0">↗</span>
-                </a>
+                <div className="mt-3 font-mono text-[9px] text-muted/50 border-t border-hairline pt-3">
+                    <ExplorerLink hash={paymentTx} type="tx" className="text-muted/50 hover:text-accent w-full" />
+                </div>
             )}
         </div>
     );

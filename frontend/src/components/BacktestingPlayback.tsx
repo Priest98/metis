@@ -105,9 +105,9 @@ export default function BacktestingPlayback() {
     };
 
     return (
-        <div className="border border-white/10 bg-[#182030] rounded-[1.75rem] p-6 shadow-2xl space-y-6 select-none relative overflow-hidden">
+        <div className="border border-hairline bg-surface rounded-[1.75rem] p-6 shadow-2xl space-y-6 select-none relative overflow-hidden">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-hairline pb-4">
                 <div>
                     <span className="bg-accent/15 border border-accent/25 text-accent text-[9px] font-bold px-2 py-0.5 rounded font-mono uppercase tracking-wider">
                         Interactive Sandbox
@@ -127,7 +127,7 @@ export default function BacktestingPlayback() {
                     </button>
                     <button
                         onClick={resetPlayback}
-                        className="font-mono flex items-center gap-1.5 border border-white/10 bg-white/5 px-4 py-2 rounded-full text-[10px] text-muted hover:text-ink transition-colors"
+                        className="font-mono flex items-center gap-1.5 border border-hairline bg-background/10 px-4 py-2 rounded-full text-xs text-muted hover:text-ink transition-colors"
                     >
                         <RotateCcw className="w-3 h-3" />
                         Reset
@@ -135,21 +135,20 @@ export default function BacktestingPlayback() {
                 </div>
             </div>
 
-            {/* Simulated Stats */}
             <div className="grid grid-cols-3 gap-3">
-                <div className="bg-[#0b0f17]/40 p-3 rounded-xl border border-white/5">
+                <div className="bg-background/40 p-3 rounded-xl border border-hairline">
                     <p className="font-mono text-[9px] text-muted uppercase">Cumulative return</p>
                     <p className={`font-mono text-base font-bold mt-0.5 ${pnl > 0 ? 'text-approve' : 'text-ink'}`}>
                         {pnl > 0 ? `+${pnl.toFixed(2)}%` : '0.00%'}
                     </p>
                 </div>
-                <div className="bg-[#0b0f17]/40 p-3 rounded-xl border border-white/5">
+                <div className="bg-background/40 p-3 rounded-xl border border-hairline">
                     <p className="font-mono text-[9px] text-muted uppercase">Trades Executed</p>
                     <p className="font-mono text-base font-bold text-ink mt-0.5">
                         {activeTrades.length}
                     </p>
                 </div>
-                <div className="bg-[#0b0f17]/40 p-3 rounded-xl border border-white/5">
+                <div className="bg-background/40 p-3 rounded-xl border border-hairline">
                     <p className="font-mono text-[9px] text-muted uppercase">Win Rate</p>
                     <p className="font-mono text-base font-bold mt-0.5 text-approve">
                         {activeTrades.length > 1 ? '100%' : '---'}
@@ -158,19 +157,19 @@ export default function BacktestingPlayback() {
             </div>
 
             {/* Dynamic Graph Area */}
-            <div className="h-[200px] w-full bg-black/20 rounded-2xl p-2 relative">
+            <div className="h-[200px] w-full bg-background/20 rounded-2xl p-2 relative">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                         <defs>
                             <linearGradient id="playbackGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#D7FF3E" stopOpacity={0.12} />
-                                <stop offset="95%" stopColor="#D7FF3E" stopOpacity={0} />
+                                <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.12} />
+                                <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" />
-                        <XAxis dataKey="time" stroke="rgba(255,255,255,0.12)" fontSize={9} fontFamily="var(--font-jetbrains)" />
-                        <YAxis domain={[65800, 69200]} stroke="rgba(255,255,255,0.12)" fontSize={9} fontFamily="var(--font-jetbrains)" />
-                        <Area type="monotone" dataKey="price" stroke="#D7FF3E" strokeWidth={1.5} fill="url(#playbackGradient)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-hairline)" />
+                        <XAxis dataKey="time" stroke="var(--color-muted)" fontSize={9} fontFamily="var(--font-jetbrains)" />
+                        <YAxis domain={[65800, 69200]} stroke="var(--color-muted)" fontSize={9} fontFamily="var(--font-jetbrains)" />
+                        <Area type="monotone" dataKey="price" stroke="var(--color-accent)" strokeWidth={1.5} fill="url(#playbackGradient)" />
 
                         {/* Trade Dot Markers */}
                         {activeTrades.map((t, idx) => (
@@ -179,7 +178,7 @@ export default function BacktestingPlayback() {
                                 x={HISTORICAL_DATA[t.index].time}
                                 y={t.price}
                                 r={6}
-                                fill={t.type === 'BUY' ? '#22c787' : '#ff5d5d'}
+                                fill={t.type === 'BUY' ? 'var(--color-approve)' : 'var(--color-block)'}
                                 stroke="#FFF"
                                 strokeWidth={1.5}
                             />
@@ -196,8 +195,8 @@ export default function BacktestingPlayback() {
                             animate={{ opacity: 1, x: 0 }}
                             className={`px-2 py-1 rounded border flex items-center gap-1.5 shadow ${
                                 t.type === 'BUY' 
-                                    ? 'bg-[#22c787]/10 border-[#22c787]/30 text-[#22c787]' 
-                                    : 'bg-[#ff5d5d]/10 border-[#ff5d5d]/30 text-[#ff5d5d]'
+                                    ? 'bg-approve/10 border-approve/30 text-approve' 
+                                    : 'bg-block/10 border-block/30 text-block'
                             }`}
                         >
                             <span className="font-bold">{t.type}</span>
@@ -208,7 +207,7 @@ export default function BacktestingPlayback() {
             </div>
 
             {/* Status bar */}
-            <div className="bg-black/30 border border-white/5 p-3 rounded-xl flex items-center justify-between text-[10px] font-mono text-muted">
+            <div className="bg-background/30 border border-hairline p-3 rounded-xl flex items-center justify-between text-[10px] font-mono text-muted">
                 <div className="flex items-center gap-2">
                     <Clock className="size-3.5 text-accent animate-pulse" />
                     <span className="text-ink font-semibold">{statusText}</span>

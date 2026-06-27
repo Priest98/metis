@@ -302,8 +302,8 @@ export default function AgentFleetTerminal() {
     };
 
     return (
-        <div className="glass-card p-6 relative overflow-hidden shadow-2xl bg-[#182030]/80">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-white/10">
+        <div className="glass-card p-6 relative overflow-hidden shadow-2xl bg-surface/80">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-hairline">
                 <div>
                     <p className="eyebrow mb-1">agent-to-agent nanopayment network</p>
                     <h3 className="font-display text-lg font-semibold text-ink">Autonomous Agent Fleet</h3>
@@ -314,7 +314,7 @@ export default function AgentFleetTerminal() {
                         className={`p-2.5 rounded-full border transition-colors ${
                             voiceEnabled 
                                 ? 'bg-accent/10 border-accent/30 text-accent hover:bg-accent/20' 
-                                : 'bg-white/5 border-white/10 text-muted hover:bg-white/10'
+                                : 'bg-background/10 border border-hairline text-muted hover:bg-background/20'
                         }`}
                         title={voiceEnabled ? 'Mute voice narration' : 'Unmute voice narration'}
                     >
@@ -332,7 +332,7 @@ export default function AgentFleetTerminal() {
             </div>
 
             {/* Council Verdict Panel */}
-            <div className="bg-background/60 border border-white/10 p-4 mb-6 rounded-2xl relative overflow-hidden">
+            <div className="bg-background/60 border border-hairline p-4 mb-6 rounded-2xl relative overflow-hidden">
                 <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-accent via-approve to-indigo-500" />
                 <p className="font-mono text-[9px] uppercase text-muted tracking-wider mb-3">AI Council Consensus Verdict</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -342,7 +342,7 @@ export default function AgentFleetTerminal() {
                         { name: 'Risk Agent', role: 'Validator', val: votes.risk },
                         { name: 'Sentiment Agent', role: 'Context Analyzer', val: votes.sentiment }
                     ].map((agent, i) => (
-                        <div key={i} className="bg-surface/50 border border-white/10 p-2.5 rounded-xl flex flex-col justify-between h-14">
+                        <div key={i} className="bg-surface/50 border border-hairline p-2.5 rounded-xl flex flex-col justify-between h-14">
                             <span className="font-mono text-[8px] text-muted block uppercase">{agent.name}</span>
                             <span className={`font-mono text-[10px] font-bold ${
                                 agent.val === 'Awaiting' ? 'text-muted/50' :
@@ -358,7 +358,7 @@ export default function AgentFleetTerminal() {
 
             {/* Wallet Budgets Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                <div className="bg-background/60 border border-white/10 p-4 rounded-2xl shadow-md">
+                <div className="bg-background/60 border border-hairline p-4 rounded-2xl shadow-md">
                     <div className="flex items-center justify-between mb-2">
                         <span className="font-mono text-[9px] uppercase text-muted tracking-wider">Strategy Agent</span>
                         <User className="w-3.5 h-3.5 text-accent" />
@@ -366,7 +366,7 @@ export default function AgentFleetTerminal() {
                     <div className="font-mono text-xs sm:text-sm font-semibold text-ink break-all">{balances.strategy_agent.toFixed(6)} USDC</div>
                     <span className="font-mono text-[8px] text-muted block mt-1">Budget Limit: 0.10 / day</span>
                 </div>
-                <div className="bg-background/60 border border-white/10 p-4 rounded-2xl shadow-md">
+                <div className="bg-background/60 border border-hairline p-4 rounded-2xl shadow-md">
                     <div className="flex items-center justify-between mb-2">
                         <span className="font-mono text-[9px] uppercase text-muted tracking-wider">Risk Agent</span>
                         <ShieldCheck className="w-3.5 h-3.5 text-approve" />
@@ -374,7 +374,7 @@ export default function AgentFleetTerminal() {
                     <div className="font-mono text-xs sm:text-sm font-semibold text-ink break-all">{balances.risk_agent.toFixed(6)} USDC</div>
                     <span className="font-mono text-[8px] text-muted block mt-1">Validation Fee: 0.0005 / check</span>
                 </div>
-                <div className="bg-background/60 border border-white/10 p-4 rounded-2xl shadow-md">
+                <div className="bg-background/60 border border-hairline p-4 rounded-2xl shadow-md">
                     <div className="flex items-center justify-between mb-2">
                         <span className="font-mono text-[9px] uppercase text-muted tracking-wider">Signal Agent</span>
                         <Coins className="w-3.5 h-3.5 text-accent" />
@@ -382,7 +382,7 @@ export default function AgentFleetTerminal() {
                     <div className="font-mono text-xs sm:text-sm font-semibold text-ink break-all">{balances.signal_agent.toFixed(6)} USDC</div>
                     <span className="font-mono text-[8px] text-muted block mt-1">Unlock Fee: 0.001 / signal</span>
                 </div>
-                <div className="bg-background/60 border border-white/10 p-4 rounded-2xl shadow-md">
+                <div className="bg-background/60 border border-hairline p-4 rounded-2xl shadow-md">
                     <div className="flex items-center justify-between mb-2">
                         <span className="font-mono text-[9px] uppercase text-muted tracking-wider">Sentiment Agent</span>
                         <Brain className="w-3.5 h-3.5 text-indigo-400" />
@@ -412,15 +412,15 @@ export default function AgentFleetTerminal() {
                 )}
             </AnimatePresence>
 
-            <div ref={logContainerRef} className="bg-black/60 border border-white/10 p-4 h-[220px] rounded-2xl overflow-y-auto font-mono text-[11px] leading-relaxed text-slate-300">
-                <div className="flex items-center gap-2 mb-3 text-slate-500 pb-2 border-b border-white/[0.04]">
+            <div ref={logContainerRef} className="bg-background/60 border border-hairline p-4 h-[220px] rounded-2xl overflow-y-auto font-mono text-[11px] leading-relaxed text-ink">
+                <div className="flex items-center gap-2 mb-3 text-muted pb-2 border-b border-hairline">
                     <Activity className="w-3 h-3 text-accent animate-pulse" />
                     <span>Agent Telemetry Feed (Arc L1 Sandbox)</span>
                 </div>
                 <div className="space-y-2">
                     {logs.map((log, i) => (
                         <div key={i} className="flex items-start gap-2">
-                            <span className="text-slate-600">[{log.timestamp}]</span>
+                            <span className="text-muted">[{log.timestamp}]</span>
                             <span className={
                                 log.agent === 'Strategy Agent (Trader)' || log.agent === 'Strategy Agent'
                                     ? 'text-accent' 
@@ -430,12 +430,12 @@ export default function AgentFleetTerminal() {
                                     ? 'text-indigo-400' 
                                     : log.agent === 'Sentiment Agent'
                                     ? 'text-purple-400'
-                                    : 'text-slate-500'
+                                    : 'text-muted'
                             }>
                                 {log.agent}:
                             </span>
-                            <span className="text-slate-500 uppercase tracking-wide">[{log.action}]</span>
-                            <span className="text-slate-300 flex-1">{log.details}</span>
+                            <span className="text-muted uppercase tracking-wide">[{log.action}]</span>
+                            <span className="text-ink/90 flex-1">{log.details}</span>
                         </div>
                     ))}
                 </div>
@@ -443,8 +443,8 @@ export default function AgentFleetTerminal() {
 
             {/* Arc Transaction Proof Floating Overlay */}
             {activeTxProof && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 bg-[#182030]/95 border border-accent p-5 w-[280px] rounded-[1.75rem] shadow-2xl animate-fade-in font-mono text-[9px]">
-                    <div className="flex justify-between items-center pb-2 border-b border-dashed border-white/10 mb-3">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 bg-surface/95 border border-accent p-5 w-[280px] rounded-[1.75rem] shadow-2xl animate-fade-in font-mono text-[9px]">
+                    <div className="flex justify-between items-center pb-2 border-b border-dashed border-hairline mb-3">
                         <span className="font-bold text-accent flex items-center gap-1">
                             <Terminal className="w-3 h-3 text-accent" />
                             ARC TRANSACTION PROOF

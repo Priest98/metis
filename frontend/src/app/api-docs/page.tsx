@@ -8,7 +8,7 @@ import { LogoMark } from '@/components/LogoMark';
 
 export default function ApiDocsPage() {
     return (
-        <div className="min-h-screen bg-[#0b0f17] text-ink relative py-16 px-5 sm:px-8 font-mono">
+        <div className="min-h-screen bg-background text-ink relative py-16 px-5 sm:px-8 font-mono">
             {/* Nav */}
             <div className="max-w-4xl mx-auto mb-10 flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-2 text-xs text-muted hover:text-ink transition-colors">
@@ -16,7 +16,7 @@ export default function ApiDocsPage() {
                     Back to home
                 </Link>
                 <div className="flex items-center gap-2">
-                    <span className="bg-white/5 border border-white/10 text-muted text-[10px] font-bold px-2.5 py-1 rounded uppercase">
+                    <span className="bg-background/10 border border-hairline text-muted text-[10px] font-bold px-2.5 py-1 rounded uppercase">
                         v1.0.0-beta
                     </span>
                 </div>
@@ -44,12 +44,12 @@ export default function ApiDocsPage() {
                 <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="border border-white/10 bg-[#182030] rounded-2xl p-5 sm:p-6 shadow-xl space-y-4"
+                    className="border border-hairline bg-surface rounded-2xl p-5 sm:p-6 shadow-xl space-y-4"
                 >
                     <h3 className="font-bold text-xs uppercase tracking-wider text-ink flex items-center gap-2">
                         <Key className="size-4 text-accent" /> Connection Details
                     </h3>
-                    <div className="bg-black/30 border border-white/5 rounded-xl p-4 font-mono text-xs text-muted space-y-2 select-all">
+                    <div className="bg-background/20 border border-hairline rounded-xl p-4 font-mono text-xs text-muted space-y-2 select-all">
                         <div><span className="text-accent font-semibold">BASE URL:</span> https://api.metis.trade/v1</div>
                         <div><span className="text-accent font-semibold">AUTH:</span> Bearer {'{your_jwt_token}'}</div>
                         <div><span className="text-accent font-semibold">FORMAT:</span> application/json</div>
@@ -61,18 +61,18 @@ export default function ApiDocsPage() {
                     <h3 className="font-bold text-xs uppercase tracking-wider text-ink">
                         API Endpoints
                     </h3>
-                    <div className="border border-white/10 bg-[#182030] rounded-2xl overflow-hidden shadow-xl">
+                    <div className="border border-hairline bg-surface rounded-2xl overflow-hidden shadow-xl">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left font-mono text-xs border-collapse">
                                 <thead>
-                                    <tr className="border-b border-white/10 bg-black/20 text-muted uppercase text-[9px] tracking-wider">
+                                    <tr className="border-b border-hairline bg-background/20 text-muted uppercase text-[9px] tracking-wider">
                                         <th className="p-4 font-bold">Method</th>
                                         <th className="p-4 font-bold">Endpoint</th>
                                         <th className="p-4 font-bold">Description</th>
                                         <th className="p-4 font-bold">Auth</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-white/5">
+                                <tbody className="divide-y divide-hairline">
                                     {[
                                         { method: 'GET', path: '/signals/', desc: 'List all available quantitative signals', auth: 'Required', color: 'text-sky-400 bg-sky-400/10 border-sky-400/20' },
                                         { method: 'POST', path: '/signals/{id}/unlock', desc: 'Pay 0.001 USDC via x402 to unlock full entry details', auth: 'Required', color: 'text-[#22c787] bg-[#22c787]/10 border-[#22c787]/20' },
@@ -81,7 +81,7 @@ export default function ApiDocsPage() {
                                         { method: 'GET', path: '/backtests/', desc: 'List backtest results and trade logs', auth: 'Required', color: 'text-sky-400 bg-sky-400/10 border-sky-400/20' },
                                         { method: 'POST', path: '/strategies/', desc: 'Create a new trading strategy', auth: 'Required', color: 'text-[#22c787] bg-[#22c787]/10 border-[#22c787]/20' }
                                     ].map((route, i) => (
-                                        <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                                        <tr key={i} className="hover:bg-surface/30 transition-colors">
                                             <td className="p-4">
                                                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${route.color}`}>
                                                     {route.method}
@@ -103,8 +103,8 @@ export default function ApiDocsPage() {
                     <h3 className="font-bold text-xs uppercase tracking-wider text-ink">
                         x402 Micropayment Flow
                     </h3>
-                    <div className="border border-white/10 bg-[#182030] rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-center justify-around gap-6 text-center">
-                        <div className="p-4 rounded-xl bg-black/20 border border-white/5 w-full max-w-[200px] space-y-2">
+                    <div className="border border-hairline bg-surface rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-center justify-around gap-6 text-center">
+                        <div className="p-4 rounded-xl bg-background/20 border border-hairline w-full max-w-[200px] space-y-2">
                             <Cpu className="size-5 text-accent mx-auto" />
                             <div className="font-bold text-xs text-ink uppercase">Your Agent</div>
                             <div className="text-[10px] text-muted">Triggers code lookup or API client action.</div>
@@ -119,7 +119,7 @@ export default function ApiDocsPage() {
                             <div className="h-0.5 w-16 bg-accent/30 hidden md:block" />
                         </div>
 
-                        <div className="p-4 rounded-xl bg-black/20 border border-white/5 w-full max-w-[200px] space-y-2">
+                        <div className="p-4 rounded-xl bg-background/20 border border-hairline w-full max-w-[200px] space-y-2">
                             <ShieldCheck className="size-5 text-[#22c787] mx-auto" />
                             <div className="font-bold text-xs text-ink uppercase">Signal Unlocked</div>
                             <div className="text-[10px] text-muted">Confirmed on Arc L1 in &lt;400ms.</div>
@@ -132,8 +132,8 @@ export default function ApiDocsPage() {
                     <h3 className="font-bold text-xs uppercase tracking-wider text-ink flex items-center gap-2">
                         <Code className="size-4 text-accent" /> Code Example
                     </h3>
-                    <div className="border border-white/10 bg-[#060910] rounded-2xl p-5 shadow-xl space-y-4 overflow-hidden relative">
-                        <div className="absolute top-2 right-2 px-2.5 py-0.5 bg-white/5 border border-white/10 rounded font-mono text-[9px] text-muted uppercase">
+                    <div className="border border-hairline bg-background/20 rounded-2xl p-5 shadow-xl space-y-4 overflow-hidden relative">
+                        <div className="absolute top-2 right-2 px-2.5 py-0.5 bg-background/10 border border-hairline rounded font-mono text-[9px] text-muted uppercase">
                             bash / curl
                         </div>
                         <pre className="text-xs text-muted/90 leading-relaxed overflow-x-auto select-all max-h-[300px]">
@@ -165,7 +165,7 @@ curl -X POST https://api.metis.trade/v1/signals/sig_abc123/unlock \\
                 <div className="text-center pt-6">
                     <Link 
                         href="/signup" 
-                        className="inline-block bg-accent hover:bg-white text-[#0b0f17] font-bold text-xs uppercase px-8 py-3.5 rounded-xl shadow-lg transition-all"
+                        className="inline-block bg-accent hover:bg-ink text-background hover:text-background font-bold text-xs uppercase px-8 py-3.5 rounded-xl shadow-lg transition-all duration-200"
                     >
                         Get your API key →
                     </Link>

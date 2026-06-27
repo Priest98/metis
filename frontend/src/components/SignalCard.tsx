@@ -105,14 +105,14 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
             animate={paymentStatus === 'failed' ? 'failed' : ''}
             whileHover={shouldReduceMotion ? {} : { 
                 y: -4, 
-                borderColor: isBuy ? 'rgba(34,199,135,0.3)' : 'rgba(255,93,93,0.3)', 
-                boxShadow: isBuy ? '0 12px 35px rgba(34,199,135,0.12)' : '0 12px 35px rgba(255,93,93,0.12)' 
+                borderColor: isBuy ? 'rgba(34,199,135,0.35)' : 'rgba(255,93,93,0.35)', 
+                boxShadow: isBuy ? '0 12px 35px rgba(34,199,135,0.15)' : '0 12px 35px rgba(255,93,93,0.15)' 
             }}
-            className="group relative bg-[#182030]/85 backdrop-blur-md rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 border border-white/10 shadow-xl transition-all duration-300 overflow-hidden"
+            className="group relative bg-surface/85 backdrop-blur-md rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 border border-hairline shadow-xl transition-all duration-300 overflow-hidden"
         >
             
             {/* Visual gradient overlay matching BUY/SELL direction */}
-            <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 pointer-events-none ${
+            <div className={`absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-300 pointer-events-none ${
                 isBuy ? 'bg-gradient-to-br from-emerald-500 to-transparent' : 'bg-gradient-to-br from-rose-500 to-transparent'
             }`}></div>
 
@@ -120,17 +120,17 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                 {/* Header */}
                 <div className="flex items-start justify-between mb-5">
                     <div>
-                        <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{signal.symbol}</h3>
+                        <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-ink">{signal.symbol}</h3>
                         <div className="flex items-center gap-2 mt-1.5">
                             <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-3 py-0.5 rounded-full ${
                                 isBuy 
-                                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-glow-emerald' 
-                                    : 'bg-rose-500/10 text-rose-400 border border-rose-500/20 text-glow-rose'
+                                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' 
+                                    : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
                             }`}>
                                 {isBuy ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                                 {signal.direction}
                             </span>
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-full">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted bg-surface/50 border border-hairline px-2.5 py-0.5 rounded-full">
                                 <Clock className="w-3 h-3" />
                                 {formatDistanceToNow(new Date(signal.created_at), { addSuffix: true })}
                             </span>
@@ -140,7 +140,7 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                     {/* Signal Score Circular Badge */}
                     <div className="relative shrink-0">
                         <svg className="w-14 h-14 transform -rotate-90">
-                            <circle cx="28" cy="28" r="24" stroke="rgba(255,255,255,0.03)" strokeWidth="3" fill="none" />
+                            <circle cx="28" cy="28" r="24" stroke="var(--color-hairline)" strokeWidth="3" fill="none" />
                             <circle
                                 cx="28"
                                 cy="28"
@@ -150,23 +150,23 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                                 fill="none"
                                 strokeDasharray={`${2 * Math.PI * 24}`}
                                 strokeDashoffset={`${2 * Math.PI * 24 * (1 - signal.signal_score / 10)}`}
-                                className={signal.signal_score >= 8.5 ? 'text-emerald-400' : signal.signal_score >= 7.0 ? 'text-amber-400' : 'text-indigo-400'}
+                                className={signal.signal_score >= 8.5 ? 'text-approve' : signal.signal_score >= 7.0 ? 'text-review' : 'text-accent'}
                                 strokeLinecap="round"
                             />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-sm font-bold text-white leading-none">{signal.signal_score.toFixed(1)}</span>
-                            <span className="text-[7px] text-slate-500 font-bold mt-0.5 uppercase tracking-wider">Score</span>
+                            <span className="text-sm font-bold text-ink leading-none">{signal.signal_score.toFixed(1)}</span>
+                            <span className="text-[7px] text-muted font-bold mt-0.5 uppercase tracking-wider">Score</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Blurable Pricing Targets Box */}
-                <div className="relative mb-5 bg-black/20 rounded-2xl p-3 border border-white/5">
+                <div className="relative mb-5 bg-background/25 rounded-2xl p-3 border border-hairline">
                     <div className={`grid grid-cols-3 gap-3 transition-all duration-300 ${signal.gated ? 'blur-[5px] select-none pointer-events-none' : ''}`}>
-                        <PriceElement label="Entry Price" value={signal.entry_price} color="text-indigo-300" gated={signal.gated} />
-                        <PriceElement label="Stop Loss" value={signal.stop_loss} color="text-rose-400" gated={signal.gated} />
-                        <PriceElement label="Take Profit" value={signal.take_profit} color="text-emerald-400" gated={signal.gated} />
+                        <PriceElement label="Entry Price" value={signal.entry_price} color="text-accent" gated={signal.gated} />
+                        <PriceElement label="Stop Loss" value={signal.stop_loss} color="text-block" gated={signal.gated} />
+                        <PriceElement label="Take Profit" value={signal.take_profit} color="text-approve" gated={signal.gated} />
                     </div>
 
                     {/* Overlay Padlock Gating with exit transition */}
@@ -177,12 +177,12 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                                 initial={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.3 }}
-                                className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/60 rounded-2xl backdrop-blur-[2px]"
+                                className="absolute inset-0 flex flex-col items-center justify-center bg-background/70 rounded-2xl backdrop-blur-[2px]"
                             >
-                                <div className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shadow-lg">
-                                    <Lock className="w-3.5 h-3.5 text-amber-400" />
+                                <div className="w-8 h-8 rounded-full bg-surface border border-hairline flex items-center justify-center shadow-lg">
+                                    <Lock className="w-3.5 h-3.5 text-review" />
                                 </div>
-                                <span className="text-[9px] font-bold tracking-widest text-slate-500 uppercase mt-1">Gated Signals</span>
+                                <span className="text-[9px] font-bold tracking-widest text-muted uppercase mt-1">Gated Signals</span>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -190,18 +190,18 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
 
                 {/* Key Metrics */}
                 <div className="grid grid-cols-2 gap-3 mb-5">
-                    <div className="flex items-center gap-2.5 bg-white/5 border border-white/5 rounded-2xl p-3">
-                        <Zap className="w-4 h-4 text-indigo-400" />
+                    <div className="flex items-center gap-2.5 bg-surface/40 border border-hairline rounded-2xl p-3">
+                        <Zap className="w-4 h-4 text-accent" />
                         <div>
-                            <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide">Win Prob</span>
-                            <span className="text-xs font-bold text-slate-300">{signal.probability_score.toFixed(0)}%</span>
+                            <span className="block text-[9px] font-bold text-muted uppercase tracking-wide">Win Prob</span>
+                            <span className="text-xs font-bold text-ink">{signal.probability_score.toFixed(0)}%</span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2.5 bg-white/5 border border-white/5 rounded-2xl p-3">
-                        <Target className="w-4 h-4 text-amber-400" />
+                    <div className="flex items-center gap-2.5 bg-surface/40 border border-hairline rounded-2xl p-3">
+                        <Target className="w-4 h-4 text-review" />
                         <div>
-                            <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide">Risk/Reward</span>
-                            <span className="text-xs font-bold text-slate-300">{signal.gated ? 'Locked' : `1:${riskReward.toFixed(1)}`}</span>
+                            <span className="block text-[9px] font-bold text-muted uppercase tracking-wide">Risk/Reward</span>
+                            <span className="text-xs font-bold text-ink">{signal.gated ? 'Locked' : `1:${riskReward.toFixed(1)}`}</span>
                         </div>
                     </div>
                 </div>
@@ -209,24 +209,24 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                 {/* Technical Meta Tag badges */}
                 <div className="flex flex-wrap gap-1.5 mb-5">
                     <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
-                        signal.confidence_level === 'High' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                        signal.confidence_level === 'Medium' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 
-                        'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                        signal.confidence_level === 'High' ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' :
+                        signal.confidence_level === 'Medium' ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' : 
+                        'bg-rose-500/10 text-rose-600 border border-rose-500/20'
                     }`}>
                         {signal.confidence_level} Confidence
                     </span>
-                    <span className="text-[10px] font-bold text-slate-400 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold text-muted bg-surface/50 border border-hairline px-2.5 py-0.5 rounded-full">
                         {signal.risk_rating} Risk
                     </span>
-                    <span className="text-[10px] font-bold text-slate-400 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold text-muted bg-surface/50 border border-hairline px-2.5 py-0.5 rounded-full">
                         {signal.gated ? 'Nano Gated' : `${signal.position_sizing.toFixed(1)}% Allocation`}
                     </span>
                 </div>
 
                 {/* Trade Setup Explanation Box */}
-                <div className="bg-black/10 rounded-2xl p-3 border border-white/5 mb-5">
+                <div className="bg-background/20 rounded-2xl p-3 border border-hairline mb-5">
                     <p className={`text-xs leading-relaxed transition-all duration-300 ${
-                        signal.gated ? 'text-slate-500 italic' : 'text-slate-300'
+                        signal.gated ? 'text-muted italic' : 'text-ink/80'
                     }`}>
                         {signal.trade_explanation}
                     </p>
@@ -245,7 +245,7 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                                     ? 'bg-emerald-600 text-white shadow-emerald-500/20'
                                     : paymentStatus === 'failed'
                                     ? 'bg-rose-600 text-white shadow-rose-500/20'
-                                    : 'bg-white text-black hover:bg-accent hover:text-black shadow-white/10 hover:shadow-accent/15'
+                                    : 'bg-ink text-background hover:bg-accent hover:text-background border border-hairline shadow-md hover:shadow-lg'
                             }`}
                         >
                             {/* Glass shimmer overlay during processing */}
@@ -324,25 +324,25 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                     try {
                         const debateData = JSON.parse(signal.debate_transcript);
                         return (
-                            <div className="mt-5 border-t border-white/[0.04] pt-4">
+                            <div className="mt-5 border-t border-hairline pt-4">
                                 <button
                                     onClick={() => setShowDebate(!showDebate)}
-                                    className="flex items-center justify-between w-full text-[10px] font-bold uppercase tracking-wider text-indigo-400 hover:text-indigo-300 transition-colors"
+                                    className="flex items-center justify-between w-full text-[10px] font-bold uppercase tracking-wider text-accent hover:opacity-85 transition-colors"
                                 >
                                     <span>💬 AI Committee Consensus</span>
                                     <span>{showDebate ? 'Hide Debate' : 'Show Debate'}</span>
                                 </button>
                                 
                                 {showDebate && (
-                                    <div className="mt-3 space-y-3 bg-[#05070c]/40 rounded-xl p-3 border border-white/[0.02]">
-                                        <div className="flex gap-2 justify-between text-[9px] font-bold text-slate-500 border-b border-white/[0.02] pb-2">
-                                            <span className={debateData.technical_vote === 'APPROVE' ? 'text-emerald-400' : 'text-rose-400'}>
+                                    <div className="mt-3 space-y-3 bg-background/50 rounded-xl p-3 border border-hairline">
+                                        <div className="flex gap-2 justify-between text-[9px] font-bold text-muted border-b border-hairline pb-2">
+                                            <span className={debateData.technical_vote === 'APPROVE' ? 'text-emerald-500' : 'text-rose-500'}>
                                                 Tech: {debateData.technical_vote}
                                             </span>
-                                            <span className={debateData.macro_vote === 'APPROVE' ? 'text-emerald-400' : 'text-rose-400'}>
+                                            <span className={debateData.macro_vote === 'APPROVE' ? 'text-emerald-500' : 'text-rose-500'}>
                                                 Macro: {debateData.macro_vote}
                                             </span>
-                                            <span className={debateData.risk_vote === 'APPROVE' ? 'text-emerald-400' : 'text-rose-400'}>
+                                            <span className={debateData.risk_vote === 'APPROVE' ? 'text-emerald-500' : 'text-rose-500'}>
                                                 Risk: {debateData.risk_vote}
                                             </span>
                                         </div>
@@ -351,19 +351,19 @@ export default function SignalCard({ signal: initialSignal }: { signal: Signal }
                                             {debateData.debate_rounds?.map((round: any, i: number) => (
                                                 <div key={i} className="space-y-0.5">
                                                     <span className={`block font-bold ${
-                                                        round.speaker === 'Technical Analyst' ? 'text-indigo-300' :
-                                                        round.speaker === 'Macro/Sentiment Analyst' ? 'text-amber-300' :
-                                                        'text-rose-300'
+                                                        round.speaker === 'Technical Analyst' ? 'text-accent' :
+                                                        round.speaker === 'Macro/Sentiment Analyst' ? 'text-review' :
+                                                        'text-block'
                                                     }`}>
                                                         {round.speaker}:
                                                     </span>
-                                                    <p className="text-slate-300 italic">&ldquo;{round.message}&rdquo;</p>
+                                                    <p className="text-ink/90 italic">&ldquo;{round.message}&rdquo;</p>
                                                 </div>
                                             ))}
                                         </div>
                                         
-                                        <div className="border-t border-white/[0.02] pt-2 text-[10px] text-slate-400 leading-normal">
-                                            <strong className="text-white block mb-0.5">Consensus Resolution:</strong>
+                                        <div className="border-t border-hairline pt-2 text-[10px] text-muted leading-normal">
+                                            <strong className="text-ink font-bold block mb-0.5">Consensus Resolution:</strong>
                                             {debateData.consensus_explanation}
                                         </div>
                                     </div>

@@ -23,7 +23,7 @@ const APP_NAV = [
 
 const PUBLIC_NAV = [
     { href: '#how-it-works', label: 'how it works' },
-    { href: '#signals',      label: 'signals' },
+    { href: '/demo',         label: 'judge demo 🏆' },
     { href: '/api-docs',     label: 'api' },
     { href: '/testimonials', label: 'testimonials' },
     { href: '/contact',      label: 'contact' },
