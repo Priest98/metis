@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, CheckCircle } from 'lucide-react';
 import ExplorerLink from '@/components/ExplorerLink';
+import api from '@/lib/api';
 
 interface Payment {
     id: string;
@@ -64,53 +65,70 @@ const PAYMENT_LABELS = [
 ];
 
 export default function TractionTimeline({ compact = false }: { compact?: boolean }) {
-    const [payments, setPayments] = useState<Payment[]>(() =>
-        SEED_PAYMENTS.map((p, i) => ({ ...p, id: `seed-${i}` }))
-    );
-    const totalRef = useRef(SEED_PAYMENTS.reduce((s, p) => s + p.amount, 0));
+    const [payments, setPayments] = useState<Payment[]>([]);
 
-    // Age all payments every second
+    const fetchHistory = async () => {
+        try {
+            const res = await api.get('/wallet/public-history');
+            const data = res.data || [];
+            
+            const realPayments: Payment[] = data.map((tx: any) => {
+                const ageSeconds = tx.created_at 
+                    ? Math.max(0, Math.floor((Date.now() - new Date(tx.created_at).getTime()) / 1000)) 
+                    : 10;
+                return {
+                    id: tx.id,
+                    txHash: tx.tx_hash,
+                    from: tx.sender_address,
+                    to: tx.receiver_address,
+                    amount: tx.amount,
+                    label: tx.purpose || 'nanopayment',
+                    ageSeconds,
+                };
+            });
+            
+            const merged = [...realPayments];
+            const needed = (compact ? 5 : 10) - merged.length;
+            if (needed > 0) {
+                const realHashes = new Set(realPayments.map(p => p.txHash.toLowerCase()));
+                let seedIndex = 0;
+                let addedCount = 0;
+                while (addedCount < needed && seedIndex < SEED_PAYMENTS.length) {
+                    const seed = SEED_PAYMENTS[seedIndex];
+                    if (!realHashes.has(seed.txHash.toLowerCase())) {
+                        merged.push({
+                            ...seed,
+                            id: `seed-${seedIndex}`,
+                        });
+                        addedCount++;
+                    }
+                    seedIndex++;
+                }
+            }
+            
+            merged.sort((a, b) => a.ageSeconds - b.ageSeconds);
+            setPayments(merged.slice(0, compact ? 5 : 10));
+        } catch (err) {
+            console.error('Failed to fetch public transaction history:', err);
+            if (payments.length === 0) {
+                setPayments(SEED_PAYMENTS.map((p, i) => ({ ...p, id: `seed-${i}` })));
+            }
+        }
+    };
+
+    useEffect(() => {
+        fetchHistory();
+        const pollId = setInterval(fetchHistory, 15000);
+        return () => clearInterval(pollId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
         const id = setInterval(() => {
             setPayments(prev => prev.map(p => ({ ...p, ageSeconds: p.ageSeconds + 1 })));
         }, 1000);
         return () => clearInterval(id);
     }, []);
-
-    // Add a new synthetic payment every ~20 seconds
-    useEffect(() => {
-        const id = setInterval(() => {
-            const isUserTrade = Math.random() > 0.4;
-            const amount = isUserTrade ? 0.0010 : [0.0003, 0.0005, 0.0008, 0.0012][Math.floor(Math.random() * 4)];
-            const from = isUserTrade ? USER_WALLET : AGENT_WALLET;
-            const to   = isUserTrade ? AGENT_WALLET : [RISK_WALLET, SENTIMENT_WALLET, STRATEGY_WALLET][Math.floor(Math.random() * 3)];
-            const label = PAYMENT_LABELS[Math.floor(Math.random() * PAYMENT_LABELS.length)];
-
-            totalRef.current += amount;
-
-            const newPayment: Payment = {
-                id: `live-${Date.now()}`,
-                txHash: fakeHash(),
-                from,
-                to,
-                amount,
-                label,
-                ageSeconds: 0,
-                isNew: true,
-            };
-
-            setPayments(prev => {
-                const updated = [newPayment, ...prev.slice(0, compact ? 4 : 9)];
-                return updated;
-            });
-
-            // Clear isNew after animation
-            setTimeout(() => {
-                setPayments(prev => prev.map(p => p.id === newPayment.id ? { ...p, isNew: false } : p));
-            }, 800);
-        }, 20000);
-        return () => clearInterval(id);
-    }, [compact]);
 
     const displayPayments = compact ? payments.slice(0, 5) : payments;
     const total = payments.reduce((s, p) => s + p.amount, 0);

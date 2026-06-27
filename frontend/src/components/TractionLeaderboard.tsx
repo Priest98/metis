@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, TrendingUp, Zap, ExternalLink } from 'lucide-react';
+import api from '@/lib/api';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -78,36 +79,87 @@ function arcScanUrl(addr: string): string {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function TractionLeaderboard() {
-    const [board, setBoard] = useState<LeaderEntry[]>(
-        SEED_LEADERBOARD.map(e => ({ ...e, delta: 0 }))
-    );
+    const [board, setBoard] = useState<LeaderEntry[]>([]);
     const [pulse, setPulse] = useState<string | null>(null);
-    const [totalUSDC, setTotalUSDC] = useState(
-        SEED_LEADERBOARD.reduce((s, e) => s + e.usdc, 0)
-    );
+    const [totalUSDC, setTotalUSDC] = useState(0);
 
-    // Simulate live updates: occasionally bump a random wallet's count
-    useEffect(() => {
-        const id = setInterval(() => {
-            if (Math.random() > 0.55) return; // ~45% chance each tick
-            setBoard(prev => {
-                const idx = Math.floor(Math.random() * prev.length);
-                const gain = Math.ceil(Math.random() * 3);
-                const next = prev.map((e, i) =>
-                    i === idx
-                        ? { ...e, signals: e.signals + gain, usdc: e.usdc + gain * 0.001, delta: gain, lastSeen: 'just now' }
-                        : { ...e, delta: 0 }
-                );
-                // Re-sort
-                next.sort((a, b) => b.signals - a.signals);
-                next.forEach((e, i) => { e.rank = i + 1; });
-                setPulse(next[idx]?.address ?? null);
-                setTotalUSDC(s => s + gain * 0.001);
-                setTimeout(() => setPulse(null), 1500);
-                return next;
+    const fetchLeaderboard = async () => {
+        try {
+            const res = await api.get('/wallet/public-leaderboard');
+            const data = res.data || [];
+            
+            const realLeaders: LeaderEntry[] = data.map((entry: any, i: number) => {
+                const prev = board.find(b => b.address.toLowerCase() === entry.address.toLowerCase());
+                const delta = prev && entry.signals > prev.signals ? (entry.signals - prev.signals) : 0;
+                
+                if (delta > 0) {
+                    setPulse(entry.address);
+                    setTimeout(() => setPulse(null), 1500);
+                }
+                
+                // Parse relative age
+                let lastSeenDisplay = 'recently';
+                if (entry.lastSeen) {
+                    const elapsed = Math.floor((Date.now() - new Date(entry.lastSeen).getTime()) / 1000);
+                    if (elapsed < 60) lastSeenDisplay = 'just now';
+                    else if (elapsed < 3600) lastSeenDisplay = `${Math.floor(elapsed / 60)}m ago`;
+                    else lastSeenDisplay = `${Math.floor(elapsed / 3600)}h ago`;
+                }
+
+                return {
+                    rank: entry.rank,
+                    address: entry.address,
+                    signals: entry.signals,
+                    usdc: entry.usdc,
+                    lastSeen: lastSeenDisplay,
+                    badge: entry.badge || '👤 Trader',
+                    isAgent: entry.isAgent,
+                    delta,
+                };
             });
-        }, 7000);
-        return () => clearInterval(id);
+
+            // Merge with SEED_LEADERBOARD to have at least 5 rows
+            const merged = [...realLeaders];
+            const needed = 5 - merged.length;
+            if (needed > 0) {
+                const realAddrs = new Set(realLeaders.map(r => r.address.toLowerCase()));
+                let seedIndex = 0;
+                let addedCount = 0;
+                while (addedCount < needed && seedIndex < SEED_LEADERBOARD.length) {
+                    const seed = SEED_LEADERBOARD[seedIndex];
+                    if (!realAddrs.has(seed.address.toLowerCase())) {
+                        merged.push({
+                            ...seed,
+                            delta: 0,
+                        });
+                        addedCount++;
+                    }
+                    seedIndex++;
+                }
+            }
+
+            // Re-sort and re-rank
+            merged.sort((a, b) => b.signals - a.signals);
+            merged.forEach((e, index) => {
+                e.rank = index + 1;
+            });
+
+            setBoard(merged);
+            setTotalUSDC(merged.reduce((s, e) => s + e.usdc, 0));
+        } catch (err) {
+            console.error('Failed to fetch public leaderboard:', err);
+            if (board.length === 0) {
+                setBoard(SEED_LEADERBOARD.map(e => ({ ...e, delta: 0 })));
+                setTotalUSDC(SEED_LEADERBOARD.reduce((s, e) => s + e.usdc, 0));
+            }
+        }
+    };
+
+    useEffect(() => {
+        fetchLeaderboard();
+        const pollId = setInterval(fetchLeaderboard, 15000);
+        return () => clearInterval(pollId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const rankColor = (r: number) =>

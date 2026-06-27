@@ -217,6 +217,87 @@ async def wallet_faucet(
     }
 
 
+@router.get("/public-history", response_model=List[Dict[str, Any]])
+async def get_public_transaction_history(
+    db: AsyncSession = Depends(get_db)
+):
+    """Retrieve the latest global transactions from the ledger, public access."""
+    result = await db.execute(
+        select(Transaction)
+        .order_by(Transaction.created_at.desc())
+        .limit(30)
+    )
+    txs = result.scalars().all()
+    
+    return [
+        {
+            "id": str(tx.id),
+            "tx_hash": tx.tx_hash,
+            "amount": float(tx.amount),
+            "currency": tx.currency,
+            "sender_address": tx.sender_address,
+            "receiver_address": tx.receiver_address,
+            "purpose": tx.purpose,
+            "status": tx.status,
+            "created_at": tx.created_at.isoformat() if tx.created_at else None
+        }
+        for tx in txs
+    ]
+
+@router.get("/public-leaderboard", response_model=List[Dict[str, Any]])
+async def get_public_leaderboard(
+    db: AsyncSession = Depends(get_db)
+):
+    """Retrieve the global leaderboard compiled from real on-chain transaction logs."""
+    result = await db.execute(
+        select(Transaction)
+        .where(Transaction.status == "success")
+    )
+    txs = result.scalars().all()
+    
+    wallets = {}
+    for tx in txs:
+        addr = tx.sender_address
+        if not addr:
+            continue
+            
+        if addr not in wallets:
+            wallets[addr] = {
+                "signals": 0,
+                "usdc": Decimal("0.0"),
+                "last_seen": tx.created_at
+            }
+            
+        is_unlock = tx.purpose and any(p in tx.purpose for p in ["Unlock", "unlock", "Fee", "fee", "Signal", "signal"])
+        if is_unlock:
+            wallets[addr]["signals"] += 1
+            wallets[addr]["usdc"] += tx.amount
+            
+        if tx.created_at and (wallets[addr]["last_seen"] is None or tx.created_at > wallets[addr]["last_seen"]):
+            wallets[addr]["last_seen"] = tx.created_at
+            
+    leaderboard = []
+    AGENT_WALLET = '0x4bDC17682C62E15Cb3296a5aA1D61d456597EBdc'
+    RISK_WALLET = '0x8ddf06fE8985988d3e0883F945E891BD57084937'
+    
+    for addr, data in wallets.items():
+        leaderboard.append({
+            "address": addr,
+            "signals": data["signals"],
+            "usdc": float(data["usdc"]),
+            "lastSeen": data["last_seen"].isoformat() if data["last_seen"] else "recently",
+            "badge": "🤖 Metis Agent" if addr.lower() == AGENT_WALLET.lower() else "⚡ Shadow Float" if addr.lower() == RISK_WALLET.lower() else "👤 Trader",
+            "isAgent": addr.lower() == AGENT_WALLET.lower() or addr.lower() == RISK_WALLET.lower()
+        })
+        
+    leaderboard.sort(key=lambda x: (x["signals"], x["usdc"]), reverse=True)
+    
+    for i, entry in enumerate(leaderboard):
+        entry["rank"] = i + 1
+        
+    return leaderboard[:10]
+
+
 @router.get("/history", response_model=List[Dict[str, Any]])
 async def get_transaction_history(
     current_user: dict = Depends(get_current_user),
